@@ -1,0 +1,111 @@
+html {
+  font-size: 14px;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef;
+    margin: 20px,60px,20px,20px;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+.nav-item {
+    color: #CAF0F8 !important;
+}
+
+
+.nav-link {
+    color: #f7f7f7 !important;
+}
+
+.navbar-brand {
+    color: #0077B6 !important;
+}
+
+.btn-custom {
+    background-color: #023E8A !important;
+    color: #f7f7f7 !important;
+}
+
+    .btn-custom:hover, .btn-custom:active {
+        background-color: #03045E !important;
+        color: #f7f7f7 !important;
+    }
+
+.btn-custom2, .btn-custom2:hover, .btn-custom2:active {
+    color: #0077B6 !important;
+    --bs-btn-border-color: #0077B6 !important;
+}
+
+    .btn-custom2:hover, .btn-custom2:active {
+        background-color: #0077B6 !important;
+        color: #f7f7f7 !important;
+    }
+
+
+.th-custom {
+    background: #03045E !important;
+    color: #f7f7f7 !important;
+}
+
+tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+.text-custom {
+    color: #0077B6 !important;
+}
