@@ -1,0 +1,6 @@
+@ArslanProjectManager.API_HostAddress = http://localhost:5170
+
+GET {{ArslanProjectManager.API_HostAddress}}/api/
+Accept: application/json
+
+###

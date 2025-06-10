@@ -20,7 +20,7 @@ namespace ArslanProjectManager.WEB.Controllers
             _dbContext = dbContext;
             _passwordHasher = passwordHasher;
         }
-
+        /*
         [Authorize]
         public async Task<IActionResult> Index()
         {
@@ -158,6 +158,6 @@ namespace ArslanProjectManager.WEB.Controllers
                 ModelState.AddModelError("", "Error occurred while registering. Please try again.");
                 return View(model);
             }
-        }
+    }*/
     }
 }
