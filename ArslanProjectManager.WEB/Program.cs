@@ -1,4 +1,4 @@
-using ArslanProjectManager.WEB.Data;
+//using ArslanProjectManager.WEB.Data;
 using ArslanProjectManager.WEB.Middleware;
 using ArslanProjectManager.WEB.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -8,8 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<ProjectManagerDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));
+/*builder.Services.AddDbContext<ProjectManagerDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlConnection")));*/
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 

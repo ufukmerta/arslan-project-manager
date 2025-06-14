@@ -1,5 +1,5 @@
-﻿using ArslanProjectManager.WEB.Data;
-using ArslanProjectManager.WEB.Models;
+﻿//using ArslanProjectManager.WEB.Data;
+//using ArslanProjectManager.WEB.Models;
 using ArslanProjectManager.WEB.Services;
 using ArslanProjectManager.WEB.ViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -13,14 +13,14 @@ namespace ArslanProjectManager.WEB.Controllers
 {
     public class UserController : Controller
     {
-        private readonly ProjectManagerDbContext _dbContext;
+        /*private readonly ProjectManagerDbContext _dbContext;
         private readonly IPasswordHasher _passwordHasher;
         public UserController(ProjectManagerDbContext dbContext, IPasswordHasher passwordHasher)
         {
             _dbContext = dbContext;
             _passwordHasher = passwordHasher;
         }
-        /*
+        
         [Authorize]
         public async Task<IActionResult> Index()
         {
