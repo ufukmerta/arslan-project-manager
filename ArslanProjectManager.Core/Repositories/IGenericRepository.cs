@@ -9,7 +9,7 @@ namespace ArslanProjectManager.Core.Repositories
 {
     public interface IGenericRepository<T> where T : class
     {
-        Task<T> GetByIdAsync(int id);
+        Task<T?> GetByIdAsync(int id);
 
         IQueryable<T> Where(Expression<Func<T, bool>> expression);
 

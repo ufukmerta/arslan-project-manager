@@ -9,6 +9,6 @@ namespace ArslanProjectManager.Core.Repositories
 {
     public interface IUserRepository : IGenericRepository<User>
     {
-        Task<User> GetUserWithTeamsProjectsTasksAsync(int userId);
+        Task<User?> GetUserWithTeamsProjectsTasksAsync(int userId);
     }
 }

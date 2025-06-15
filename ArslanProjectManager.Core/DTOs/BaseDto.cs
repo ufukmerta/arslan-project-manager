@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace ArslanProjectManager.Core;
+namespace ArslanProjectManager.Core.DTOs;
 
 public class BaseDto
 {

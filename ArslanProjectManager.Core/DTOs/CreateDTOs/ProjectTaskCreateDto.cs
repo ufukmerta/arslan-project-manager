@@ -2,9 +2,8 @@
 using System.Linq;
 using System.Collections.Generic;
 using ArslanProjectManager.Core.Models;
-using ArslanProjectManager.Core.DTOs.CreateDTOs;
 
-namespace ArslanProjectManager.Core;
+namespace ArslanProjectManager.Core.DTOs.CreateDTOs;
 
 public class ProjectTaskCreateDto : BaseCreateDto
 {

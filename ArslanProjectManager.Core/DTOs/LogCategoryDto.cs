@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using ArslanProjectManager.Core.Models;
 
-namespace ArslanProjectManager.Core;
+namespace ArslanProjectManager.Core.DTOs;
 
 public class LogCategoryDto : BaseDto
 {

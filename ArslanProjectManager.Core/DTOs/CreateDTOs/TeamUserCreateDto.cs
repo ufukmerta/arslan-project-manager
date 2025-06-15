@@ -1,10 +1,9 @@
-﻿using ArslanProjectManager.Core.DTOs.CreateDTOs;
-using ArslanProjectManager.Core.Models;
+﻿using ArslanProjectManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ArslanProjectManager.Core;
+namespace ArslanProjectManager.Core.DTOs.CreateDTOs;
 
 public class TeamUserCreateDto : BaseCreateDto
 {
