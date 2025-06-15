@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArslanProjectManager.Core.UnitOfWorks
+namespace ArslanProjectManager.Core.UnitOfWork
 {
-    public interface IUnitOfWorks
+    public interface IUnitOfWork
     {
         void Commit();
         Task CommitAsync();
