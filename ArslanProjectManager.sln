@@ -10,6 +10,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArslanProjectManager.Repository", "ArslanProjectManager.Repository\ArslanProjectManager.Repository.csproj", "{97CC96C8-A39B-450A-AAFC-A22876E7F3EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArslanProjectManager.Service", "ArslanProjectManager.Service\ArslanProjectManager.Service.csproj", "{BA3EAD1B-79B8-4CE0-90D9-A3E34DB6EB65}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3704A3D1-8EF3-43BE-A6FF-8D6FABED92F6} = {3704A3D1-8EF3-43BE-A6FF-8D6FABED92F6}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArslanProjectManager.API", "ArslanProjectManager.API\ArslanProjectManager.API.csproj", "{2AD5F289-4081-43C6-BAA7-91D506D2EF1E}"
 	ProjectSection(ProjectDependencies) = postProject

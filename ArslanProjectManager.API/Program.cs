@@ -1,4 +1,5 @@
 using ArslanProjectManager.Repository;
+using ArslanProjectManager.Service.Mappings;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,7 @@ builder.Services.AddDbContext<ProjectManagerDbContext>(options =>
             option.MigrationsAssembly(Assembly.GetAssembly(typeof(ProjectManagerDbContext))!.GetName().Name))
     );
 
+builder.Services.AddAutoMapper(typeof(MapProfile));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
