@@ -10,7 +10,7 @@ namespace ArslanProjectManager.Core.Services
 {
     public interface IUserService: IGenericService<User>
     {
-        Task<User> GetByEmail(string email);
-        Task<Token> Login(UserLoginDto userLoginDto);
+        Task<User?> GetByEmail(string email);
+        Task<Token?> Login(UserLoginDto userLoginDto);
     }
 }
