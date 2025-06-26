@@ -10,7 +10,6 @@ namespace ArslanProjectManager.Service.Extensions
 {
     public static class ClaimsExtensions
     {
-        // veritabınına fotoğrafları binary olarak kaydet ve claim olarak ekle
         public static void AddName(this ICollection<Claim> claims, string name, string email, string image)
         {
             if (string.IsNullOrEmpty(name)) return;
