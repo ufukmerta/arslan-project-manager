@@ -1,20 +1,22 @@
+using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.API.Middlewares;
+using ArslanProjectManager.API.Modules;
 using ArslanProjectManager.Repository;
 using ArslanProjectManager.Service.Mappings;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
-using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 // Add services to the container.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
