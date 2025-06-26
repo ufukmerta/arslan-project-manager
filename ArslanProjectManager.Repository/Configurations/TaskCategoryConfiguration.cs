@@ -21,13 +21,13 @@ public class TaskCategoryConfiguration : IEntityTypeConfiguration<TaskCategory>
             .IsRequired();
 
         builder.Property(e => e.CreatedDate)
-            .HasColumnName("created_date")
-            .HasColumnType("date")
-            .HasDefaultValueSql("(getdate())");
+           .HasColumnName("created_date")
+           .HasColumnType("datetime")
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
-            .HasColumnType("date");
+            .HasColumnType("datetime");
 
         builder.Property(e => e.IsActive)
             .HasColumnName("is_active")
@@ -35,4 +35,4 @@ public class TaskCategoryConfiguration : IEntityTypeConfiguration<TaskCategory>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

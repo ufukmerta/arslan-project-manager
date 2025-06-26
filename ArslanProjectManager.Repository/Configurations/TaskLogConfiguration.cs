@@ -31,7 +31,7 @@ public class TaskLogConfiguration : IEntityTypeConfiguration<TaskLog>
         builder.Property(e => e.CreatedDate)
            .HasColumnName("created_date")
            .HasColumnType("datetime")
-           .HasDefaultValueSql("(getdate())");
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
@@ -65,4 +65,4 @@ public class TaskLogConfiguration : IEntityTypeConfiguration<TaskLog>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

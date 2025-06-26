@@ -11,6 +11,6 @@ namespace ArslanProjectManager.Core.Models
         public int Id { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public DateTime? UpdatedDate { get; set; } = null;        
+        public DateTime? UpdatedDate { get; set; } = null;
     }
 }

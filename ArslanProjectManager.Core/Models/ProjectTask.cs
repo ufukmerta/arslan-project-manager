@@ -7,9 +7,9 @@ public partial class ProjectTask : BaseEntity
 {
     public int ProjectId { get; set; }
     public string TaskName { get; set; } = null!;
-    public DateTime? StartingDate { get; set; }
+    public DateOnly? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public DateTime? ExpectedEndDate { get; set; }
+    public DateOnly? ExpectedEndDate { get; set; }
     public int TaskCategoryId { get; set; }
     public int BoardId { get; set; }
     public string? Description { get; set; }

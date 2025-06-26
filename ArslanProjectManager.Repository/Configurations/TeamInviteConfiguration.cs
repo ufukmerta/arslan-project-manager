@@ -27,9 +27,9 @@ public class TeamInviteConfiguration : IEntityTypeConfiguration<TeamInvite>
             .IsRequired();
 
         builder.Property(e => e.CreatedDate)
-            .HasColumnName("invite_date")
-            .HasColumnType("datetime")
-            .HasDefaultValueSql("(getdate())");
+           .HasColumnName("invite_date")
+           .HasColumnType("datetime")
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
@@ -63,4 +63,4 @@ public class TeamInviteConfiguration : IEntityTypeConfiguration<TeamInvite>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

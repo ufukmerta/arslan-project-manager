@@ -40,8 +40,13 @@ namespace ArslanProjectManager.Repository.Configurations
                 .HasDefaultValue(true);
 
             builder.Property(e => e.CreatedDate)
-                .HasColumnName("created_date")
-                .HasDefaultValueSql("(getdate())");
+           .HasColumnName("created_date")
+           .HasColumnType("datetime")
+           .HasDefaultValueSql("(GETUTCDATE())");
+
+            builder.Property(e => e.UpdatedDate)
+                .HasColumnName("updated_date")
+                .HasColumnType("datetime");
 
             builder.HasOne(d => d.User)
                 .WithMany(p => p.Tokens)

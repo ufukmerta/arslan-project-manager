@@ -9,8 +9,8 @@ public class ProjectTaskCreateDto : BaseCreateDto
 {
     public int ProjectId { get; set; }
     public string TaskName { get; set; } = null!;
-    public DateOnly? StartingDate { get; set; }
-    public DateOnly? EndDate { get; set; }
+    public DateOnly? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public DateOnly? ExpectedEndDate { get; set; }
     public int TaskCategoryId { get; set; }
     public int BoardId { get; set; }

@@ -27,12 +27,12 @@ public class TaskTagConfiguration : IEntityTypeConfiguration<TaskTag>
 
         builder.Property(e => e.CreatedDate)
            .HasColumnName("created_date")
-           .HasColumnType("date")
-           .HasDefaultValueSql("(getdate())");
+           .HasColumnType("datetime")
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
-            .HasColumnType("date");
+            .HasColumnType("datetime");
 
         builder.Property(e => e.IsActive)
             .HasColumnName("is_active")
@@ -45,4 +45,4 @@ public class TaskTagConfiguration : IEntityTypeConfiguration<TaskTag>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

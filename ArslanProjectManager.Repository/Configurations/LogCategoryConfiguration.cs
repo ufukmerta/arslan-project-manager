@@ -22,12 +22,12 @@ public class LogCategoryConfiguration : IEntityTypeConfiguration<LogCategory>
 
         builder.Property(e => e.CreatedDate)
            .HasColumnName("created_date")
-           .HasColumnType("date")
-           .HasDefaultValueSql("(getdate())");
+           .HasColumnType("datetime")
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
-            .HasColumnType("date");
+            .HasColumnType("datetime");
 
         builder.Property(e => e.IsActive)
             .HasColumnName("is_active")
@@ -35,4 +35,4 @@ public class LogCategoryConfiguration : IEntityTypeConfiguration<LogCategory>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

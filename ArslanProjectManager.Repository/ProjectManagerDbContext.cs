@@ -9,7 +9,7 @@ public partial class ProjectManagerDbContext : DbContext
     {
     }
 
-    public ProjectManagerDbContext(DbContextOptions<ProjectManagerDbContext> options): base(options)
+    public ProjectManagerDbContext(DbContextOptions<ProjectManagerDbContext> options) : base(options)
     {
     }
     //Migrations: dotnet ef migrations add InitialCreate --context ProjectManagerDbContext --project ArslanProjectManager.Repository --startup-project ArslanProjectManager.API
@@ -41,7 +41,7 @@ public partial class ProjectManagerDbContext : DbContext
     public virtual DbSet<Token> Tokens { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-    
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,7 +52,13 @@ public partial class ProjectManagerDbContext : DbContext
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 
     public override int SaveChanges()
-    {//*
+    {
+        var entries = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && (e.State == EntityState.Modified));
+        foreach (var entityEntry in entries)
+        {
+            ((BaseEntity)entityEntry.Entity).UpdatedDate = DateTime.Now;
+        }
+
         return base.SaveChanges();
     }
 }

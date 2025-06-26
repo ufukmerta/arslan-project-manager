@@ -32,15 +32,15 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
         builder.Property(e => e.CreatedDate)
            .HasColumnName("created_date")
            .HasColumnType("datetime")
-           .HasDefaultValueSql("(getdate())");
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
             .HasColumnType("datetime");
 
-        builder.Property(e => e.StartingDate)
-            .HasColumnName("starting_date")
-            .HasColumnType("datetime");
+        builder.Property(e => e.StartDate)
+            .HasColumnName("start_date")
+            .HasColumnType("date");
 
         builder.Property(e => e.EndDate)
             .HasColumnName("end_date")
@@ -48,7 +48,7 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
 
         builder.Property(e => e.ExpectedEndDate)
             .HasColumnName("expected_end_date")
-            .HasColumnType("datetime");
+            .HasColumnType("date");
 
         builder.Property(e => e.TaskCategoryId)
             .HasColumnName("task_category_id");
@@ -103,4 +103,4 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

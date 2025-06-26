@@ -29,9 +29,9 @@ public class TaskCommentConfiguration : IEntityTypeConfiguration<TaskComment>
             .IsRequired();
 
         builder.Property(e => e.CreatedDate)
-            .HasColumnName("created_date")
-            .HasColumnType("datetime")
-            .HasDefaultValueSql("(getdate())");
+           .HasColumnName("created_date")
+           .HasColumnType("datetime")
+           .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
@@ -53,4 +53,4 @@ public class TaskCommentConfiguration : IEntityTypeConfiguration<TaskComment>
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

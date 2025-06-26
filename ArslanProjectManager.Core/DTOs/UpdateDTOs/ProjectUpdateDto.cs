@@ -10,5 +10,6 @@ namespace ArslanProjectManager.Core.DTOs.UpdateDTOs
     {
         public string ProjectName { get; set; } = default!;
         public string? ProjectDetail { get; set; } = null;
+        public DateOnly StartDate { get; set; }
     }
 }

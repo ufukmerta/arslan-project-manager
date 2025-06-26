@@ -4,6 +4,7 @@ using ArslanProjectManager.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArslanProjectManager.Repository.Migrations
 {
     [DbContext(typeof(ProjectManagerDbContext))]
-    partial class ProjectManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250622153002_ChangeAttributeInProjectTask")]
+    partial class ChangeAttributeInProjectTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,9 +46,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -54,7 +57,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
@@ -79,9 +82,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -90,7 +93,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
@@ -109,9 +112,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -130,8 +133,8 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("project_name");
 
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date")
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2")
                         .HasColumnName("start_date");
 
                     b.Property<int>("TeamId")
@@ -139,7 +142,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("team_id");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
@@ -174,7 +177,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)")
@@ -184,8 +187,8 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnType("datetime")
                         .HasColumnName("end_date");
 
-                    b.Property<DateOnly?>("ExpectedEndDate")
-                        .HasColumnType("date")
+                    b.Property<DateTime?>("ExpectedEndDate")
+                        .HasColumnType("datetime")
                         .HasColumnName("expected_end_date");
 
                     b.Property<bool>("IsActive")
@@ -204,8 +207,8 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnType("int")
                         .HasColumnName("project_id");
 
-                    b.Property<DateOnly?>("StartDate")
-                        .HasColumnType("date")
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime")
                         .HasColumnName("start_date");
 
                     b.Property<int>("TaskCategoryId")
@@ -248,9 +251,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool?>("EditPermission")
                         .ValueGeneratedOnAdd()
@@ -271,7 +274,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("role_name");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.Property<bool?>("ViewPermission")
@@ -305,9 +308,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -316,7 +319,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
@@ -342,7 +345,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -388,7 +391,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -436,9 +439,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -457,7 +460,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("task_id");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
@@ -478,9 +481,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -499,7 +502,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("team_name");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.HasKey("Id");
@@ -522,7 +525,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasColumnName("invite_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<int>("InvitedById")
                         .HasColumnType("int")
@@ -577,9 +580,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasColumnType("date")
+                        .HasColumnName("invite_date")
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -596,7 +599,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnName("team_id");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
+                        .HasColumnType("date")
                         .HasColumnName("updated_date");
 
                     b.Property<int>("UserId")
@@ -631,9 +634,9 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<DateTime>("Expiration")
                         .HasColumnType("datetime2");
@@ -654,8 +657,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("updated_date");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int")
@@ -681,7 +683,7 @@ namespace ArslanProjectManager.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
                         .HasColumnName("register_date")
-                        .HasDefaultValueSql("(GETUTCDATE())");
+                        .HasDefaultValueSql("(getdate())");
 
                     b.Property<string>("Email")
                         .IsRequired()

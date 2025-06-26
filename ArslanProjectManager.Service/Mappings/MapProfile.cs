@@ -1,6 +1,7 @@
 ﻿using ArslanProjectManager.Core;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
+using ArslanProjectManager.Core.DTOs.DeleteDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.ViewModels;

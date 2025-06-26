@@ -33,7 +33,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(e=> e.ProfilePictureUrl)
+        builder.Property(e => e.ProfilePictureUrl)
             .HasColumnName("profile_picture_url")
             .HasMaxLength(200)
             .HasDefaultValue("profile.png");
@@ -41,16 +41,16 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(e => e.CreatedDate)
             .HasColumnName("register_date")
             .HasColumnType("datetime")
-            .HasDefaultValueSql("(getdate())");
+            .HasDefaultValueSql("(GETUTCDATE())");
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")
             .HasColumnType("datetime");
 
-        builder.Property(e=>e.IsActive)
+        builder.Property(e => e.IsActive)
             .HasColumnName("is_active")
             .HasDefaultValue(true);
 
         builder.HasQueryFilter(e => e.IsActive);
     }
-} 
+}

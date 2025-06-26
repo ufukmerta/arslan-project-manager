@@ -16,8 +16,9 @@ namespace ArslanProjectManager.Repository.Repositories
         public async Task<Token?> GetByRefreshTokenAsync(string refreshToken)
         {
             return await _context.Tokens
-                .Include(t => t.User)
-                .FirstOrDefaultAsync(t => t.RefreshToken == refreshToken);
+               .Include(t => t.User)
+               .OrderBy(t => t.Id)
+               .LastOrDefaultAsync(t => t.RefreshToken == refreshToken);
         }
 
         public async Task<List<Token>> GetActiveTokensByUserIdAsync(int userId)
