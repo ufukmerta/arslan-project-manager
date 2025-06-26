@@ -1,5 +1,5 @@
 using ArslanProjectManager.Core.Services;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace ArslanProjectManager.API.Middlewares
 {
@@ -23,8 +23,8 @@ namespace ArslanProjectManager.API.Middlewares
 
             if (!string.IsNullOrEmpty(accessToken))
             {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var jwtToken = tokenHandler.ReadJwtToken(accessToken);
+                var tokenHandler = new JsonWebTokenHandler();
+                var jwtToken = tokenHandler.ReadToken(accessToken);
 
                 if (jwtToken.ValidTo > DateTime.UtcNow)
                 {
