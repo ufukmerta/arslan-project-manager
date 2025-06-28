@@ -15,11 +15,11 @@ namespace ArslanProjectManager.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : CustomBaseController
+    public class UserController(IUserService userService, ITokenService tokenService, IMapper mapper) : CustomBaseController(tokenService)
     {
-        private readonly IUserService _userService;
-        private readonly ITokenService _tokenService;
-        private readonly IMapper _mapper;
+        private readonly IUserService _userService = userService;
+        private readonly ITokenService _tokenService = tokenService;
+        private readonly IMapper _mapper = mapper;
         public UserController(IUserService userService, ITokenService tokenService, IMapper mapper) : base(tokenService)
         {
             _userService = userService;
@@ -109,7 +109,8 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var user = _mapper.Map<User>(userDto);
-            if (userDto.ProfilePicture != null && userDto.ProfilePicture.Length > 0)
+
+            if (userDto.ProfilePicture is not null && userDto.ProfilePicture.Length > 0)
             {
                 var byteArray = Convert.FromBase64String(userDto.ProfilePicture);
                 user.ProfilePicture = byteArray;
@@ -121,10 +122,10 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid email format."));
             }
 
-            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$@$!%*\/?&+\-_.]{8,}$");
             if (!passwordRegex.IsMatch(userDto.Password))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@$!%*/?&+-_.)."));
             }
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
@@ -139,10 +140,11 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Update(UserUpdateDto userDto)
         {
             var token = GetToken();
-            if (token is null || token.UserId != userDto.Id)
+            if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "You are not authorized to update this user."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
             }
+
             var existingUser = await _userService.GetByIdAsync(userDto.Id);
             if (existingUser is null)
             {
@@ -160,15 +162,17 @@ namespace ArslanProjectManager.API.Controllers
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "New password must be at least 8 characters long."));
             }
-            if (!string.IsNullOrEmpty(userDto.Password) && !BCrypt.Net.BCrypt.Verify(userDto.Password, existingUser.Password))
+
+            var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+            if (string.IsNullOrEmpty(userDto.Email) || !emailRegex.IsMatch(userDto.Email))
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current password is incorrect."));
             }
 
             existingUser.Name = userDto.Name;
             existingUser.Email = userDto.Email;
-            existingUser.Password = string.IsNullOrEmpty(userDto.NewPassword) ? existingUser.Password : BCrypt.Net.BCrypt.HashPassword(userDto.NewPassword);
-            if (userDto.ProfilePicture != null && userDto.ProfilePicture.Length > 0)
+
+            if (userDto.ProfilePicture is not null && userDto.ProfilePicture.Length > 0)
             {
                 var byteArray = Convert.FromBase64String(userDto.ProfilePicture);
                 existingUser.ProfilePicture = byteArray;
