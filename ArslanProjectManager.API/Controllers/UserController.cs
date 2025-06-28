@@ -135,6 +135,28 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<UserDto>.Success(savedUserDto, 201));
         }
 
+        [HttpGet("[action]")]
+        [Authorize]
+        public async Task<IActionResult> Update()
+        {
+            var token = GetToken();
+            if (token is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
+            }
+            var user = await _userService.GetByIdAsync(token.UserId);
+            if (user is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
+            }
+            var userUpdateDto = _mapper.Map<UserUpdateDto>(user);
+
+            userUpdateDto.ProfilePicture = user.ProfilePicture is not null ?
+                Convert.ToBase64String(user.ProfilePicture).Insert(0, "data:image/png;base64,") : "/img/profile.png";
+
+            return CreateActionResult(CustomResponseDto<UserUpdateDto>.Success(userUpdateDto, 200));
+        }
+
         [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> Update(UserUpdateDto userDto)
