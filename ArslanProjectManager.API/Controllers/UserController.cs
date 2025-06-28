@@ -172,26 +172,24 @@ namespace ArslanProjectManager.API.Controllers
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
             }
-            if (string.IsNullOrEmpty(userDto.Password) && !string.IsNullOrEmpty(userDto.NewPassword))
+
+            existingUser.Name = userDto.Name;
+
+            if (!string.IsNullOrEmpty(userDto.Email))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current password is required to set a new password."));
+                var existingEmailUser = await _userService.GetByEmail(userDto.Email);
+                if (existingEmailUser != null && existingEmailUser.Id != userDto.Id)
+            {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(409, "This email already exists. You cannot change your email with given email address."));
             }
-            if (!string.IsNullOrEmpty(userDto.Password) && string.IsNullOrEmpty(userDto.NewPassword))
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "New password is required to change the current password."));
-            }
-            if (!string.IsNullOrEmpty(userDto.NewPassword) && userDto.NewPassword.Length <= 8)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "New password must be at least 8 characters long."));
             }
 
             var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
             if (string.IsNullOrEmpty(userDto.Email) || !emailRegex.IsMatch(userDto.Email))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current password is incorrect."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid email format."));
             }
 
-            existingUser.Name = userDto.Name;
             existingUser.Email = userDto.Email;
 
             if (userDto.ProfilePicture is not null && userDto.ProfilePicture.Length > 0)
