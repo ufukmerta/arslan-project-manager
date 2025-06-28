@@ -17,7 +17,7 @@ namespace ArslanProjectManager.API.Filters
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var idValue = context.ActionArguments.Values.FirstOrDefault();
-            if (idValue == null)
+            if (idValue is null && idValue is not int)
             {
                 await next.Invoke();
                 return;
