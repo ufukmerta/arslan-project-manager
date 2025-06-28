@@ -33,10 +33,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(e => e.ProfilePictureUrl)
-            .HasColumnName("profile_picture_url")
-            .HasMaxLength(200)
-            .HasDefaultValue("profile.png");
+        builder.Property(e => e.ProfilePicture)
+           .HasColumnName("profile_picture")
+           .HasColumnType("varbinary(max)")
+           .HasMaxLength(200);
 
         builder.Property(e => e.CreatedDate)
             .HasColumnName("register_date")

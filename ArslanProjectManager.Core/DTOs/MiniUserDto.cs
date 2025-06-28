@@ -10,6 +10,6 @@ namespace ArslanProjectManager.Core.DTOs
     {
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
-        public string? ProfilePictureUrl { get; set; } = "profile.png";
+        public byte[]? ProfilePicture { get; set; }
     }
 }

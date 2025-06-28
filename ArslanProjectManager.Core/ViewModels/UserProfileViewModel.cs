@@ -4,7 +4,7 @@ public class UserProfileViewModel
 {
     public required string Name { get; set; }   
     public required string Email { get; set; }
-    public string? Picture { get; set; } = "profile.png";
+    public string? Picture { get; set; } = "~/img/profile.png";
     public DateTime RegisterDate { get; set; }
     public bool OwnProfile { get; set; }
 

@@ -11,7 +11,7 @@ namespace ArslanProjectManager.Service.Services
         private readonly IUnitOfWork _unitOfWork;
 
         public TokenService(IGenericRepository<Token> repository, ITokenRepository tokenRepository, IUnitOfWork unitOfWork)
-            : base(tokenRepository, unitOfWork)
+            : base(repository, unitOfWork)
         {
             _repository = tokenRepository;
             _unitOfWork = unitOfWork;

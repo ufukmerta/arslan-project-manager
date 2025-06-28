@@ -41,8 +41,16 @@ namespace ArslanProjectManager.Service.Mappings
             CreateMap<TeamUpdateDto, Team>();
             CreateMap<TeamInviteUpdateDto, TeamInvite>();
             CreateMap<TeamUserUpdateDto, TeamUser>();
-            CreateMap<UserUpdateDto, User>();
+            CreateMap<User, UserCreateDto>()
+                .ForMember(src => src.ProfilePicture, dst => dst.Ignore());
+            CreateMap<UserCreateDto, User>()
+                .ForMember(src => src.ProfilePicture, dst => dst.Ignore());
+            CreateMap<Token, TokenDto>().ReverseMap();
 
+            CreateMap<UserUpdateDto, User>()
+                .ForMember(src => src.ProfilePicture, dst => dst.Ignore());
+            CreateMap<User, UserUpdateDto>()
+                .ForMember(src => src.ProfilePicture, dst => dst.Ignore());
             //WEBSITE VIEW MODELS
             CreateMap<UserLoginDto, LoginViewModel>().ReverseMap();
         }

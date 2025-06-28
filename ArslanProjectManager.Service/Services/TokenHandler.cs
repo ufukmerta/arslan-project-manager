@@ -80,7 +80,8 @@ namespace ArslanProjectManager.Service.Services
             {                
                 new Claim("sub", user.Id.ToString())
             };
-            claims.AddName(user.Name, user.Email, user.ProfilePictureUrl!);
+
+            claims.AddName(user.Name, user.Email);
             claims.AddRoles(roles.Select(r => r.RoleName).ToList());
             return claims;
         }

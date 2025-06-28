@@ -9,9 +9,9 @@ public class UserDto : BaseDto
 {
     public string Name { get; set; } = null!;    
     public string Email { get; set; } = null!;
-    public string? ProfilePictureUrl { get; set; } = "profile.png";
+    public string? ProfilePicture { get; set; }
 
-    public virtual ICollection<TeamInviteDto> TeamInvites { get; set; } = new List<TeamInviteDto>();
-    public virtual ICollection<TeamUserDto> TeamUsers { get; set; } = new List<TeamUserDto>();
-    public virtual ICollection<TeamDto> Teams { get; set; } = new List<TeamDto>();
+    public virtual ICollection<TeamInviteDto> TeamInvites { get; set; } = [];
+    public virtual ICollection<TeamUserDto> TeamUsers { get; set; } = [];
+    public virtual ICollection<TeamDto> Teams { get; set; } = [];
 }

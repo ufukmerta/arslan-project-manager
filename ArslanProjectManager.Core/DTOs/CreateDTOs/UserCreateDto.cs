@@ -9,6 +9,6 @@ public class UserCreateDto : BaseCreateDto
 {
     public string Name { get; set; } = null!;
     public string Email { get; set; } = null!;
-    public string? ProfilePictureUrl { get; set; } = "profile.png";
+    public string? ProfilePicture { get; set; }
     public string Password { get; set; } = null!;
 }

@@ -10,14 +10,17 @@ namespace ArslanProjectManager.Service.Extensions
 {
     public static class ClaimsExtensions
     {
-        public static void AddName(this ICollection<Claim> claims, string name, string email, string image)
+        public static void AddName(this ICollection<Claim> claims, string name, string email)
         {
-            if (string.IsNullOrEmpty(name)) return;
-            if (string.IsNullOrEmpty(email)) return;
-            if (string.IsNullOrEmpty(image)) image = "profile.png";
-            claims.Add(new Claim(ClaimTypes.Name, name));
-            claims.Add(new Claim(ClaimTypes.Email, email));
-            claims.Add(new Claim(ClaimTypes.Uri, image));
+            if (!string.IsNullOrEmpty(name))
+            {
+                claims.Add(new Claim(ClaimTypes.Name, name));
+            }
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, email));
+            }
         }
         public static void AddRoles(this ICollection<Claim> claims, IEnumerable<string> roles)
         {
