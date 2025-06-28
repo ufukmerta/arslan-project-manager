@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.RegularExpressions;
 
 namespace ArslanProjectManager.API.Controllers
 {
@@ -31,7 +32,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Login(UserLoginDto userLoginDto)
         {
             var token = await _userService.Login(userLoginDto);
-            if (token == null)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Invalid email or password."));
             }
@@ -106,25 +107,44 @@ namespace ArslanProjectManager.API.Controllers
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "This email is already registered."));
             }
+
             var user = _mapper.Map<User>(userDto);
             if (userDto.ProfilePicture != null && userDto.ProfilePicture.Length > 0)
             {
                 var byteArray = Convert.FromBase64String(userDto.ProfilePicture);
                 user.ProfilePicture = byteArray;
             }
+
+            var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+            if (string.IsNullOrEmpty(userDto.Email) || !emailRegex.IsMatch(userDto.Email))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid email format."));
+            }
+
+            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+            if (!passwordRegex.IsMatch(userDto.Password))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."));
+            }
+
             user.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
 
             var savedUser = await _userService.AddAsync(user);
             var savedUserDto = _mapper.Map<UserDto>(savedUser);
             return CreateActionResult(CustomResponseDto<UserDto>.Success(savedUserDto, 201));
         }
-        
+
         [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> Update(UserUpdateDto userDto)
         {
+            var token = GetToken();
+            if (token is null || token.UserId != userDto.Id)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "You are not authorized to update this user."));
+            }
             var existingUser = await _userService.GetByIdAsync(userDto.Id);
-            if (existingUser == null)
+            if (existingUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
             }
@@ -158,19 +178,19 @@ namespace ArslanProjectManager.API.Controllers
 
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
-        
+
         [HttpPut("remove-picture/{userId}")]
         [ServiceFilter(typeof(NotFoundFilter<User>))]
         [Authorize]
         public async Task<IActionResult> RemovePicture(int userId)
         {
             var token = GetToken();
-            if (token == null || token.UserId != userId)
+            if (token is null || token.UserId != userId)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "You are not authorized to remove this profile picture."));
             }
             var user = await _userService.GetByIdAsync(token.UserId);
-            if (user == null)
+            if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
             }

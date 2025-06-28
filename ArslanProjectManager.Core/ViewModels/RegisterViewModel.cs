@@ -14,11 +14,13 @@ namespace ArslanProjectManager.Core.ViewModels
 
         [Required]
         [EmailAddress]
-        [StringLength(50)]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email format.")]
         public string Email { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100, MinimumLength = 8)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+            ErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
