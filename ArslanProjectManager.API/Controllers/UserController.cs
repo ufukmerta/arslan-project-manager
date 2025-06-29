@@ -15,10 +15,11 @@ namespace ArslanProjectManager.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService, ITokenService tokenService, IMapper mapper) : CustomBaseController(tokenService)
+    public class UserController(IUserService userService, ITokenService tokenService, ITokenHandler tokenHandler, IMapper mapper) : CustomBaseController(tokenService)
     {
         private readonly IUserService _userService = userService;
         private readonly ITokenService _tokenService = tokenService;
+        private readonly ITokenHandler _tokenHandler = tokenHandler;
         private readonly IMapper _mapper = mapper;
 
         [HttpGet("[action]")]
@@ -63,6 +64,62 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var tokenDto = _mapper.Map<TokenDto>(token);
+            return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
+        {
+            var token = await _tokenService.GetValidTokenByRefreshTokenAsync(dto.RefreshToken);
+            if (token is null || !token.IsActive)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Refresh token is missing, invalid, or inactive."));
+            }
+
+            if (token.RefreshTokenExpiration < DateTime.UtcNow)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Refresh token has expired."));
+            }
+
+            var newToken = _tokenHandler.CreateToken(token.User, []);
+            if (newToken is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Token generation failed."));
+            }
+
+            // Update the new token with the existing token's refresh token and expiration
+            // to allow user to not login more than refresh token's expiration time. Maximum 7 days authorization.
+            newToken.RefreshToken = token.RefreshToken;
+            newToken.RefreshTokenExpiration = token.RefreshTokenExpiration;
+
+            var registeredToken = await _tokenService.AddAsync(newToken);
+
+            token.IsActive = false;
+            _tokenService.ChangeStatus(token);
+
+            var accessCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = newToken.Expiration,
+                Path = "/"
+            };
+            Response.Cookies.Delete("AccessToken");
+            Response.Cookies.Append("AccessToken", newToken.AccessToken, accessCookieOptions);
+
+            var refreshCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = newToken.RefreshTokenExpiration,
+                Path = "/"
+            };
+            Response.Cookies.Delete("RefreshToken");
+            Response.Cookies.Append("RefreshToken", newToken.RefreshToken, refreshCookieOptions);
+
+            var tokenDto = _mapper.Map<TokenDto>(registeredToken);
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 

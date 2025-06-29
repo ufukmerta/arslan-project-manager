@@ -2,14 +2,9 @@
 
 namespace ArslanProjectManager.WebUI.Services
 {
-    public class WebAuthStorage : IAuthStorage
+    public class WebAuthStorage(IHttpContextAccessor httpContextAccessor) : IAuthStorage
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public WebAuthStorage(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public Task<string?> GetAccessTokenAsync()
         {

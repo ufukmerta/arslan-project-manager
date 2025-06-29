@@ -4,16 +4,10 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace ArslanProjectManager.WebUI.Services
 {
-    public class TokenRefresher : ITokenRefresher
+    public class TokenRefresher(IAuthStorage authStorage, IHttpClientFactory httpClientFactory) : ITokenRefresher
     {
-        private readonly IAuthStorage _authStorage;
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public TokenRefresher(IAuthStorage authStorage, IHttpClientFactory httpClientFactory)
-        {
-            _authStorage = authStorage;
-            _httpClientFactory = httpClientFactory;
-        }
+        private readonly IAuthStorage _authStorage = authStorage;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
         public async Task<string?> EnsureValidAccessTokenAsync()
         {

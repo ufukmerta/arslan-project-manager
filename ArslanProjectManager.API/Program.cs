@@ -61,7 +61,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 if (context.AuthenticateFailure != null)
                 {
                     context.Response.Headers.Append("Authentication-Error",
-                        context.AuthenticateFailure.Message);
+                        context.AuthenticateFailure.Message.Replace("\n", " ").Replace("\r", " "));
                 }
                 return Task.CompletedTask;
             }
