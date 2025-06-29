@@ -223,5 +223,42 @@ namespace ArslanProjectManager.API.Controllers
             _userService.Update(user);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
+
+        [HttpPut("update-password")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePassword(UserPasswordUpdateDto userPasswordUpdateDto)
+        {
+            var token = GetToken();
+            if (token is null || token.UserId != userPasswordUpdateDto.Id)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
+            }
+
+            var existingUser = await _userService.GetByIdAsync(userPasswordUpdateDto.Id);
+            if (existingUser is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
+            }
+
+            if (string.IsNullOrEmpty(userPasswordUpdateDto.Password) || string.IsNullOrEmpty(userPasswordUpdateDto.NewPassword))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current and new password are required to set a new password."));
+            }
+
+            if (!string.IsNullOrEmpty(userPasswordUpdateDto.Password) && !BCrypt.Net.BCrypt.Verify(userPasswordUpdateDto.Password, existingUser.Password))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current password is incorrect."));
+            }
+
+            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$!%*\/?&+\-_.]{8,}$");
+            if (!passwordRegex.IsMatch(userPasswordUpdateDto.Password))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."));
+            }
+
+            existingUser.Password = BCrypt.Net.BCrypt.HashPassword(userPasswordUpdateDto.NewPassword);
+            _userService.Update(existingUser);
+            return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+        }
     }
 }
