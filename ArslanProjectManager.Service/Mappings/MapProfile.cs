@@ -51,7 +51,22 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(src => src.ProfilePicture, dst => dst.Ignore());
             CreateMap<User, UserUpdateDto>()
                 .ForMember(src => src.ProfilePicture, dst => dst.Ignore());
+
             //WEBSITE VIEW MODELS
+            //User
+            //User/Profile
+            CreateMap<UserProfileDto, UserProfileViewModel>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Picture, opt => opt.MapFrom(src => src.ProfilePicture))
+                .ForMember(dest => dest.RegisterDate, opt => opt.MapFrom(src => src.RegisterDate))
+                .ForMember(dest => dest.OwnProfile, opt => opt.MapFrom(src => src.OwnProfile))
+                .ForMember(dest => dest.TotalProjects, opt => opt.MapFrom(src => src.TotalProjects))
+                .ForMember(dest => dest.CompletedProjects, opt => opt.MapFrom(src => src.CompletedProjects))
+                .ForMember(dest => dest.CurrentTeam, opt => opt.MapFrom(src => src.CurrentTeam))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role)).ReverseMap();
+
+            //User/Login
             CreateMap<UserLoginDto, LoginViewModel>().ReverseMap();
         }
     }

@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Core.Services
 {
-    public interface IUserService: IGenericService<User>
+    public interface IUserService : IGenericService<User>
     {
         Task<User?> GetByEmail(string email);
+        Task<UserProfileDto?> GetUserProfileAsync(int userId);
         Task<Token?> Login(UserLoginDto userLoginDto);
     }
 }

@@ -4,14 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.Repository.Repositories
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository
+    public class UserRepository(ProjectManagerDbContext context) : GenericRepository<User>(context), IUserRepository
     {
-        private readonly ProjectManagerDbContext _context;
-
-        public UserRepository(ProjectManagerDbContext context) : base(context)
-        {
-            _context = context;
-        }
+        private readonly ProjectManagerDbContext _context = context;
 
         public async Task<User?> GetUserWithTeamsProjectsTasksAsync(int userId)
         {
@@ -20,6 +15,7 @@ namespace ArslanProjectManager.Repository.Repositories
                     .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.Projects)
                             .ThenInclude(p => p.ProjectTasks)
+                                .ThenInclude(pt => pt.Board)
                                     .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }

@@ -20,11 +20,50 @@ namespace ArslanProjectManager.API.Controllers
         private readonly IUserService _userService = userService;
         private readonly ITokenService _tokenService = tokenService;
         private readonly IMapper _mapper = mapper;
-        public UserController(IUserService userService, ITokenService tokenService, IMapper mapper) : base(tokenService)
+
+        [HttpGet("[action]")]
+        [Authorize]
+        public async Task<IActionResult> Profile()
         {
-            _userService = userService;
-            _tokenService = tokenService;
-            _mapper = mapper;
+            var token = base.GetToken();
+            if (token is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in"));
+            }
+
+            JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token.AccessToken);
+            if (jwtToken.ValidTo < DateTime.UtcNow)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Token is expired"));
+            }
+
+            var userProfileDto = await _userService.GetUserProfileAsync(token.UserId);
+            if (userProfileDto is null)
+            {
+                return CreateActionResult(CustomResponseDto<UserProfileDto>.Fail(404, "User not found"));
+            }
+
+            return CreateActionResult(CustomResponseDto<UserProfileDto>.Success(userProfileDto, 200));
+        }
+
+        [Authorize]
+        [HttpGet()]
+        public async Task<IActionResult> GetByToken()
+        {
+            var token = GetToken();
+            if (token is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in"));
+            }
+
+            var user = await _userService.GetByIdAsync(token.UserId);
+            if (user is null)
+        {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found"));
+            }
+
+            var tokenDto = _mapper.Map<TokenDto>(token);
+            return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
         [HttpPost("[action]")]
