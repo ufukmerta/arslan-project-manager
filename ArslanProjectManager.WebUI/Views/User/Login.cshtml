@@ -15,7 +15,7 @@
             <input type="hidden" asp-for="ReturnUrl" />
             <div class="form-group">
                 <label asp-for="Email">Email address</label>
-                <input asp-for="Email" class="form-control" placeholder="Enter email" />
+                <input asp-for="Email" class="form-control" placeholder="Enter email" value="@TempData["email"]"  />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group py-2">

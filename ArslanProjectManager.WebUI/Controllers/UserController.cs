@@ -209,12 +209,9 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             TempData["successMessage"] = "Registration successful. You can now log in.";
-            LoginViewModel loginViewModel = new()
-            {
-                Email = registerViewModel.Email
-            };
+            TempData["email"] = registerViewModel.Email;
 
-            return RedirectToAction(nameof(Login), nameof(User), loginViewModel);
+            return RedirectToAction(nameof(Login), nameof(User));
         }
 
         [AllowAnonymous]
