@@ -90,6 +90,25 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
                 .ForMember(dest => dest.NewPassword, opt => opt.MapFrom(src => src.NewPassword))
                 .ForMember(dest => dest.ConfirmNewPassword, opt => opt.Ignore()).ReverseMap();
+
+            //Home
+            //Home/Index2
+            CreateMap<HomeDto, HomeViewModel>()
+                .ForMember(dest => dest.RecentTasks, opt => opt.MapFrom(src => src.RecentTasks))
+                .ForMember(dest => dest.RecentProjects, opt => opt.MapFrom(src => src.RecentProjects));
+
+            CreateMap<Project, RecentProjectDto>()
+                .ForMember(dest => dest.TotalTasks, opt => opt.MapFrom(src => src.ProjectTasks.Count))
+                .ForMember(dest => dest.CompletedTasks, opt => opt.MapFrom(src => src.ProjectTasks.Count(t => t.BoardId == 3)))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.ProjectDetail))
+                .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.Team.TeamName));
+
+            CreateMap<ProjectTask, RecentTaskDto>()
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+                .ForMember(dest => dest.AppointeeName, opt => opt.MapFrom(src => src.Appointee.User.Name));
+
+            CreateMap<RecentTaskDto, RecentTaskViewModel>().ReverseMap();
+            CreateMap<RecentProjectDto, RecentProjectViewModel>().ReverseMap();
         }
     }
 }

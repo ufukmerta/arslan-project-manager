@@ -1,0 +1,162 @@
+﻿@model HomeViewModel
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card bg-light rounded shadow-sm mb-4">
+                <div class="card-body">
+                    <a style="text-decoration:none;" asp-action="Index" asp-controller="Projects">
+                        <h5 class="card-title">Project Overview</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0">@Model.TotalProjects</h2>
+                                <small class="text-muted">Total Projects</small>
+                            </div>
+                            <div class="text-success">
+                                <h2 class="mb-0">@Model.CompletedProjects</h2>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: @(Model.ProjectCompletionRate)%"
+                                 aria-valuenow="@Model.ProjectCompletionRate"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light rounded shadow-sm mb-4">
+                <div class="card-body">
+                    <a style="text-decoration:none;" asp-action="Index" asp-controller="Tasks">
+                        <h5 class="card-title">Task Overview</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0">@Model.TotalTasks</h2>
+                                <small class="text-muted">Total Tasks</small>
+                            </div>
+                            <div class="text-success">
+                                <h2 class="mb-0">@Model.CompletedTasks</h2>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: @(Model.TaskCompletionRate)%"
+                                 aria-valuenow="@Model.TaskCompletionRate"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light rounded shadow-sm mb-4">
+                <div class="card-body">
+                    <a style="text-decoration:none;" asp-action="Index" asp-controller="Teams">
+                        <h5 class="card-title">Team Overview</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0">@Model.TotalTeams</h2>
+                                <small class="text-muted">Teams</small>
+                            </div>
+                            <div>
+                                <h2 class="mb-0">@Model.TotalMembers</h2>
+                                <small class="text-muted">Members</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card bg-light rounded shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Recent Updated Tasks</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentTasks.Count != 0)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var task in Model.RecentTasks)
+                            {
+                                <a href="@Url.Action("Details", "Tasks", new { id = task.Id })"
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@task.TaskName</h6>
+                                        <span>
+                                            <i class="bi bi-activity h6"> </i>
+                                            <small class="text-muted align-content-center fs-6"> @task.UpdatedDate.ToShortDateString()</small>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <p class="mb-1">@task.Description</p>
+                                        <span>
+                                            <i class="bi bi-plus-circle h6"> </i>
+                                            <small class="text-muted align-content-center fs-6"> @task.CreatedDate.ToShortDateString()</small>
+                                        </span>
+                                    </div>
+
+                                    <small>Project: @task.ProjectName</small>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No recent tasks found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card bg-light rounded shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Recent Projects</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentProjects.Count != 0)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var project in Model.RecentProjects)
+                            {
+                                <a href="@Url.Action("Details", "Projects", new { id = project.Id })"
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@project.ProjectName</h6>
+                                        <span>
+                                            <i class="bi bi-plus-circle h6"> </i>
+                                            <small class="text-muted align-content-center fs-6"> @project.CreatedDate.ToShortDateString()</small>
+                                        </span>
+                                    </div>
+                                    <p class="mb-1">@project.Description</p>
+                                    <small>Team: @project.TeamName</small>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">No recent projects found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

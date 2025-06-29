@@ -13,10 +13,25 @@ namespace ArslanProjectManager.Repository.Repositories
             return await _context.Users
                 .Include(u => u.TeamUsers)
                     .ThenInclude(tu => tu.Team)
+                        .ThenInclude(t => t.TeamUsers)
+                .Include(t => t.TeamUsers)
+                    .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.Projects)
                             .ThenInclude(p => p.ProjectTasks)
                                 .ThenInclude(pt => pt.Board)
-                                    .FirstOrDefaultAsync(u => u.Id == userId);
+                .Include(u => u.TeamUsers)
+                    .ThenInclude(tu => tu.Team)
+                        .ThenInclude(t => t.Projects)
+                            .ThenInclude(p => p.ProjectTasks)
+                                .ThenInclude(pt => pt.Appointee)
+                                    .ThenInclude(a => a.User)
+                .Include(u => u.TeamUsers)
+                    .ThenInclude(tu => tu.Team)
+                        .ThenInclude(t => t.Projects)
+                            .ThenInclude(p => p.ProjectTasks)
+                                .ThenInclude(pt => pt.Appointer)
+                                    .ThenInclude(a => a.User)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }
 }

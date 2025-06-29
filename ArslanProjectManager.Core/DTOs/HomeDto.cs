@@ -15,7 +15,7 @@ namespace ArslanProjectManager.Core.DTOs
         public int TotalTeams { get; set; }
         public int TotalMembers { get; set; }
 
-        public List<RecentTaskDto> RecentTasks { get; set; } = new();
-        public List<RecentProjectDto> RecentProjects { get; set; } = new();
+        public List<RecentTaskDto> RecentTasks { get; set; } = [];
+        public List<RecentProjectDto> RecentProjects { get; set; } = [];
     }
 }

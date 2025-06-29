@@ -26,33 +26,54 @@ namespace ArslanProjectManager.Service.Services
             {
                 return null;
             }
-
+            UserProfileDto userProfileDto;
             var userTeam = user.TeamUsers.FirstOrDefault();
-            var userProfileDto = new UserProfileDto
+            //if the userTeam is null, it means the user is not part of any team. So, just return the profile without team/project details.
+            if (userTeam == null)
             {
-                Name = user.Name,
-                Email = user.Email,
-                ProfilePicture = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture).Insert(0, "data:image/png;base64,") : "/img/profile.png",
-                RegisterDate = user.CreatedDate,
-                OwnProfile = true,
-                CurrentTeam = userTeam!.Team.TeamName,
-                Role = user.Teams.Count != 0 ? "Team Manager" : "Team Member",
-                TotalProjects = user.TeamUsers
-                    .SelectMany(tu => tu.Team.Projects)
-                    .Count(),
-                CompletedProjects = user.TeamUsers
-                    .SelectMany(tu => tu.Team.Projects)
-                    .Count(p => p.ProjectTasks
-                    .All(t => t.Board.BoardName == "Done")),
-                TotalTasks = user.TeamUsers
-                    .SelectMany(tu => tu.Team.Projects)
-                    .SelectMany(p => p.ProjectTasks)
-                    .Count(t => t.AppointeeId == userTeam!.Id),
-                CompletedTasks = user.TeamUsers
-                    .SelectMany(tu => tu.Team.Projects)
-                    .SelectMany(p => p.ProjectTasks)
-                    .Count(t => t.AppointeeId == userTeam!.Id && t.Board.BoardName == "Done")
-            };
+                userProfileDto = new UserProfileDto
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    ProfilePicture = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture).Insert(0, "data:image/png;base64,") : "/img/profile.png",
+                    RegisterDate = user.CreatedDate,
+                    OwnProfile = true,
+                    CurrentTeam = "No Team",
+                    Role = "No Role",
+                    TotalProjects = 0,
+                    CompletedProjects = 0,
+                    TotalTasks = 0,
+                    CompletedTasks = 0
+                };
+            }
+            else
+            {
+                userProfileDto = new UserProfileDto
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    ProfilePicture = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture).Insert(0, "data:image/png;base64,") : "/img/profile.png",
+                    RegisterDate = user.CreatedDate,
+                    OwnProfile = true,
+                    CurrentTeam = userTeam!.Team.TeamName,
+                    Role = user.Teams.Count != 0 ? "Team Manager" : "Team Member",
+                    TotalProjects = user.TeamUsers
+                        .SelectMany(tu => tu.Team.Projects)
+                        .Count(),
+                    CompletedProjects = user.TeamUsers
+                        .SelectMany(tu => tu.Team.Projects)
+                        .Count(p => p.ProjectTasks
+                        .All(t => t.Board.BoardName == "Done")),
+                    TotalTasks = user.TeamUsers
+                        .SelectMany(tu => tu.Team.Projects)
+                        .SelectMany(p => p.ProjectTasks)
+                        .Count(t => t.AppointeeId == userTeam!.Id),
+                    CompletedTasks = user.TeamUsers
+                        .SelectMany(tu => tu.Team.Projects)
+                        .SelectMany(p => p.ProjectTasks)
+                        .Count(t => t.AppointeeId == userTeam!.Id && t.Board.BoardName == "Done")
+                };
+            }
 
             return userProfileDto;
         }

@@ -15,8 +15,8 @@ namespace ArslanProjectManager.Core.ViewModels
         public int TotalTeams { get; set; }
         public int TotalMembers { get; set; }
 
-        public List<RecentTaskViewModel> RecentTasks { get; set; } = new();
-        public List<RecentProjectViewModel> RecentProjects { get; set; } = new();
+        public List<RecentTaskViewModel> RecentTasks { get; set; } = [];
+        public List<RecentProjectViewModel> RecentProjects { get; set; } = [];
     }
     public class RecentTaskViewModel
     {
@@ -24,7 +24,8 @@ namespace ArslanProjectManager.Core.ViewModels
         public string TaskName { get; set; } = string.Empty;
         public string? Description { get; set; } = string.Empty;
         public DateTime CreatedDate { get; set; }
-        public DateTime? StartingDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public DateOnly? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public int BoardId { get; set; }
         public string ProjectName { get; set; } = string.Empty;
@@ -37,7 +38,8 @@ namespace ArslanProjectManager.Core.ViewModels
         public string ProjectName { get; set; } = string.Empty;
         public string? Description { get; set; } = string.Empty;
         public string TeamName { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateOnly StartDate { get; set; }
         public int TotalTasks { get; set; }
         public int CompletedTasks { get; set; }
     }
