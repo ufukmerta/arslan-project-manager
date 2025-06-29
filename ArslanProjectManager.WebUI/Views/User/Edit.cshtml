@@ -1,0 +1,71 @@
+﻿@model EditUserViewModel
+
+
+@{
+    ViewData["Title"] = "Profile";
+}
+<form asp-action="Edit" asp-controller="User" method="post" enctype="multipart/form-data">
+    <input type="hidden" value="@Model.Id" name="Id" />
+    <div class="py-2"></div>
+    <div class="container">
+        <div class="main-body">
+            <div class="row gutters-sm">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <img src="@Model.Picture" alt="Admin" class="rounded-circle" style="object-fit: contain;" height="150" width="150">
+                                <div class="mt-3">
+                                    <h4>@Html.DisplayFor(Model => Model.Name)</h4>
+                                    <div class="small font-italic text-muted mt-3 mb-2">JPG or PNG no larger than 1 MB</div>
+
+                                    <div class="input-group mb-2">
+                                        <input type="file" class="form-control" accept=".png, .jpeg, .jpg" asp-for="ProfilePictureFile" id="inputGroupFile02">
+                                        <label class="input-group-text bg-info" style="--bs-bg-opacity: .25;" for="inputGroupFile02">Upload Picture</label>
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <a class="btn btn-outline-danger w-100 rounded" asp-action="RemovePicture">Remove Picture</a>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8 mt-5">
+                    <div class="card mb-3 mt-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Full Name</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input asp-for="Name" type="text" class="form-control" value="@Model.Name">
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Email</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    <input asp-for="Email" type="text" class="form-control" value="@Model.Email">
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <a class="btn btn-outline-warning opacity-75" asp-action="ChangePassword">Change Password</a>
+                                    <input type="submit" class="btn btn-outline-primary" asp-action="Edit" value="Save Changes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</form>
+@Html.AntiForgeryToken()

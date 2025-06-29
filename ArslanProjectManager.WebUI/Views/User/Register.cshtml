@@ -1,0 +1,51 @@
+﻿@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+<script>
+    function myFunction() {
+        $('input, textarea, select').each(function() {
+            $(this).val($.trim($(this).val()));
+        });
+        return true;
+    };
+</script>
+<form method="post" action="Register" class="pt-2" id="registerForm">
+    <div class="form-group">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" class="form-control" placeholder="Enter your name" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group py-2">
+        <label asp-for="Email">Email address</label>
+        <input asp-for="Email" class="form-control" placeholder="Enter email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group py-2">
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" class="form-control" placeholder="Password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+        <p class="mb-0">
+            <small id="passwordHelpBlock" class="form-text text-muted">
+                Minimum eight characters, at least one lowercase letter, one uppercase letter, one number, and one special character.
+            </small>
+        </p>
+
+    </div>
+    <div class="form-group py-2">
+        <label asp-for="ConfirmPassword">Confirm Password</label>
+        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm Password" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <button type="submit" class="btn btn-custom w-100 mt-1 py-2" onmouseover="myFunction()">Submit</button>
+    <p>@ViewBag.Error</p>
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

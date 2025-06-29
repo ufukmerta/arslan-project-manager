@@ -268,12 +268,12 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> UpdatePassword(UserPasswordUpdateDto userPasswordUpdateDto)
         {
             var token = GetToken();
-            if (token is null || token.UserId != userPasswordUpdateDto.Id)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
             }
 
-            var existingUser = await _userService.GetByIdAsync(userPasswordUpdateDto.Id);
+            var existingUser = await _userService.GetByIdAsync(token.UserId);
             if (existingUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
@@ -290,7 +290,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$!%*\/?&+\-_.]{8,}$");
-            if (!passwordRegex.IsMatch(userPasswordUpdateDto.Password))
+            if (!passwordRegex.IsMatch(userPasswordUpdateDto.NewPassword))
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."));
             }

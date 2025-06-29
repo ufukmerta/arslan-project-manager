@@ -1,0 +1,164 @@
+﻿@model UserProfileViewModel
+
+@{
+	ViewData["Title"] = "Profile";
+}
+
+<div class="py-2"></div>
+<div class="container">
+	<div class="main-body">
+		<div class="row gutters-sm">
+			<div class="col-md-4 mb-3">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex flex-column align-items-center text-center">
+							<img src="@Model.Picture" alt="Admin" class="rounded-circle" style="object-fit: contain;" height="150" width="150">
+							<div class="mt-3">
+								<h4>@Html.DisplayFor(Model => Model.Name)</h4>
+								<p class="text-secondary mb-1">@Model.Role</p>
+								<p class="text-muted font-size-sm">@Model.CurrentTeam</p>
+								@if (!@Model.OwnProfile)
+								{
+									<button class="btn btn-custom">Follow</button>
+									<button class="btn btn-custom2">Message</button>
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="card mt-3">
+					<div class="card-body">
+						<h5 class="card-title">Project Status</h5>
+						<div class="mb-3">
+							<h6 class="mb-2">Projects</h6>
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<small>Completion Rate: @Model.ProjectCompletionRate.ToString("F1")%</small>
+								<small>@Model.CompletedProjects / @Model.TotalProjects</small>
+							</div>
+							<div class="progress" style="height: 8px;">
+								<div class="progress-bar bg-success" role="progressbar" style="width: @Model.ProjectCompletionRate%"></div>
+							</div>
+						</div>
+						<div class="mb-3">
+							<h6 class="mb-2">Tasks</h6>
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<small>Completion Rate: @Model.TaskCompletionRate.ToString("F1")%</small>
+								<small>@Model.CompletedTasks / @Model.TotalTasks</small>
+							</div>
+							<div class="progress" style="height: 8px;">
+								<div class="progress-bar bg-info" role="progressbar" style="width: @Model.TaskCompletionRate%"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-8">
+				<div class="card mb-3">
+					<div class="card-body">
+						<div class="row">
+							<div class="col-sm-3">
+								<h6 class="mb-0">Full Name</h6>
+							</div>
+							<div class="col-sm-9 text-secondary">
+								@Html.DisplayFor(Model => Model.Name)
+							</div>
+						</div>
+						<hr>
+						<div class="row">
+							<div class="col-sm-3">
+								<h6 class="mb-0">Email</h6>
+							</div>
+							<div class="col-sm-9 text-secondary">
+								@Html.DisplayFor(Model => Model.Email)
+							</div>
+						</div>
+						<hr>
+						<div class="row">
+							<div class="col-sm-3">
+								<h6 class="mb-0">Team</h6>
+							</div>
+							<div class="col-sm-9 text-secondary">
+								@Model.CurrentTeam
+							</div>
+						</div>
+						<hr>
+						<div class="row">
+							<div class="col-sm-3">
+								<h6 class="mb-0">Role</h6>
+							</div>
+							<div class="col-sm-9 text-secondary">
+								@Model.Role
+							</div>
+						</div>
+						<hr>
+						<div class="row">
+							<div class="col-sm-3">
+								<h6 class="mb-0">Register Date</h6>
+							</div>
+							<div class="col-sm-9 text-secondary">
+								@Html.DisplayFor(Model => Model.RegisterDate)
+							</div>
+						</div>
+						@if (@Model.OwnProfile)
+						{
+							<hr>
+							<div class="row">
+								<div class="col-sm-12">
+									<a class="btn btn-info" asp-action="Edit">Edit Profile</a>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+
+				<div class="row gutters-sm">
+					<div class="col-sm-12 mb-3">
+						<div class="card h-100">
+							<div class="card-body">
+								<h6 class="d-flex align-items-center mb-3">
+									<i class="material-icons text-info mr-2 pe-1">assignment</i>Project Status Overview
+								</h6>
+								<div class="mb-3">
+									<div class="d-flex justify-content-between align-items-center mb-2">
+										<small>Overall Project Completion</small>
+										<small>@Model.CompletedProjects / @Model.TotalProjects</small>
+									</div>
+									<div class="progress mb-3" style="height: 5px">
+										<div class="progress-bar bg-success" role="progressbar"
+											 style="width: @Model.ProjectCompletionRate%"
+											 aria-valuenow="@Model.ProjectCompletionRate"
+											 aria-valuemin="0"
+											 aria-valuemax="100">
+										</div>
+									</div>
+								</div>
+								<div class="mb-3">
+									<div class="d-flex justify-content-between align-items-center mb-2">
+										<small>Task Completion</small>
+										<small>@Model.CompletedTasks / @Model.TotalTasks</small>
+									</div>
+									<div class="progress mb-3" style="height: 5px">
+										<div class="progress-bar bg-info" role="progressbar"
+											 style="width: @Model.TaskCompletionRate%"
+											 aria-valuenow="@Model.TaskCompletionRate"
+											 aria-valuemin="0"
+											 aria-valuemax="100">
+										</div>
+									</div>
+								</div>
+								<div class="text-center mt-4">
+									<a class="btn btn-outline-primary btn-sm" asp-controller="Projects" asp-action="Index">
+										View All Projects
+									</a>
+									<a class="btn btn-outline-info btn-sm ms-2" asp-controller="Tasks" asp-action="Index">
+										View All Tasks
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

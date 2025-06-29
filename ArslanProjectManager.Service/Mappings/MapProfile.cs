@@ -67,7 +67,29 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role)).ReverseMap();
 
             //User/Login
-            CreateMap<UserLoginDto, LoginViewModel>().ReverseMap();
+            CreateMap<UserLoginDto, LoginViewModel>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password)).ReverseMap();
+
+            //User/Register
+            CreateMap<UserCreateDto, RegisterViewModel>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
+                .ForMember(dest => dest.ConfirmPassword, opt => opt.Ignore()).ReverseMap();
+
+            //User/EditProfile
+            CreateMap<UserUpdateDto, EditUserViewModel>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Picture, opt => opt.MapFrom(src => src.ProfilePicture))
+                .ForMember(dest => dest.ProfilePictureFile, opt => opt.Ignore()).ReverseMap();//profile picture is handled separately: file -> base64
+
+            //User/ChangePassword
+            CreateMap<UserPasswordUpdateDto, ChangePasswordViewModel>()
+                .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
+                .ForMember(dest => dest.NewPassword, opt => opt.MapFrom(src => src.NewPassword))
+                .ForMember(dest => dest.ConfirmNewPassword, opt => opt.Ignore()).ReverseMap();
         }
     }
 }
