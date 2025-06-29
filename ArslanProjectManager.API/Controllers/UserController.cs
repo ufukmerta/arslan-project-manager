@@ -203,22 +203,23 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
-        [HttpPut("remove-picture/{userId}")]
-        [ServiceFilter(typeof(NotFoundFilter<User>))]
+        [HttpDelete("remove-picture")]
         [Authorize]
-        public async Task<IActionResult> RemovePicture(int userId)
+        public async Task<IActionResult> RemovePicture()
         {
             var token = GetToken();
-            if (token is null || token.UserId != userId)
+            if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "You are not authorized to remove this profile picture."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
             }
+
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
             }
-            user.ProfilePicture = null;
+
+            user!.ProfilePicture = null;
             _userService.Update(user);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
