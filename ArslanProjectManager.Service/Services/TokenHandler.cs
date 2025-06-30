@@ -10,13 +10,10 @@ using System.Text;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TokenHandler : ITokenHandler
+    public class TokenHandler(IConfiguration configuration) : ITokenHandler
     {
-        private readonly IConfiguration Configuration;
-        public TokenHandler(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        private readonly IConfiguration Configuration = configuration;
+
         public string CreateRefreshToken()
         {
             byte[] randomNumber = new byte[64];
@@ -27,15 +24,15 @@ namespace ArslanProjectManager.Service.Services
 
         public Token CreateToken(User user, List<Role> roles)
         {
-            Token token = new Token();
+            Token token = new();
             var securityKey = Configuration["Jwt:SecurityKey"];
             if (string.IsNullOrEmpty(securityKey))
             {
                 throw new InvalidOperationException("Security key is not configured");
             }
 
-            SymmetricSecurityKey symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey));
-            SigningCredentials signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            SymmetricSecurityKey symmetricSecurityKey = new(Encoding.UTF8.GetBytes(securityKey));
+            SigningCredentials signingCredentials = new(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = SetClaims(user, roles).ToList();
             
@@ -61,11 +58,7 @@ namespace ArslanProjectManager.Service.Services
             // Validate the token can be read back
             try
             {
-                var validatedToken = jsonWebTokenHandler.ReadToken(token.AccessToken);
-                if (validatedToken == null)
-                {
-                    throw new SecurityTokenException("Token validation failed");
-                }
+                var validatedToken = jsonWebTokenHandler.ReadToken(token.AccessToken) ?? throw new SecurityTokenException("Token validation failed");
             }
             catch (Exception ex)
             {
@@ -76,10 +69,11 @@ namespace ArslanProjectManager.Service.Services
         }
         public IEnumerable<Claim> SetClaims(User user, List<Role> roles)
         {
-            List<Claim> claims = new List<Claim>
-            {                
-                new Claim("sub", user.Id.ToString())
-            };
+            List<Claim> claims =
+            [
+                new Claim("sub", user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            ];
 
             claims.AddName(user.Name, user.Email);
             claims.AddRoles(roles.Select(r => r.RoleName).ToList());
