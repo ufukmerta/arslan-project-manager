@@ -109,6 +109,87 @@ namespace ArslanProjectManager.Service.Mappings
 
             CreateMap<RecentTaskDto, RecentTaskViewModel>().ReverseMap();
             CreateMap<RecentProjectDto, RecentProjectViewModel>().ReverseMap();
+
+            //Projects
+            //Projects/Index
+            CreateMap<UserProjectDto, ProjectViewModel>()
+                .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.ProjectId))
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.ProjectName))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.TeamName))
+                .ForMember(dest => dest.TeamId, opt => opt.MapFrom(src => src.TeamId))
+                .ForMember(dest => dest.ManagerId, opt => opt.MapFrom(src => src.ManagerId))
+                .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.TaskCount))
+                .ForMember(dest => dest.CompletedTaskCount, opt => opt.MapFrom(src => src.CompletedTaskCount)).ReverseMap();
+
+            //Projects/Details
+            CreateMap<ProjectDetailsDto, ProjectDetailsViewModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.ProjectName))
+                .ForMember(dest => dest.ProjectDetail, opt => opt.MapFrom(src => src.ProjectDetail))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.Tasks, opt => opt.MapFrom(src => src.Tasks)).ReverseMap();
+
+
+            CreateMap<ProjectTaskDto, ProjectTaskViewModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.TaskName, opt => opt.MapFrom(src => src.TaskName))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.BoardId, opt => opt.MapFrom(src => src.BoardId))
+                .ForMember(dest => dest.TaskCategoryId, opt => opt.MapFrom(src => src.TaskCategoryId))
+                .ForMember(dest => dest.AppointeeId, opt => opt.MapFrom(src => src.AppointeeId))
+                .ForMember(dest => dest.AppointerId, opt => opt.MapFrom(src => src.AppointerId))
+                .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.ProjectId)).ReverseMap();
+
+            CreateMap<ProjectTaskDto, MiniProjectTaskDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.TaskName, opt => opt.MapFrom(src => src.TaskName))
+                .ForMember(dest => dest.BoardId, opt => opt.MapFrom(src => src.BoardId))
+                .ForMember(dest => dest.AppointeeId, opt => opt.MapFrom(src => src.AppointeeId))
+                .ForMember(dest => dest.AppointeeName, opt => opt.MapFrom(src => src.AppointeeName))
+                .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority)).ReverseMap();
+
+            CreateMap<MiniProjectTaskDto, ProjectTaskViewModel>().ReverseMap();
+
+            CreateMap<TaskCommentDto, TaskCommentViewModel>().ReverseMap();
+
+            CreateMap<TaskCommentCreateDto, CreateTaskCommentViewModel>().ReverseMap();
+
+            //Projects/Create
+            CreateMap<ProjectCreateDto, CreateProjectViewModel>()
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.ProjectName))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.ProjectDetail))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.TeamId, opt => opt.MapFrom(src => src.TeamId)).ReverseMap();
+
+            CreateMap<MiniProjectDto, Project>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.ProjectName))
+                .ForMember(dest => dest.ProjectDetail, opt => opt.Ignore())
+                .ForMember(dest => dest.StartDate, opt => opt.Ignore())
+                .ForMember(dest => dest.TeamId, opt => opt.Ignore())
+                .ForMember(dest => dest.Team, opt => opt.Ignore())
+                .ForMember(dest => dest.ProjectTasks, opt => opt.Ignore()).ReverseMap();
+
+            //Projects/Edit
+            CreateMap<EditProjectViewModel, ProjectUpdateDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProjectId))
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.ProjectName))
+                .ForMember(dest => dest.ProjectDetail, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate)).ReverseMap();
+
+            //Projects/Delete
+            CreateMap<DeleteProjectViewModel, ProjectDeleteDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ProjectId))
+                .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.ProjectName))
+                .ForMember(dest => dest.ProjectDetail, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.TeamName))
+                .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.TaskCount))
+                .ForMember(dest => dest.CompletedTaskCount, opt => opt.MapFrom(src => src.CompletedTaskCount)).ReverseMap();
         }
     }
 }

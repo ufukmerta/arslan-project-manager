@@ -1,0 +1,68 @@
+﻿@model CreateProjectViewModel
+
+@{
+    ViewData["Title"] = "Create Project";
+}
+@if (string.IsNullOrEmpty(ViewData["errorMessage"]?.ToString()))
+{
+    <div>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header th-custom">
+                        <h4 class="my-1 mx-0">Create New Project</h4>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Create" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="ProjectName" class="form-label">Project Name</label>
+                                <input asp-for="ProjectName" class="form-control" />
+                                <span asp-validation-for="ProjectName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="TeamId" class="form-label">Team</label>
+                                <select asp-for="TeamId" class="form-select" asp-items="ViewBag.TeamId">
+                                    <option value="">Select a team...</option>
+                                </select>
+                                <span asp-validation-for="TeamId" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                            @{
+
+                                var firstDayOfCurrentYear = new DateTime(DateTime.Now.Year, 1, 1).ToString("yyyy-MM-dd");
+                                var firstDayOfNextYear = new DateTime(DateTime.Now.AddYears(1).Year, 1, 1).ToString("yyyy-MM-dd");
+                            }
+                            <div class="mb-3">
+                                <label asp-for="StartDate" class="form-label">Start Date</label>
+                                <input min="@firstDayOfCurrentYear" value="@DateTime.Today.ToString("yyyy-MM-dd")" max="@firstDayOfNextYear" asp-for="StartDate" class="form-control" type="date" />
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to List
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Create Project
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

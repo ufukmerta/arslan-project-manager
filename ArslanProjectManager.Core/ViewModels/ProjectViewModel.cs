@@ -10,11 +10,13 @@ namespace ArslanProjectManager.Core.ViewModels
 
         public string? Description { get; set; }
 
-        public DateTime StartDate { get; set; }        
+        public DateOnly StartDate { get; set; }
 
         public string TeamName { get; set; } = string.Empty;
 
         public int TeamId { get; set; }
+
+        public int ManagerId { get; set; }
 
         public int TaskCount { get; set; }
 
@@ -26,24 +28,24 @@ namespace ArslanProjectManager.Core.ViewModels
         public int Id { get; set; }
         public string ProjectName { get; set; } = string.Empty;
         public string? ProjectDetail { get; set; }
-        public DateTime StartDate { get; set; }
-        public List<ProjectTaskViewModel> Tasks { get; set; } = new();
+        public DateOnly StartDate { get; set; }
+        public List<ProjectTaskViewModel> Tasks { get; set; } = [];
     }
 
     public class CreateProjectViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Project name is required.")]
         [StringLength(100)]
         public string ProjectName { get; set; } = string.Empty;
 
         [StringLength(500)]
         public string? Description { get; set; }
 
-        [Required]
-        public DateTime StartDate { get; set; }
+        [Required(ErrorMessage = "Start date is required.")]
+        public DateOnly StartDate { get; set; }
 
 
-        [Required]
+        [Required(ErrorMessage ="Team is required to create project.")]
         public int TeamId { get; set; }
     }
 
@@ -66,7 +68,7 @@ namespace ArslanProjectManager.Core.ViewModels
         public string? Description { get; set; }
 
         [Required]
-        public DateTime StartDate { get; set; }      
+        public DateOnly StartDate { get; set; }
 
         [Required]
         public int TeamId { get; set; }
@@ -77,7 +79,7 @@ namespace ArslanProjectManager.Core.ViewModels
         public int ProjectId { get; set; }
         public string ProjectName { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public DateTime StartDate { get; set; }
+        public DateOnly StartDate { get; set; }
         public string TeamName { get; set; } = string.Empty;
         public int TaskCount { get; set; }
         public int CompletedTaskCount { get; set; }

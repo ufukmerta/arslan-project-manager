@@ -11,7 +11,7 @@ namespace ArslanProjectManager.Core.DTOs
         public int ProjectId { get; set; }
         public string ProjectName { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public DateTime StartDate { get; set; }
+        public DateOnly StartDate { get; set; }
         public string TeamName { get; set; } = string.Empty;
         public int TeamId { get; set; }
         public int ManagerId { get; set; }

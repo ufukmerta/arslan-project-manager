@@ -1,0 +1,110 @@
+﻿@model ProjectDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.ProjectName + " Project Details";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>@Html.DisplayFor(model => model.ProjectName)</h2>
+        <p class="text-muted">@Html.DisplayFor(model => model.ProjectDetail)</p>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary">Tasks: @Model.Tasks.Count</span>
+            <span class="badge bg-success">Completed: @Model.Tasks.Count(t => t.BoardId == 3)</span>
+            <span class="badge bg-info">Start Date: @Model.StartDate.ToString("d")</span>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-3">
+    <div class="row">
+        <!-- To Do Column -->
+        <div class="col-md-4">
+            <div class="card border border-2 border-custom h-100">
+                <div class="card-header bg-light fw-bold text-center">To Do</div>
+                <div class="card-body">
+                    @foreach (var task in Model.Tasks.Where(t => t.BoardId == 1))
+                    {
+                        <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="text-decoration-none">
+                            <div class="task-card mb-2 p-2 border border-2 rounded">
+                                <h6 class="mb-1">@task.TaskName</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">@task.AppointeeName</small>
+                                    <span class="badge bg-@(task.Priority == ProjectTask.TaskPriority.Low ? "success" : task.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">
+                                        @(task.Priority)
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                    <a asp-controller="Tasks" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-custom w-100">
+                        <i class="bi bi-plus-circle"></i> Add Task
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Progress Column -->
+        <div class="col-md-4">
+            <div class="card border border-2 border-custom h-100">
+                <div class="card-header bg-light fw-bold text-center">In Progress</div>
+                <div class="card-body">
+                    @foreach (var task in Model.Tasks.Where(t => t.BoardId == 2))
+                    {
+                        <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="text-decoration-none">
+                            <div class="task-card mb-2 p-2 border border-2 rounded">
+                                <h6 class="mb-1">@task.TaskName</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">@task.AppointeeName</small>
+                                    <span class="badge bg-@(task.Priority == ProjectTask.TaskPriority.Low ? "success" : task.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">
+                                        @(task.Priority)
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                    <a asp-controller="Tasks" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-custom w-100">
+                        <i class="bi bi-plus-circle"></i> Add Task
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Column -->
+        <div class="col-md-4">
+            <div class="card border border-2 border-custom h-100">
+                <div class="card-header bg-light fw-bold text-center">Completed</div>
+                <div class="card-body">
+                    @foreach (var task in Model.Tasks.Where(t => t.BoardId == 3))
+                    {
+                        <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="text-decoration-none">
+                            <div class="task-card mb-2 p-2 border border-2 rounded">
+                                <h6 class="mb-1">@task.TaskName</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">@task.AppointeeName</small>
+                                    <span class="badge bg-@(task.Priority == ProjectTask.TaskPriority.Low ? "success" : task.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">
+                                        @(task.Priority)
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                    <a asp-controller="Tasks" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-custom w-100">
+                        <i class="bi bi-plus-circle"></i> Add Task
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .task-card {
+        transition: all 0.2s ease-in-out;
+    }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+</style>

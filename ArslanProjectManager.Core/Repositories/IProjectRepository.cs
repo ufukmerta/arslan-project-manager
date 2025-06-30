@@ -9,5 +9,6 @@ namespace ArslanProjectManager.Core.Repositories
 {
     public interface IProjectRepository: IGenericRepository<Project>
     {
+        Task<Project?> GetProjectWithDetailsAsync(int id);
     }
 }
