@@ -1,12 +1,13 @@
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.ViewModels;
+using ArslanProjectManager.WebUI.Controllers;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
-namespace ArslanProjectManager.WebUI.Controllers
+namespace ArslanProjectManager.WEBUI.Controllers
 {
     public class HomeController(IHttpClientFactory httpClientFactory, IAuthStorage authStorage, IMapper mapper) : BaseController
     {
@@ -53,6 +54,56 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var viewModel = _mapper.Map<HomeViewModel>(wrapper.Data);
             return View(viewModel);
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error(int? code = null)
+        {
+
+            ViewBag.StatusCode = code;
+            if (code == 400)
+            {
+                return RedirectToAction(nameof(BadRequest), "Home");
+            }
+            else if (code == 401)
+            {
+                return RedirectToAction(nameof(Unauthorized), "Home");
+            }
+            else if (code == 403)
+            {
+                return RedirectToAction(nameof(Forbidden), "Home");
+            }
+            else if (code == 404)
+            {
+                return RedirectToAction(nameof(NotFound), "Home");
+            }
+            else
+            {
+                return RedirectToAction(nameof(NotFound), "Home");
+            }
+        }
+
+        [HttpGet]
+        public new IActionResult BadRequest()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public new IActionResult Unauthorized()
+        {
+            return View();
+        }
+        [HttpGet]
+        public IActionResult Forbidden()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public new IActionResult NotFound()
+        {
+            return View();
         }
     }
 }
