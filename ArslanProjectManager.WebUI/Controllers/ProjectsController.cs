@@ -94,16 +94,18 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    LoginViewModel loginViewModel = new()
-                    {
-                        ReturnUrl = Url.Action("Index", "Projects")
-                    };
-                    return RedirectToAction("Login", "User", loginViewModel);
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return RedirectToAction("Index", "Projects");
+                    return RedirectToAction(nameof(Index));
                 }
             }
 
@@ -136,16 +138,18 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    LoginViewModel loginViewModel = new()
-                    {
-                        ReturnUrl = Url.Action("Index", "Projects")
-                    };
-                    return RedirectToAction("Login", "User", loginViewModel);
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return View(new CreateProjectViewModel());
+                    return RedirectToAction(nameof(Index));
                 }
             }
 
@@ -191,16 +195,29 @@ namespace ArslanProjectManager.WebUI.Controllers
                 var response = await client.GetAsync("projects/create");
                 if (!response.IsSuccessStatusCode)
                 {
-                    TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return View(model);
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        TempData["UnauthorizedFrom"] = "project";
+                        return Unauthorized();
+                    }
+                    else if (response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        TempData["ForbiddenFrom"] = "project";
+                        return StatusCode(StatusCodes.Status403Forbidden);
+                    }
+                    else
+                    {
+                        TempData["errorMessage"] = await GetErrorMessageAsync(response);
+                        return RedirectToAction(nameof(Index));
+                    }
                 }
 
                 var json = await response.Content.ReadAsStreamAsync();
                 var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<List<MiniTeamDto>>>(json, _jsonSerializerOptions);
                 if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
                 {
-                    TempData["errorMessage"] = "Failed to retrieve teams.";
-                    return View(model);
+                    TempData["errorMessage"] = "Invalid input.";
+                    return RedirectToAction(nameof(Index));
                 }
 
                 var teams = wrapper.Data;
@@ -219,15 +236,28 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response2 = await client2.PostAsJsonAsync("projects/create", projectDto);
             if (!response2.IsSuccessStatusCode)
             {
-                TempData["errorMessage"] = await GetErrorMessageAsync(response2);
-                return View(model);
+                if (response2.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response2.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                else
+                {
+                    TempData["errorMessage"] = await GetErrorMessageAsync(response2);
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             var json2 = await response2.Content.ReadAsStreamAsync();
             var wrapper2 = await JsonSerializer.DeserializeAsync<CustomResponseDto<MiniProjectDto>>(json2, _jsonSerializerOptions);
             if (wrapper2 == null || !wrapper2.IsSuccess || wrapper2.Data == null)
             {
-                TempData["errorMessage"] = "Failed to create project. Please check your input and try again.";
+                TempData["errorMessage"] = "Failed to retrieve created project.";
                 return View(model);
             }
 
@@ -236,8 +266,8 @@ namespace ArslanProjectManager.WebUI.Controllers
             return RedirectToAction("Details", new { id = createdProjectDto.Id });
         }
 
-        [HttpGet]
         [Authorize]
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             string? token = await _authStorage.GetAccessTokenAsync();
@@ -255,8 +285,21 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync($"projects/edit/{id}");
             if (!response.IsSuccessStatusCode)
             {
-                TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                return RedirectToAction("Index", "Projects");
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                else
+                {
+                    TempData["errorMessage"] = await GetErrorMessageAsync(response);
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             var json = await response.Content.ReadAsStreamAsync();
@@ -267,8 +310,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Index", "Projects");
             }
 
-            var projectUpdateDto = wrapper.Data;
-            var editProjectViewModel = _mapper.Map<EditProjectViewModel>(projectUpdateDto);
+            var editProjectDto = wrapper.Data;
+            var editProjectViewModel = _mapper.Map<EditProjectViewModel>(editProjectDto);
             return View(editProjectViewModel);
         }
 
@@ -285,8 +328,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             if (model == null || model.ProjectId <= 0 || string.IsNullOrWhiteSpace(model.ProjectName))
             {
-                TempData["errorMessage"] = "Fill all required fields.";
-                return View(model);
+                return BadRequest();
             }
 
             if (!ModelState.IsValid)
@@ -302,13 +344,18 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    var loginViewModel = new LoginViewModel();
-                    return RedirectToAction("Login", "User", loginViewModel);
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return View(model);
+                    return RedirectToAction(nameof(Index));
                 }
             }
 
@@ -346,13 +393,18 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    var loginViewModel = new LoginViewModel();
-                    return RedirectToAction("Login", "User", loginViewModel);
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return RedirectToAction("Index", "Projects");
+                    return RedirectToAction(nameof(Index));
                 }
             }
 
@@ -369,10 +421,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             return View(projectViewModel);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(DeleteProjectViewModel model)
+        public async Task<IActionResult> DeleteConfirm(int ProjectId)
         {
             string? token = await _authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
@@ -380,25 +432,30 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Login", "User");
             }
 
-            if (model == null || model.ProjectId <= 0)
+            if (ProjectId <= 0)
             {
                 TempData["errorMessage"] = "Invalid project data.";
-                return View(model);
+                return RedirectToAction("Index");
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.DeleteAsync($"projects/delete/{model.ProjectId}");
+            var response = await client.DeleteAsync($"projects/delete/{ProjectId}");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    var loginViewModel = new LoginViewModel();
-                    return RedirectToAction("Login", "User", loginViewModel);
+                    TempData["UnauthorizedFrom"] = "project";
+                    return Unauthorized();
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "project";
+                    return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return RedirectToAction("Index", "Projects");
+                    return RedirectToAction(nameof(Index));
                 }
             }
 
