@@ -56,7 +56,7 @@ public partial class ProjectManagerDbContext : DbContext
         var entries = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && (e.State == EntityState.Modified));
         foreach (var entityEntry in entries)
         {
-            ((BaseEntity)entityEntry.Entity).UpdatedDate = DateTime.Now;
+            ((BaseEntity)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
         }
 
         return base.SaveChanges();
