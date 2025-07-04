@@ -1,0 +1,144 @@
+﻿@using ArslanProjectManager.Core.Models
+@model ProjectTaskViewModel
+
+@{
+    ViewData["Title"] = Model.TaskName + " Task Details";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>@Html.DisplayFor(model => model.TaskName)</h2>
+        <p class="text-muted">@Html.DisplayFor(model => model.Description)</p>
+        <div class="d-flex gap-2 flex-wrap">
+            <span class="badge bg-primary">Project: @Model.ProjectName</span>
+            <span class="badge bg-@(Model.Priority == ProjectTask.TaskPriority.Low ? "success" : Model.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">Priority: @Model.Priority</span>
+            <span class="badge bg-info">Status: @Model.BoardName</span>
+            <span class="badge bg-secondary">Category: @Model.TaskCategoryName</span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Task Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Created On</label>
+                            <p class="mb-0">@Model.CreatedDate.ToShortDateString()</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Last Updated</label>
+                            <p class="mb-0">@(Model.UpdatedDate?.ToShortDateString() ?? "Not updated")</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Start Date</label>
+                            <p class="mb-0">@(Model.StartDate?.ToShortDateString() ?? "Not started")</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">End Date</label>
+                            <p class="mb-0">@(Model.EndDate?.ToShortDateString() ?? "Not completed")</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Expected End Date</label>
+                            <p class="mb-0">@(Model.ExpectedEndDate?.ToShortDateString() ?? "Not set")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Assignment</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Assigned To</label>
+                    <p class="mb-0">@Model.AppointeeName</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Assigned By</label>
+                    <p class="mb-0">@Model.AppointerName</p>
+                </div>
+            </div>
+        </div>
+        <div class="d-grid gap-2">
+            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">
+                <i class="bi bi-pencil"></i> Edit Task
+            </a>
+            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">
+                <i class="bi bi-trash"></i> Delete Task
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Task Comments</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddComment" asp-route-id="@Model.Id" method="post" class="mt-1 ">
+                    <input type="hidden" value="@Html.ViewContext.RouteData.Values["id"]?.ToString()" name="TaskId" asp-for="NewComment.TaskId" />
+                    <div class="mb-3">
+                        <label asp-for="NewComment.Comment" class="form-label">Add a Comment</label>
+                        <textarea name="Comment" class="form-control" rows="3" required></textarea>
+                        <span asp-validation-for="NewComment.Comment" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-chat-dots"></i> Post Comment
+                    </button>
+                </form>
+                @if (Model.Comments.Count!=0)
+                {
+                    <div class="comments-list mt-3">
+                        @foreach (var comment in Model.Comments.OrderByDescending(c => c.Date))
+                        {
+                            <div class="comment mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">@comment.CommenterName</h6>
+                                        <small class="text-muted">@comment.Date.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                </div>
+                                <p class="mt-2 mb-0">@comment.Comment</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-4">No comments yet.</p>
+                }               
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 1em;
+    }
+    .comments-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .comment {
+        background-color: #f8f9fa;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

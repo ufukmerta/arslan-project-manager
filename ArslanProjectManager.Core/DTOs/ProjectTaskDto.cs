@@ -1,5 +1,4 @@
 ﻿using ArslanProjectManager.Core.DTOs;
-using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.ViewModels;
 using System;
@@ -7,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace ArslanProjectManager.Core.DTOs;
+namespace ArslanProjectManager.Core;
 
 public class ProjectTaskDto : BaseDto
 {
@@ -15,13 +14,13 @@ public class ProjectTaskDto : BaseDto
     public DateOnly? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public DateOnly? ExpectedEndDate { get; set; }
-    
+
     public int TaskCategoryId { get; set; }
     public string TaskCategoryName { get; set; } = string.Empty;
-    
+
     public int BoardId { get; set; }
     public string BoardName { get; set; } = string.Empty;
-    
+
     public string? Description { get; set; }
 
     public int AppointerId { get; set; }
@@ -30,8 +29,10 @@ public class ProjectTaskDto : BaseDto
     public int AppointeeId { get; set; }
     public string AppointeeName { get; set; } = string.Empty;
 
+    public bool CanDelete { get; set; }
+
     public ProjectTask.TaskPriority Priority { get; set; }
-    
+
     public int ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
 

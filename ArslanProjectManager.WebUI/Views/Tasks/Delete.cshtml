@@ -1,0 +1,80 @@
+﻿@model DeleteTaskViewModel
+
+@{
+    ViewData["Title"] = "Delete Task";
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>Delete Task</h2>
+        <p class="text-danger">Are you sure you want to delete this task?</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Task Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <h4>@Model.TaskName</h4>
+                        <p class="text-muted mb-3">@Model.Description</p>
+                        <div class="d-flex gap-2 flex-wrap mb-4">
+                            <span class="badge bg-primary">Project: @Model.ProjectName</span>
+                            <span class="badge bg-@(Model.Priority == ProjectTask.TaskPriority.Low ? "success" : Model.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">Priority: @Model.Priority</span>
+                            <span class="badge bg-info">Status: @Model.BoardName</span>
+                            <span class="badge bg-secondary">Category: @Model.TaskCategoryName</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Created On</label>
+                            <p class="mb-0">@Model.CreatedDate.ToShortDateString()</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Assigned To</label>
+                            <p class="mb-0">@Model.AppointeeName</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Assigned By</label>
+                            <p class="mb-0">@Model.AppointerName</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-danger">This action cannot be undone.</p>
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="TaskId" />
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete Task
+                        </button>
+                        <a class="btn btn-secondary" asp-action="Index">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 1em;
+    }
+</style>
