@@ -21,6 +21,8 @@ namespace ArslanProjectManager.WebUI.Controllers
         private readonly IMapper _mapper = mapper;
         private readonly IAuthStorage _authStorage = authStorage;
 
+        [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             string? token = await _authStorage.GetAccessTokenAsync();
@@ -40,7 +42,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var json = await response.Content.ReadAsStreamAsync();
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<UserProfileDto>>(json, _jsonSerializerOptions);
-            if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
+            if (wrapper is null || !wrapper.IsSuccess || wrapper.Data is null)
             {
                 TempData["errorMessage"] = "An error occurred while fetching user data. Please try again later.";
                 return View(new LoginViewModel());
@@ -55,8 +57,12 @@ namespace ArslanProjectManager.WebUI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login(string? ReturnUrl = null, string? RedirectUrl = null)
         {
+            if (RedirectUrl == "Unauthorized")
+            {
+                return RedirectToAction("Unauthorized", "Home");
+            }
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync("user");
+            var response = await client.GetAsync("User");
             if (!response.IsSuccessStatusCode)
             {
                 return View(new LoginViewModel());
@@ -64,7 +70,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var json = await response.Content.ReadAsStreamAsync();
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<TokenDto>>(json, _jsonSerializerOptions);
-            if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
+            if (wrapper is null || !wrapper.IsSuccess || wrapper.Data is null)
             {
                 TempData["errorMessage"] = "An error occurred while fetching user data. Please try again later.";
                 return View(new LoginViewModel());
@@ -167,8 +173,8 @@ namespace ArslanProjectManager.WebUI.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register()
         {
             return View(new RegisterViewModel());
@@ -202,7 +208,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var jsonResponse = await response.Content.ReadAsStreamAsync();
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<UserCreateDto>>(jsonResponse, _jsonSerializerOptions);
-            if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
+            if (wrapper is null || !wrapper.IsSuccess || wrapper.Data is null)
             {
                 TempData["errorMessage"] = "An error occurred while registering. Please try again later.";
                 return View(registerViewModel);
@@ -247,7 +253,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var json = await response.Content.ReadAsStreamAsync();
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<UserUpdateDto>>(json, _jsonSerializerOptions);
-            if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
+            if (wrapper is null || !wrapper.IsSuccess || wrapper.Data is null)
             {
                 TempData["errorMessage"] = "An error occurred while fetching user data. Please try again later.";
                 return RedirectToAction(nameof(Index));
@@ -294,7 +300,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             if (!response.IsSuccessStatusCode)
             {
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                RedirectToAction(nameof(Edit));
+                return RedirectToAction(nameof(Edit));
             }
 
             TempData["successMessage"] = "Profile updated successfully. Some changes may not be seen before re-login";
