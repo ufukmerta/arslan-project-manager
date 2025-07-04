@@ -70,9 +70,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.WriteIndented = true;
-});
+    {
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 builder.Services.AddRouting(options =>
 {
@@ -96,7 +96,6 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
     containerBuilder.RegisterModule(new RepositoryServiceModule());
 });
 
-builder.Services.AddAutoMapper(typeof(MapProfile));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
