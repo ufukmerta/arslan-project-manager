@@ -3,12 +3,12 @@
 @{
     ViewData["Title"] = "Login";
     string? errorMessage = TempData["errorMessage2"]?.ToString();
-    if (string.IsNullOrEmpty(errorMessage))
+    if (!string.IsNullOrEmpty(errorMessage))
     {
-        TempData["errorMessage"] = TempData["errorMessage2"];
+        TempData["errorMessage"] = errorMessage;
     }
 }
-@{  
+@{
     if (string.IsNullOrEmpty(errorMessage))
     {
         <form method="post" action="Login" class="">
