@@ -30,8 +30,8 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
             }
 
-            var x = await _projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token.UserId));
-            if (!x)
+            var doesProjectExist = await _projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token.UserId));
+            if (!doesProjectExist)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "No projects found for this user"));
             }
@@ -77,7 +77,7 @@ namespace ArslanProjectManager.API.Controllers
             var userProject = _projectService.Where(x => x.Id == id && x.Team.TeamUsers.Any(tu => tu.UserId == token.UserId));
             if (!userProject.Any())
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
             }
 
             var projectDetailsDto = await _projectService.GetProjectDetailsAsync(id);
@@ -133,10 +133,19 @@ namespace ArslanProjectManager.API.Controllers
 
             var team = await _context.Teams
                 .Include(t => t.TeamUsers)
-                .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token.UserId));
-            if (team is null)
+                .AnyAsync(t => t.Id == model.TeamId);
+            if (!team)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Team not found or access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Team not found."));
+
+            }
+
+            var teamByTeamUser = await _context.Teams
+                .Include(t => t.TeamUsers)
+                .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token.UserId));
+            if (teamByTeamUser is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
             }
 
             var project = new Project
@@ -147,13 +156,12 @@ namespace ArslanProjectManager.API.Controllers
                 TeamId = model.TeamId
             };
 
-            var createdProjectEntry = await _context.Projects.AddAsync(project);
-            if (createdProjectEntry is null)
+            var createdProject = await _projectService.AddAsync(project);
+            if (createdProject is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Failed to create project"));
             }
 
-            var createdProject = createdProjectEntry.Entity;
             var createdProjectDto = new MiniProjectDto
             {
                 Id = createdProject.Id,
@@ -161,7 +169,6 @@ namespace ArslanProjectManager.API.Controllers
                 ProjectName = createdProject.ProjectName
             };
 
-            await _context.SaveChangesAsync();
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(createdProjectDto, 201));
         }
 
@@ -171,7 +178,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             Token? token = base.GetToken();
-            if (token == null)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
             }
@@ -184,11 +191,7 @@ namespace ArslanProjectManager.API.Controllers
             var project = await _context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == id);
-            if (project == null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
-            }
-            if (project.Team.ManagerId != token.UserId)
+            if (project!.Team.ManagerId != token.UserId)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "You're not authorized to edit this project"));
             }
@@ -209,22 +212,28 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Edit(ProjectUpdateDto model)
         {
             Token? token = base.GetToken();
-            if (token == null)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
             }
 
-            if (model == null || model.Id <= 0 || string.IsNullOrWhiteSpace(model.ProjectName))
+            if (model is null || model.Id <= 0 || string.IsNullOrWhiteSpace(model.ProjectName))
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project data"));
+            }
+
+            var doesProjectExist = await _projectService.AnyAsync(p => p.Id == model.Id);
+            if (!doesProjectExist)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
             }
 
             var project = await _context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == model.Id && p.Team.TeamUsers.Any(tu => tu.UserId == token.UserId));
-            if (project == null)
+            if (project is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found or access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
             }
 
             project.ProjectName = model.ProjectName;
@@ -238,17 +247,15 @@ namespace ArslanProjectManager.API.Controllers
                 ProjectName = project.ProjectName,
                 CreatedDate = project.CreatedDate
             };
-
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(updatedProjectDto, 200));
         }
 
         [Authorize]
         [HttpGet("delete/{id}")]
-        [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> DeleteConfirm(int id)
         {
             Token? token = base.GetToken();
-            if (token == null)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
             }
@@ -258,12 +265,17 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project ID"));
             }
 
-            // Check if the project exists and the user has access
-            var project = await _context.Projects
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            if (project is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
+            }
+
+            project = await _context.Projects
                 .Include(p => p.Team)
                 .Include(p => p.ProjectTasks)
                 .FirstOrDefaultAsync(p => p.Id == id && p.Team.ManagerId == token.UserId);
-            if (project == null)
+            if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
             }
@@ -278,17 +290,15 @@ namespace ArslanProjectManager.API.Controllers
                 TaskCount = project.ProjectTasks.Count,
                 CompletedTaskCount = project.ProjectTasks.Count(t => t.BoardId == 3)
             };
-
             return CreateActionResult(CustomResponseDto<ProjectDeleteDto>.Success(projectDeleteDto, 200));
         }
 
         [Authorize]
         [HttpDelete("[action]/{id}")]
-        [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Delete(int id)
         {
             Token? token = base.GetToken();
-            if (token == null)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
             }
@@ -298,14 +308,18 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project ID"));
             }
 
-            // Check if the project exists and the user has access
-            var project = await _context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id && p.Team.ManagerId == token.UserId);
-            if (project == null)
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            if (project is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found or access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
             }
 
-            // Soft delete the project by changing its status
+            project = await _context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id && p.Team.ManagerId == token.UserId);
+            if (project is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
+            }
+
             project.IsActive = false;
             _projectService.ChangeStatus(project);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
