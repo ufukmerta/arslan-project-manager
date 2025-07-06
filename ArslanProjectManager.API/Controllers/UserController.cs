@@ -4,6 +4,7 @@ using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
+using ArslanProjectManager.Core.Constants;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,33 +16,35 @@ namespace ArslanProjectManager.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService, ITokenService tokenService, ITokenHandler tokenHandler, IMapper mapper) : CustomBaseController(tokenService)
+    public class UserController(IUserService userService, ITokenService tokenService, ITokenHandler tokenHandler, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper) : CustomBaseController(tokenService)
     {
         private readonly IUserService _userService = userService;
         private readonly ITokenService _tokenService = tokenService;
         private readonly ITokenHandler _tokenHandler = tokenHandler;
+        private readonly ITeamInviteService _teamInviteService = teamInviteService;
+        private readonly ITeamService _teamService = teamService;
         private readonly IMapper _mapper = mapper;
 
         [HttpGet("[action]")]
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var token = base.GetToken();
+            var token = await GetToken();
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
             }
 
             JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token.AccessToken);
             if (jwtToken.ValidTo < DateTime.UtcNow)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Token is expired"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.TokenExpired));
             }
 
             var userProfileDto = await _userService.GetUserProfileAsync(token.UserId);
             if (userProfileDto is null)
             {
-                return CreateActionResult(CustomResponseDto<UserProfileDto>.Fail(404, "User not found"));
+                return CreateActionResult(CustomResponseDto<UserProfileDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
             return CreateActionResult(CustomResponseDto<UserProfileDto>.Success(userProfileDto, 200));
@@ -51,16 +54,16 @@ namespace ArslanProjectManager.API.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetByToken()
         {
-            var token = GetToken();
+            var token = await GetToken();
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
             }
 
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
-        {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found"));
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
             var tokenDto = _mapper.Map<TokenDto>(token);
@@ -73,18 +76,18 @@ namespace ArslanProjectManager.API.Controllers
             var token = await _tokenService.GetValidTokenByRefreshTokenAsync(dto.RefreshToken);
             if (token is null || !token.IsActive)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Refresh token is missing, invalid, or inactive."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenMissing));
             }
 
             if (token.RefreshTokenExpiration < DateTime.UtcNow)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Refresh token has expired."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenExpired));
             }
 
             var newToken = _tokenHandler.CreateToken(token.User, []);
             if (newToken is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Token generation failed."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.TokenGenerationFailed));
             }
 
             // Update the new token with the existing token's refresh token and expiration
@@ -130,13 +133,13 @@ namespace ArslanProjectManager.API.Controllers
             var token = await _userService.Login(userLoginDto);
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Invalid email or password."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InvalidCredentials));
             }
 
             var handler = new JwtSecurityTokenHandler();
             if (!handler.CanReadToken(token.AccessToken))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, "Invalid token format generated"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.TokenGenerationFailed));
             }
 
             Response.Cookies.Delete("AccessToken");
@@ -166,15 +169,15 @@ namespace ArslanProjectManager.API.Controllers
             Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshTokenOptions);
 
             Token registeredToken = await _tokenService.AddAsync(token);
-            var TokenDto = _mapper.Map<TokenDto>(registeredToken);
-            return CreateActionResult(CustomResponseDto<TokenDto>.Success(TokenDto, 200));
+            var tokenDto = _mapper.Map<TokenDto>(registeredToken);
+            return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
         [HttpPost("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            var accessToken = GetToken()?.AccessToken ?? Request.Cookies["AccessToken"];
+            var accessToken = (await GetToken())?.AccessToken ?? Request.Cookies["AccessToken"];
             // Firstly, clear the access and refresh tokens from cookies before processing the logout. So, error handling will be easier.
             Response.Cookies.Delete("AccessToken");
             Response.Cookies.Delete("RefreshToken");
@@ -201,7 +204,7 @@ namespace ArslanProjectManager.API.Controllers
             var existingUser = await _userService.AnyAsync(x => x.Email == userDto.Email);
             if (existingUser)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "This email is already registered."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.EmailAlreadyExists));
             }
 
             var user = _mapper.Map<User>(userDto);
@@ -212,17 +215,11 @@ namespace ArslanProjectManager.API.Controllers
                 user.ProfilePicture = byteArray;
             }
 
-            var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-            if (string.IsNullOrEmpty(userDto.Email) || !emailRegex.IsMatch(userDto.Email))
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid email format."));
-            }
+            var emailValidation = ValidateEmail(userDto.Email);
+            if (emailValidation != null) return emailValidation;
 
-            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$@$!%*\/?&+\-_.]{8,}$");
-            if (!passwordRegex.IsMatch(userDto.Password))
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@$!%*/?&+-_.)."));
-            }
+            var passwordValidation = ValidatePassword(userDto.Password);
+            if (passwordValidation != null) return passwordValidation;
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
 
@@ -235,15 +232,15 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Update()
         {
-            var token = GetToken();
+            var token = await GetToken();
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
             }
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
             var userUpdateDto = _mapper.Map<UserUpdateDto>(user);
 
@@ -257,16 +254,16 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Update(UserUpdateDto userDto)
         {
-            var token = GetToken();
+            var token = await GetToken();
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
             }
 
             var existingUser = await _userService.GetByIdAsync(userDto.Id);
             if (existingUser is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
             existingUser.Name = userDto.Name;
@@ -275,16 +272,13 @@ namespace ArslanProjectManager.API.Controllers
             {
                 var existingEmailUser = await _userService.GetByEmail(userDto.Email);
                 if (existingEmailUser != null && existingEmailUser.Id != userDto.Id)
-            {
-                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(409, "This email already exists. You cannot change your email with given email address."));
-            }
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(409, ErrorMessages.EmailAlreadyExistsForUpdate));
+                }
             }
 
-            var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-            if (string.IsNullOrEmpty(userDto.Email) || !emailRegex.IsMatch(userDto.Email))
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid email format."));
-            }
+            var emailValidation = ValidateEmail(userDto.Email);
+            if (emailValidation != null) return emailValidation;
 
             existingUser.Email = userDto.Email;
 
@@ -303,16 +297,16 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> RemovePicture()
         {
-            var token = GetToken();
+            var token = await GetToken();
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
             }
 
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
             user!.ProfilePicture = null;
@@ -324,37 +318,173 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> UpdatePassword(UserPasswordUpdateDto userPasswordUpdateDto)
         {
-            var token = GetToken();
+            var token = await GetToken();
             if (token is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Not authorized"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
             }
 
             var existingUser = await _userService.GetByIdAsync(token.UserId);
             if (existingUser is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "User not found."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
             if (string.IsNullOrEmpty(userPasswordUpdateDto.Password) || string.IsNullOrEmpty(userPasswordUpdateDto.NewPassword))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current and new password are required to set a new password."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.PasswordsRequired));
             }
 
             if (!string.IsNullOrEmpty(userPasswordUpdateDto.Password) && !BCrypt.Net.BCrypt.Verify(userPasswordUpdateDto.Password, existingUser.Password))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Current password is incorrect."));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.CurrentPasswordIncorrect));
             }
 
-            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$!%*\/?&+\-_.]{8,}$");
-            if (!passwordRegex.IsMatch(userPasswordUpdateDto.NewPassword))
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character."));
-            }
+            var passwordValidation = ValidatePassword(userPasswordUpdateDto.NewPassword);
+            if (passwordValidation != null) return passwordValidation;
 
             existingUser.Password = BCrypt.Net.BCrypt.HashPassword(userPasswordUpdateDto.NewPassword);
             _userService.Update(existingUser);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
+
+        [HttpGet("my-invites")]
+        [Authorize]
+        public async Task<IActionResult> MyInvites()
+        {
+            var token = await GetToken();
+            if (token is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
+            }
+
+            var user = await _userService.GetByIdAsync(token.UserId);
+            if (user is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
+            }
+
+            var pendingInvites = await _teamInviteService
+                .Where(x => x.InvitedEmail == user.Email && x.Status == TeamInvite.InviteStatus.Pending)
+                .Include(x => x.Team)
+                .Include(x => x.InvitedBy)
+                .ToListAsync();
+
+            var inviteDtos = _mapper.Map<List<PendingInviteDto>>(pendingInvites);
+
+            return CreateActionResult(CustomResponseDto<List<PendingInviteDto>>.Success(inviteDtos, 200));
+        }
+
+
+        [HttpPost("accept-invite/{id}")]
+        [Authorize]
+        public async Task<IActionResult> AcceptInvite(int id)
+        {
+            var token = await GetToken();
+            if (token is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
+            }
+
+            var user = await _userService.GetByIdAsync(token.UserId);
+            if (user is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
+            }
+
+            var invite = await _teamInviteService
+                .Where(x => x.Id == id && x.InvitedEmail == user.Email)
+                .Include(x => x.Team)
+                .FirstOrDefaultAsync();
+
+            if (invite is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InviteNotFound));
+            }
+
+            if (invite.Status != TeamInvite.InviteStatus.Pending)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InviteAlreadyProcessed));
+            }
+
+            var existingTeamUser = await _teamService.GetTeamUserAsync(invite.TeamId, user.Id);
+            if (existingTeamUser != null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.UserAlreadyTeamMember));
+            }
+
+            try
+            {
+                // Create team user
+                var teamUser = new TeamUser
+                {
+                    TeamId = invite.TeamId,
+                    UserId = user.Id,
+                    RoleId = 1 // Default member role
+                };
+
+                await _teamService.AddTeamUserAsync(teamUser);
+
+                // Update invite status
+                invite.Status = TeamInvite.InviteStatus.Accepted;
+                invite.UpdatedDate = DateTime.UtcNow;
+                invite.StatusChangeNote = $"Accepted by {user.Name}";
+
+                _teamInviteService.Update(invite);
+
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+            }
+            catch
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.FailedToAcceptInvite));
+            }
+        }
+
+        [HttpPost("reject-invite/{id}")]
+        [Authorize]
+        public async Task<IActionResult> RejectInvite(int id)
+        {
+            var token = await GetToken();
+            if (token is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
+            }
+
+            var user = await _userService.GetByIdAsync(token.UserId);
+            if (user is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
+            }
+
+            var invite = await _teamInviteService
+                .Where(x => x.Id == id && x.InvitedEmail == user.Email)
+                .FirstOrDefaultAsync();
+
+            if (invite is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InviteNotFound));
+            }
+
+            if (invite.Status != TeamInvite.InviteStatus.Pending)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InviteAlreadyProcessed));
+            }
+
+            try
+            {
+                invite.Status = TeamInvite.InviteStatus.Rejected;
+                invite.UpdatedDate = DateTime.UtcNow;
+                invite.StatusChangeNote = $"Rejected by {user.Name}";
+
+                _teamInviteService.Update(invite);
+
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+            }
+            catch
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.FailedToRejectInvite));
+            }
+        }
+
     }
 }

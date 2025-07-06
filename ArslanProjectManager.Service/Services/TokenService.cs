@@ -17,6 +17,16 @@ namespace ArslanProjectManager.Service.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<Token?> GetValidTokenByAccessTokenAsync(string accessToken)
+        {
+            var token = await _repository.GetByAcessTokenAsync(accessToken);
+            if (token == null || !token.IsActive || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
+            {
+                return null;
+            }
+            return token;
+        }
+
         public async Task<Token?> GetValidTokenByRefreshTokenAsync(string refreshToken)
         {
             var token = await _repository.GetByRefreshTokenAsync(refreshToken);

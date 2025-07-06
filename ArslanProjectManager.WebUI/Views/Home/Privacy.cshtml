@@ -1,6 +1,319 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "_LandingLayout";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container-fluid px-0">
+    <!-- Hero Section -->
+    <section class="hero-section bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-4 fw-bold mb-4">Privacy Policy</h1>
+                    <p class="lead mb-4">Your privacy is important to us. Learn how we collect, use, and protect your information.</p>
+                    <p class="mb-0">Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy Content Section -->
+    <section class="privacy-content py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <!-- Introduction -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-shield-check me-2"></i>Introduction
+                            </h2>
+                            <p>Arslan Project Manager ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our project management platform and services.</p>
+                            <p>By using our service, you agree to the collection and use of information in accordance with this policy.</p>
+                        </div>
+                    </div>
+
+                    <!-- Information We Collect -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-database me-2"></i>Information We Collect
+                            </h2>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h5 class="text-secondary">Personal Information</h5>
+                                    <ul class="list-unstyled">
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Name and email address</li>
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Profile information</li>
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Team and project data</li>
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Communication preferences</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h5 class="text-secondary">Usage Information</h5>
+                                    <ul class="list-unstyled">
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Login times and session data</li>
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Feature usage patterns</li>
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Device and browser information</li>
+                                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>IP address and location data</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- How We Use Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-gear me-2"></i>How We Use Your Information
+                            </h2>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-person-check text-primary fs-4 me-3 mt-1"></i>
+                                        <div>
+                                            <h6>Account Management</h6>
+                                            <p class="small text-muted">Create and manage your account, authenticate users, and provide customer support.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-graph-up text-primary fs-4 me-3 mt-1"></i>
+                                        <div>
+                                            <h6>Service Improvement</h6>
+                                            <p class="small text-muted">Analyze usage patterns to improve our platform and develop new features.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-bell text-primary fs-4 me-3 mt-1"></i>
+                                        <div>
+                                            <h6>Communication</h6>
+                                            <p class="small text-muted">Send important updates, notifications, and respond to your inquiries.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start">
+                                        <i class="bi bi-shield-lock text-primary fs-4 me-3 mt-1"></i>
+                                        <div>
+                                            <h6>Security</h6>
+                                            <p class="small text-muted">Protect against fraud, abuse, and ensure platform security.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Information Sharing -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-share me-2"></i>Information Sharing
+                            </h2>
+                            <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except in the following circumstances:</p>
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Limited Sharing</h6>
+                                <ul class="mb-0">
+                                    <li>With your explicit consent</li>
+                                    <li>To comply with legal obligations</li>
+                                    <li>To protect our rights and safety</li>
+                                    <li>With trusted service providers who assist in operating our platform</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Security -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-lock-fill me-2"></i>Data Security
+                            </h2>
+                            <p>We implement appropriate security measures to protect your personal information:</p>
+                            <div class="row g-3">
+                                <div class="col-md-4 text-center">
+                                    <i class="bi bi-key text-primary fs-1 mb-2"></i>
+                                    <h6>Encryption</h6>
+                                    <p class="small text-muted">All data is encrypted in transit and at rest</p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <i class="bi bi-shield-check text-primary fs-1 mb-2"></i>
+                                    <h6>Access Controls</h6>
+                                    <p class="small text-muted">Strict access controls and authentication</p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <i class="bi bi-eye-slash text-primary fs-1 mb-2"></i>
+                                    <h6>Privacy</h6>
+                                    <p class="small text-muted">Regular security audits and monitoring</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Your Rights -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-person-gear me-2"></i>Your Rights
+                            </h2>
+                            <p>You have the following rights regarding your personal information:</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-eye text-success me-2"></i>
+                                        <span><strong>Access:</strong> View your personal data</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-pencil text-success me-2"></i>
+                                        <span><strong>Update:</strong> Correct inaccurate information</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-trash text-success me-2"></i>
+                                        <span><strong>Delete:</strong> Request data deletion</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-download text-success me-2"></i>
+                                        <span><strong>Export:</strong> Download your data</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cookies -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-cookie me-2"></i>Cookies and Tracking
+                            </h2>
+                            <p>We use cookies and similar technologies to enhance your experience:</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Purpose</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Essential</strong></td>
+                                            <td>Authentication and security</td>
+                                            <td>Session</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Functional</strong></td>
+                                            <td>Remember preferences</td>
+                                            <td>1 year</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Analytics</strong></td>
+                                            <td>Improve user experience</td>
+                                            <td>2 years</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-envelope me-2"></i>Contact Us
+                            </h2>
+                            <p>If you have any questions about this Privacy Policy or our data practices, please contact us:</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-envelope-fill text-primary me-2"></i>
+                                        <span>ufukmertarslan@gmail.com</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-telephone-fill text-primary me-2"></i>
+                                        <span>+1 (555) 123-4567</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Updates -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h2 class="h4 text-primary mb-3">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Policy Updates
+                            </h2>
+                            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by:</p>
+                            <ul>
+                                <li>Posting the new Privacy Policy on this page</li>
+                                <li>Sending you an email notification</li>
+                                <li>Displaying a notice on our platform</li>
+                            </ul>
+                            <p class="mb-0">Your continued use of our service after any changes constitutes acceptance of the updated policy.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Styles {
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #48CAE4 0%, #0077B6 100%);
+        }
+
+        .text-primary {
+            color: #0077B6 !important;
+        }
+
+        .bg-primary {
+            background-color: #0077B6 !important;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .link {
+            color: #0077B6 !important;
+        }
+
+        .link:hover {
+            color: #03045E !important;
+        }
+
+        .privacy-content {
+            background-color: #f8f9fa;
+        }
+
+        .table th {
+            background-color: #0077B6 !important;
+            color: white !important;
+            border-color: #0077B6 !important;
+        }
+
+        .alert-info {
+            background-color: #e3f2fd;
+            border-color: #0077B6;
+            color: #0c5460;
+        }
+    </style>
+}

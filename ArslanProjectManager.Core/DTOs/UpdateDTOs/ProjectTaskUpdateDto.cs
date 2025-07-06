@@ -1,9 +1,4 @@
 ﻿using ArslanProjectManager.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Core.DTOs.UpdateDTOs
 {
@@ -19,9 +14,9 @@ namespace ArslanProjectManager.Core.DTOs.UpdateDTOs
         public int AppointeeId { get; set; }
         public int BoardId { get; set; }
 
-        public List<TaskUserDto> TeamMembers { get; set; } = new List<TaskUserDto>();
-        public List<BoardTagDto> BoardTags { get; set; } = new List<BoardTagDto>();
-        public List<TaskCategoryDto> TaskCategories { get; set; } = new List<TaskCategoryDto>();
+        public List<TaskUserDto> TeamMembers { get; set; } = [];
+        public List<BoardTagDto> BoardTags { get; set; } = [];
+        public List<TaskCategoryDto> TaskCategories { get; set; } = [];
 
     }
 }

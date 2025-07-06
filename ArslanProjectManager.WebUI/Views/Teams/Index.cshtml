@@ -1,0 +1,147 @@
+﻿@model IEnumerable<TeamViewModel>
+@{
+    ViewData["Title"] = "Teams";
+}
+
+@if (Model.Count() == 0)
+{
+    <div class="text-center py-4">
+        <i class="bi bi-people-fill fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No teams found</h5>
+        <p class="text-muted">You haven't joined any teams yet.</p>
+        <a class="btn btn-custom" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> Create Your First Team
+        </a>
+        <a class="btn btn-custom2" asp-action="MyInvites" asp-controller="User">
+            <i class="bi bi-envelope"></i> Check Your Pending Invites
+        </a>
+    </div>
+}
+else
+{
+    <table id="teamsTable" class="table table-hover table-striped">
+        <thead>
+            <tr>
+                <th class="th-custom w-25 py-3">
+                    <i class="bi bi-people"></i> Team
+                </th>
+                <th class="th-custom w-25 py-3">
+                    <i class="bi bi-person-badge"></i> Manager
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-person-lines-fill"></i> Members
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-folder"></i> Projects
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-gear"></i> Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <i class="bi bi-people text-primary me-2"></i>
+                        @Html.DisplayFor(modelItem => item.TeamName)
+                    </td>
+                    <td>
+                        <i class="bi bi-person text-info me-2"></i>
+                        @Html.DisplayFor(modelItem => item.ManagerName)
+                    </td>
+                    <td style="text-align:center;">
+                        <span class="badge bg-primary">
+                            <i class="bi bi-person-lines-fill me-1"></i>
+                            @Html.DisplayFor(modelItem => item.MemberCount)
+                        </span>
+                    </td>
+                    <td style="text-align:center;">
+                        <span class="badge bg-info">
+                            <i class="bi bi-folder me-1"></i>
+                            @Html.DisplayFor(modelItem => item.ProjectCount)
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group w-100">
+                            <a class="btn btn-info" asp-action="Details" asp-route-id="@item.TeamId">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a class="btn btn-primary" asp-action="Invite" asp-route-id="@item.TeamId">
+                                <i class="bi bi-person-plus"></i> Invite
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="mt-3">
+        <a class="btn btn-custom2" asp-action="MyInvites" asp-controller="User">
+            <i class="bi bi-envelope"></i> Check Invites
+        </a>
+        <a class="btn btn-custom" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> Create New Team
+        </a>
+    </div>
+}
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Custom date sorting for D.MM.YYYY or DD.MM.YYYY format (European format)
+            jQuery.extend(jQuery.fn.dataTable.ext.type.order, {
+                "date-dmy-pre": function (date) {
+                    if (!date) return 0;
+                    
+                    // Get the text content, handling both string and DOM element
+                    var dateText;
+                    if (typeof date === 'string') {
+                        dateText = date.trim();
+                    } else {
+                        // If it's a DOM element, get its text content
+                        dateText = $(date).text().trim();
+                    }
+                    
+                    if (!dateText) return 0;
+                    
+                    // Clean up the date text - remove any HTML and get only the date part
+                    // The date format is D.MM.YYYY or DD.MM.YYYY
+                    var dateMatch = dateText.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+                    if (dateMatch) {
+                        var day = parseInt(dateMatch[1], 10);
+                        var month = parseInt(dateMatch[2], 10);
+                        var year = parseInt(dateMatch[3], 10);
+                        
+                        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                            return new Date(year, month - 1, day).getTime();
+                        }
+                    }
+                    
+                    return 0;
+                },
+                "date-dmy-asc": function (a, b) {
+                    return a - b;
+                },
+                "date-dmy-desc": function (a, b) {
+                    return b - a;
+                }
+            });
+
+            $('#teamsTable').DataTable({
+                "order": [[0, "asc"]], // Sort by team name ascending
+                "pageLength": 10,
+                "language": {
+                    "search": "Search teams:",
+                    "lengthMenu": "Show _MENU_ teams per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ teams",
+                    "infoEmpty": "Showing 0 to 0 of 0 teams",
+                    "infoFiltered": "(filtered from _MAX_ total teams)"
+                }
+            });
+        });
+    </script>
+}

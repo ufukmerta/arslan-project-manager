@@ -20,13 +20,16 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(e => e.Description)
+            .HasColumnName("description");            
+
         builder.Property(e => e.ManagerId)
             .HasColumnName("manager_id");
 
         builder.Property(e => e.CreatedDate)
            .HasColumnName("created_date")
            .HasColumnType("datetime")
-           .HasDefaultValueSql("(GETUTCDATE())");
+           .HasDefaultValueSql("(GETUTCDATE())");           
 
         builder.Property(e => e.UpdatedDate)
             .HasColumnName("updated_date")

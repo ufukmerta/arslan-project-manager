@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace ArslanProjectManager.Core.Models;
+﻿namespace ArslanProjectManager.Core.Models;
 
 public partial class ProjectTask : BaseEntity
 {

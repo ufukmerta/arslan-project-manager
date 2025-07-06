@@ -6,6 +6,7 @@ namespace ArslanProjectManager.Core.Models;
 public partial class Team : BaseEntity
 {
     public string TeamName { get; set; } = null!;
+    public string? Description { get; set; }
     public int ManagerId { get; set; }
 
     public virtual User Manager { get; set; } = null!;

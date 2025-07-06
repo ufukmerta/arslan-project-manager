@@ -9,5 +9,7 @@ namespace ArslanProjectManager.Core.Services
 {
     public interface ITeamService: IGenericService<Team>
     {
+        Task<TeamUser?> GetTeamUserAsync(int teamId, int userId);
+        Task<TeamUser> AddTeamUserAsync(TeamUser teamUser);
     }
 }

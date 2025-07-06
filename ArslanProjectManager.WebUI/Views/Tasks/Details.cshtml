@@ -7,13 +7,31 @@
 
 <div class="row mb-4">
     <div class="col">
-        <h2>@Html.DisplayFor(model => model.TaskName)</h2>
-        <p class="text-muted">@Html.DisplayFor(model => model.Description)</p>
+        <h2>
+            <i class="bi bi-list-task text-primary me-2"></i>
+            @Html.DisplayFor(model => model.TaskName)
+        </h2>
+        <p class="text-muted">
+            <i class="bi bi-chat-text me-2"></i>
+            @Html.DisplayFor(model => model.Description)
+        </p>
         <div class="d-flex gap-2 flex-wrap">
-            <span class="badge bg-primary">Project: @Model.ProjectName</span>
-            <span class="badge bg-@(Model.Priority == ProjectTask.TaskPriority.Low ? "success" : Model.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">Priority: @Model.Priority</span>
-            <span class="badge bg-info">Status: @Model.BoardName</span>
-            <span class="badge bg-secondary">Category: @Model.TaskCategoryName</span>
+            <span class="badge bg-primary">
+                <i class="bi bi-folder me-1"></i>
+                Project: @Model.ProjectName
+            </span>
+            <span class="badge bg-@(Model.Priority == ProjectTask.TaskPriority.Low ? "success" : Model.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Priority: @Model.Priority
+            </span>
+            <span class="badge bg-info">
+                <i class="bi bi-kanban me-1"></i>
+                Status: @Model.BoardName
+            </span>
+            <span class="badge bg-secondary">
+                <i class="bi bi-tags me-1"></i>
+                Category: @Model.TaskCategoryName
+            </span>
         </div>
     </div>
 </div>
@@ -22,31 +40,53 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Task Information</h5>
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Task Information
+                </h5>
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Created On</label>
-                            <p class="mb-0">@Model.CreatedDate.ToShortDateString()</p>
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-calendar-plus text-success me-2"></i> Created On
+                            </label>
+                            <p class="mb-0" data-utc-date="@Model.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ssZ")">@Model.CreatedDate.ToShortDateString()</p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Last Updated</label>
-                            <p class="mb-0">@(Model.UpdatedDate?.ToShortDateString() ?? "Not updated")</p>
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-calendar-check text-info me-2"></i> Last Updated
+                            </label>
+                            <p class="mb-0" data-utc-date="@Model.UpdatedDate?.ToString("yyyy-MM-ddTHH:mm:ssZ")">@(Model.UpdatedDate?.ToShortDateString() ?? "Not updated")</p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Start Date</label>
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-play-circle text-primary me-2"></i> Start Date
+                            </label>
                             <p class="mb-0">@(Model.StartDate?.ToShortDateString() ?? "Not started")</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">End Date</label>
-                            <p class="mb-0">@(Model.EndDate?.ToShortDateString() ?? "Not completed")</p>
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-calendar-x text-warning me-2"></i> End Date
+                            </label>
+
+                            <p class="mb-0">
+                                @if (Model.EndDate == null)
+                                {
+                                    <span class="text-danger">Not completed</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success" data-utc-date="@Model.EndDate.Value.ToString("yyyy-MM-ddTHH:mm:ssZ")">@Model.EndDate.Value.ToString()</span>
+                                }
+                            </p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Expected End Date</label>
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-calendar-event text-danger me-2"></i> Expected End Date
+                            </label>
                             <p class="mb-0">@(Model.ExpectedEndDate?.ToShortDateString() ?? "Not set")</p>
                         </div>
                     </div>
@@ -57,15 +97,21 @@
     <div class="col-md-4">
         <div class="card mb-3">
             <div class="card-header">
-                <h5 class="mb-0">Assignment</h5>
+                <h5 class="mb-0">
+                    <i class="bi bi-person-check"></i> Assignment
+                </h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Assigned To</label>
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person text-info me-2"></i> Assigned To
+                    </label>
                     <p class="mb-0">@Model.AppointeeName</p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Assigned By</label>
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-person-badge text-primary me-2"></i> Assigned By
+                    </label>
                     <p class="mb-0">@Model.AppointerName</p>
                 </div>
             </div>
@@ -85,13 +131,17 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Task Comments</h5>
+                <h5 class="mb-0">
+                    <i class="bi bi-chat-dots"></i> Task Comments
+                </h5>
             </div>
             <div class="card-body">
                 <form asp-action="AddComment" asp-route-id="@Model.Id" method="post" class="mt-1 ">
                     <input type="hidden" value="@Html.ViewContext.RouteData.Values["id"]?.ToString()" name="TaskId" asp-for="NewComment.TaskId" />
                     <div class="mb-3">
-                        <label asp-for="NewComment.Comment" class="form-label">Add a Comment</label>
+                        <label asp-for="NewComment.Comment" class="form-label">
+                            <i class="bi bi-chat-text"></i> Add a Comment
+                        </label>
                         <textarea name="Comment" class="form-control" rows="3" required></textarea>
                         <span asp-validation-for="NewComment.Comment" class="text-danger"></span>
                     </div>
@@ -99,7 +149,7 @@
                         <i class="bi bi-chat-dots"></i> Post Comment
                     </button>
                 </form>
-                @if (Model.Comments.Count!=0)
+                @if (Model.Comments.Count != 0)
                 {
                     <div class="comments-list mt-3">
                         @foreach (var comment in Model.Comments.OrderByDescending(c => c.Date))
@@ -107,19 +157,31 @@
                             <div class="comment mb-3 p-3 border rounded">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <h6 class="mb-1">@comment.CommenterName</h6>
-                                        <small class="text-muted">@comment.Date.ToString("MMM dd, yyyy HH:mm")</small>
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-person-circle text-primary me-2"></i>
+                                            @comment.CommenterName
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @comment.Date.ToString("MMM dd, yyyy HH:mm")
+                                        </small>
                                     </div>
                                 </div>
-                                <p class="mt-2 mb-0">@comment.Comment</p>
+                                <p class="mt-2 mb-0">
+                                    <i class="bi bi-chat-quote text-muted me-2"></i>
+                                    @comment.Comment
+                                </p>
                             </div>
                         }
                     </div>
                 }
                 else
                 {
-                    <p class="text-muted mb-4">No comments yet.</p>
-                }               
+                    <p class="text-muted mb-4">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        No comments yet.
+                    </p>
+                }
             </div>
         </div>
     </div>
@@ -130,15 +192,56 @@
         font-size: 0.9em;
         padding: 0.5em 1em;
     }
+
     .comments-list {
         max-height: 500px;
         overflow-y: auto;
     }
+
     .comment {
         background-color: #f8f9fa;
     }
 </style>
 
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    
+    <script>
+        $(document).ready(function () {
+            // Convert UTC dates to user's local timezone
+            function convertUtcToLocal() {
+                $('[data-utc-date]').each(function () {
+                    var utcDateString = $(this).attr('data-utc-date');
+                    if (utcDateString && utcDateString !== '') {
+                        try {
+                            // Parse the UTC date string
+                            var utcDate = new Date(utcDateString);
+                            
+                            // Convert to local timezone
+                            var localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
+                            
+                            // Format the date and time in DD.MM.YYYY HH:mm format (European format)
+                            var day = localDate.getDate().toString().padStart(2, '0');
+                            var month = (localDate.getMonth() + 1).toString().padStart(2, '0');
+                            var year = localDate.getFullYear();
+                            var hours = localDate.getHours().toString().padStart(2, '0');
+                            var minutes = localDate.getMinutes().toString().padStart(2, '0');
+                            var formattedDateTime = day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
+                            
+                            // Update the display
+                            $(this).text(formattedDateTime);
+                        } catch (e) {
+                            console.log('Error converting date:', utcDateString, e);
+                        }
+                    }
+                });
+            }
+            
+            // Convert dates when page loads
+            convertUtcToLocal();
+        });
+    </script>
 }

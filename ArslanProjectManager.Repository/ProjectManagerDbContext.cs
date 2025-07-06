@@ -53,12 +53,35 @@ public partial class ProjectManagerDbContext : DbContext
 
     public override int SaveChanges()
     {
-        var entries = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && (e.State == EntityState.Modified));
-        foreach (var entityEntry in entries)
+        var addedEntries = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && e.State == EntityState.Added);
+        foreach (var entry in addedEntries)
+        {
+            ((BaseEntity)entry.Entity).CreatedDate = DateTime.UtcNow;
+        }
+
+        var modifiedEntities = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && (e.State == EntityState.Modified));
+        foreach (var entityEntry in modifiedEntities)
         {
             ((BaseEntity)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
         }
 
         return base.SaveChanges();
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var addedEntities = ChangeTracker.Entries()
+            .Where(e => e.State == EntityState.Added && e.Entity is BaseEntity);
+
+        foreach (var entry in addedEntities)
+            ((BaseEntity)entry.Entity).CreatedDate = DateTime.UtcNow;
+
+        var modifiedEntities = ChangeTracker.Entries()
+            .Where(e => e.State == EntityState.Modified && e.Entity is BaseEntity);
+
+        foreach (var entry in modifiedEntities)
+            ((BaseEntity)entry.Entity).UpdatedDate = DateTime.UtcNow;
+
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }

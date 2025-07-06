@@ -1,5 +1,4 @@
-﻿using ArslanProjectManager.Core;
-using ArslanProjectManager.Core.DTOs;
+﻿using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.DeleteDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
@@ -19,18 +18,11 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.WEBUI.Controllers
 {
-    public class TasksController : BaseController
+    public class TasksController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage) : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IMapper _mapper;
-        private readonly IAuthStorage _authStorage;
-
-        public TasksController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage)
-        {
-            _httpClientFactory = httpClientFactory;
-            _mapper = mapper;
-            _authStorage = authStorage;
-        }
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+        private readonly IMapper _mapper = mapper;
+        private readonly IAuthStorage _authStorage = authStorage;
 
         [Authorize]
         public async Task<IActionResult> Index()
@@ -49,13 +41,18 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync("tasks");
             if (!response.IsSuccessStatusCode)
             {
-                TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
+                    TempData["errorMessage"] = await GetErrorMessageAsync(response);
                     return RedirectToAction("Login", "User");
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return View(new List<ProjectTaskViewModel>());
                 }
                 else
                 {
+                    TempData["errorMessage"] = await GetErrorMessageAsync(response);
                     return View(new List<ProjectTaskViewModel>());
                 }
             }
@@ -190,7 +187,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
             if (id <= 0)
             {
-                TempData["errorMessage"] = "Invalid project ID.";
+                TempData["errorMessage"] = "Invalid task ID.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -340,7 +337,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
             if (id <= 0)
             {
-                TempData["errorMessage"] = "Invalid project ID.";
+                TempData["errorMessage"] = "Invalid task ID.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -369,8 +366,8 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<ProjectTaskUpdateDto>>(json, _jsonSerializerOptions);
             if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
             {
-                TempData["errorMessage"] = "Failed to retrieve project details.";
-                return RedirectToAction("Index", "Projects");
+                TempData["errorMessage"] = "Failed to retrieve task details.";
+                return RedirectToAction("Index");
             }
 
             var editTaskDto = wrapper.Data;
@@ -474,8 +471,8 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<ProjectTaskDeleteDto>>(json, _jsonSerializerOptions);
             if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
             {
-                TempData["errorMessage"] = "Failed to retrieve project details.";
-                return RedirectToAction("Index", "Projects");
+                TempData["errorMessage"] = "Failed to retrieve task details.";
+                return RedirectToAction("Index");
             }
 
             var taskDto = wrapper.Data;
@@ -496,7 +493,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
             if (TaskId <= 0)
             {
-                TempData["errorMessage"] = "Invalid project data.";
+                TempData["errorMessage"] = "Invalid task data.";
                 return RedirectToAction("Index");
             }
 
@@ -522,7 +519,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
             }
 
             TempData["successMessage"] = "Task deleted successfully!";
-            return RedirectToAction("Index", "Projects");
+            return RedirectToAction("Index", "Tasks");
         }
     }
 }

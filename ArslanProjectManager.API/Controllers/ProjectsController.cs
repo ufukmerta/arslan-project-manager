@@ -1,4 +1,5 @@
 ﻿using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.DeleteDTOs;
@@ -6,6 +7,8 @@ using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Repository;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,239 +17,224 @@ namespace ArslanProjectManager.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectsController(ProjectManagerDbContext context, IProjectService projectService, ITokenService tokenService) : CustomBaseController(tokenService)
+    public class ProjectsController(ProjectManagerDbContext context, IProjectService projectService, ITokenService tokenService, IMapper mapper) : CustomBaseController(tokenService)
     {
         private readonly ProjectManagerDbContext _context = context;
         private readonly IProjectService _projectService = projectService;
-        private readonly ITokenService _tokenService = tokenService;
+        private readonly IMapper _mapper = mapper;
 
-        [Authorize]
         [HttpGet()]
+        [Authorize]
         public async Task<IActionResult> GetByToken()
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            var doesProjectExist = await _projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token.UserId));
+            var token = await GetToken();
+            var doesProjectExist = await _projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token!.UserId));
             if (!doesProjectExist)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "No projects found for this user"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoProjectsFound));
             }
 
             var projects = await _context.Projects
-               .Include(x => x.Team)
-               .ThenInclude(x => x.TeamUsers)
-               .Include(x => x.ProjectTasks)
-               .Where(x => x.Team.TeamUsers.Any(tu => tu.UserId == token.UserId))
-               .Select(p => new UserProjectDto
-               {
-                   ProjectId = p.Id,
-                   ProjectName = p.ProjectName,
-                   Description = p.ProjectDetail,
-                   StartDate = p.StartDate,
-                   TeamName = p.Team.TeamName,
-                   TeamId = p.TeamId,
-                   ManagerId = p.Team.ManagerId,
-                   TaskCount = p.ProjectTasks.Count,
-                   CompletedTaskCount = p.ProjectTasks.Count(t => t.BoardId == 3)
-               })
-               .ToListAsync();
+                 .Where(x => x.Team.TeamUsers.Any(tu => tu.UserId == token!.UserId))
+                 .ProjectTo<UserProjectDto>(_mapper.ConfigurationProvider)
+                 .ToListAsync();
 
             return CreateActionResult(CustomResponseDto<IEnumerable<UserProjectDto>>.Success(projects, 200));
         }
 
-        [Authorize]
         [HttpGet("[action]/{id}")]
+        [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Details(int id)
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            if (id <= 0)
+            var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
+            if (idValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project ID"));
+                return idValidation;
             }
 
-            var userProject = _projectService.Where(x => x.Id == id && x.Team.TeamUsers.Any(tu => tu.UserId == token.UserId));
-            if (!userProject.Any())
+            var token = await GetToken();
+            var accessValidation = await ValidateProjectAccess(token, id);
+            if (accessValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
+                return accessValidation;
             }
 
             var projectDetailsDto = await _projectService.GetProjectDetailsAsync(id);
             if (projectDetailsDto is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
             return CreateActionResult(CustomResponseDto<ProjectDetailsDto>.Success(projectDetailsDto, 200));
         }
 
-        [Authorize]
         [HttpGet("[action]")]
+        [Authorize]
         public async Task<IActionResult> Create()
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
+            var token = await GetToken();
             var userTeamDto = await _context.TeamUsers
                 .Include(tu => tu.Team)
-                .Where(tu => tu.UserId == token.UserId)
+                .Where(tu => tu.UserId == token!.UserId)
                 .Select(tu => new MiniTeamDto
                 {
                     Id = tu.TeamId,
                     TeamName = tu.Team.TeamName
                 })
                 .ToListAsync();
-            if (userTeamDto.Count == 0)
+            if (userTeamDto.Count is 0)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "No teams found for this user"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoTeamsFound));
             }
 
             return CreateActionResult(CustomResponseDto<List<MiniTeamDto>>.Success(userTeamDto, 200));
         }
 
-        [Authorize]
         [HttpPost("[action]")]
+        [Authorize]
         public async Task<IActionResult> Create(ProjectCreateDto model)
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            if (model is null || string.IsNullOrWhiteSpace(model.ProjectName) || model.TeamId <= 0)
+            var validationResult = ValidateModel(
+                model,
+                m => m != null && !string.IsNullOrWhiteSpace(m.ProjectName) && m.TeamId > 0,
+                ErrorMessages.InvalidProjectData
+            );
+            if (validationResult is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project data"));
+                return validationResult;
             }
 
+            var token = await GetToken();
             var team = await _context.Teams
                 .Include(t => t.TeamUsers)
                 .AnyAsync(t => t.Id == model.TeamId);
             if (!team)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Team not found."));
-
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
             }
 
             var teamByTeamUser = await _context.Teams
                 .Include(t => t.TeamUsers)
-                .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token.UserId));
+                .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token!.UserId));
             if (teamByTeamUser is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
             }
 
-            var project = new Project
-            {
-                ProjectName = model.ProjectName,
-                ProjectDetail = model.ProjectDetail,
-                StartDate = model.StartDate,
-                TeamId = model.TeamId
-            };
-
+            var project = _mapper.Map<Project>(model);
             var createdProject = await _projectService.AddAsync(project);
             if (createdProject is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Failed to create project"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.FailedToCreateProject));
             }
 
-            var createdProjectDto = new MiniProjectDto
-            {
-                Id = createdProject.Id,
-                CreatedDate = createdProject.CreatedDate,
-                ProjectName = createdProject.ProjectName
-            };
-
+            var createdProjectDto = _mapper.Map<MiniProjectDto>(createdProject);
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(createdProjectDto, 201));
         }
 
-        [Authorize]
         [HttpGet("[action]/{id}")]
+        [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Edit(int id)
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            if (id <= 0)
+            var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
+            if (idValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project ID"));
+                return idValidation;
+            }
+
+            var token = await GetToken();
+            var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
+            if (accessValidation is not null)
+            {
+                return accessValidation;
             }
 
             var project = await _context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == id);
-            if (project!.Team.ManagerId != token.UserId)
+
+            if (project is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "You're not authorized to edit this project"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var projectUpdateDto = new ProjectUpdateDto
-            {
-                Id = project.Id,
-                ProjectName = project.ProjectName,
-                ProjectDetail = project.ProjectDetail,
-                StartDate = project.StartDate
-            };
-
+            var projectUpdateDto = _mapper.Map<ProjectUpdateDto>(project);
             return CreateActionResult(CustomResponseDto<ProjectUpdateDto>.Success(projectUpdateDto, 200));
         }
 
-        [Authorize]
         [HttpPut("[action]")]
+        [Authorize]
         public async Task<IActionResult> Edit(ProjectUpdateDto model)
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            if (model is null || model.Id <= 0 || string.IsNullOrWhiteSpace(model.ProjectName))
+            var validationResult = ValidateModel(
+                model,
+                m => m != null && m.Id > 0 && !string.IsNullOrWhiteSpace(m.ProjectName),
+                ErrorMessages.InvalidProjectData
+            );
+            if (validationResult is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project data"));
+                return validationResult;
             }
 
-            var doesProjectExist = await _projectService.AnyAsync(p => p.Id == model.Id);
-            if (!doesProjectExist)
+            var token = await GetToken();
+            var accessValidation = await ValidateProjectAccess(token, model.Id, requireManagerAccess: true);
+            if (accessValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
+                return accessValidation;
             }
 
             var project = await _context.Projects
                 .Include(p => p.Team)
-                .FirstOrDefaultAsync(p => p.Id == model.Id && p.Team.TeamUsers.Any(tu => tu.UserId == token.UserId));
+                .FirstOrDefaultAsync(p => p.Id == model.Id);
+
             if (project is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
             project.ProjectName = model.ProjectName;
             project.ProjectDetail = model.ProjectDetail;
             project.StartDate = model.StartDate;
-            _context.Projects.Update(project);
-            await _context.SaveChangesAsync();
-            var updatedProjectDto = new MiniProjectDto
-            {
-                Id = project.Id,
-                ProjectName = project.ProjectName,
-                CreatedDate = project.CreatedDate
-            };
+            _projectService.Update(project);
+            var updatedProjectDto = _mapper.Map<MiniProjectDto>(project);
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(updatedProjectDto, 200));
         }
 
@@ -254,42 +242,36 @@ namespace ArslanProjectManager.API.Controllers
         [HttpGet("delete/{id}")]
         public async Task<IActionResult> DeleteConfirm(int id)
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            if (id <= 0)
+            var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
+            if (idValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project ID"));
+                return idValidation;
             }
 
-            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
-            if (project is null)
+            var token = await GetToken();
+            var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
+            if (accessValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
+                return accessValidation;
             }
 
-            project = await _context.Projects
+            var project = await _context.Projects
                 .Include(p => p.Team)
                 .Include(p => p.ProjectTasks)
-                .FirstOrDefaultAsync(p => p.Id == id && p.Team.ManagerId == token.UserId);
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (project is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var projectDeleteDto = new ProjectDeleteDto
-            {
-                Id = project.Id,
-                ProjectName = project.ProjectName,
-                ProjectDetail = project.ProjectDetail,
-                StartDate = project.StartDate,
-                TeamName = project.Team.TeamName,
-                TaskCount = project.ProjectTasks.Count,
-                CompletedTaskCount = project.ProjectTasks.Count(t => t.BoardId == 3)
-            };
+            var projectDeleteDto = _mapper.Map<ProjectDeleteDto>(project);
             return CreateActionResult(CustomResponseDto<ProjectDeleteDto>.Success(projectDeleteDto, 200));
         }
 
@@ -297,32 +279,66 @@ namespace ArslanProjectManager.API.Controllers
         [HttpDelete("[action]/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Token? token = base.GetToken();
-            if (token is null)
+            var tokenValidation = await ValidateToken();
+            if (tokenValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Not logged in or access token is invalid"));
+                return tokenValidation;
             }
 
-            if (id <= 0)
+            var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
+            if (idValidation is not null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, "Invalid project ID"));
+                return idValidation;
             }
 
-            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == id);
+            var token = await GetToken();
+
+            var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
+            if (accessValidation is not null)
+            {
+                return accessValidation;
+            }
+
+            var project = await _context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id);
+
             if (project is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, "Project not found"));
-            }
-
-            project = await _context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id && p.Team.ManagerId == token.UserId);
-            if (project is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, "Access denied"));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
             project.IsActive = false;
             _projectService.ChangeStatus(project);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+        }
+
+        protected async Task<IActionResult?> ValidateProjectAccess(Token? token, int projectId, bool requireManagerAccess = false)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Team)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
+
+            if (project is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
+            }
+
+            if (requireManagerAccess)
+            {
+                if (project.Team.ManagerId != token!.UserId)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotAuthorizedToEditProject));
+                }
+            }
+            else
+            {
+                var isMember = await _context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
+                if (!isMember)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
+                }
+            }
+
+            return null;
         }
     }
 }

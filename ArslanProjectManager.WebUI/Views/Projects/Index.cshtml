@@ -5,76 +5,124 @@
     ViewData["Title"] = "Projects";
 }
 
-<table id="projectsTable" class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th class="th-custom py-3">Project Name</th>
-            <th class="th-custom py-3">Description</th>
-            <th class="th-custom py-3">Team</th>
-            <th class="th-custom py-3">Start Date</th>
-            <th class="th-custom py-3">Tasks</th>
-            <th class="th-custom py-3">Completed Tasks</th>
-            <th class="th-custom py-3 text-center">Actions</th>
-        </tr>
-    </thead>
-    <tbody class="table-group-divider">
-        @foreach (var project in Model)
-        {
+@if (Model.Count() == 0)
+{
+    <div class="text-center py-4">
+        <i class="bi bi-folder-fill fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No projects found</h5>
+        <p class="text-muted">You haven't created or joined any projects yet.</p>
+        <a class="btn btn-custom" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> Create Your First Project
+        </a>
+        <a class="btn btn-custom2" asp-action="Index" asp-controller="Teams">
+            <i class="bi bi-people"></i> Join a Team First
+        </a>
+    </div>
+}
+else
+{
+    <table id="projectsTable" class="table table-striped table-hover">
+        <thead>
             <tr>
-                <td>@Html.DisplayFor(modelItem => project.ProjectName)</td>
-                <td>@Html.DisplayFor(modelItem => project.Description)</td>
-                <td>@Html.DisplayFor(modelItem => project.TeamName)</td>
-                <td>@Html.Raw(@project.StartDate.ToString("d.M.yyyy"))</td>
-                <td style="text-align:center;">
-                    @Html.DisplayFor(modelItem => project.TaskCount)
-                </td>
-                <td style="text-align:center;">
-                    @Html.DisplayFor(modelItem => project.CompletedTaskCount)
-                </td>
-                <td>
-                    <div class="btn-group w-100">
-                        <a class="btn btn-info" asp-action="Details" asp-route-id="@project.ProjectId">View</a>
-                        @if (project.ManagerId == Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier)))
-                        {
-                            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@project.ProjectId">Edit</a>
-                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@project.ProjectId">Delete</a>
-                        }
-                    </div>
-                </td>
+                <th class="th-custom py-3">
+                    <i class="bi bi-folder"></i> Project Name
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-chat-text"></i> Description
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-people"></i> Team
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-calendar-plus"></i> Start Date
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-list-task"></i> Tasks
+                </th>
+                <th class="th-custom py-3">
+                    <i class="bi bi-check-circle"></i> Completed Tasks
+                </th>
+                <th class="th-custom py-3 text-center">
+                    <i class="bi bi-gear"></i> Actions
+                </th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody class="table-group-divider">
+            @foreach (var project in Model)
+            {
+                <tr>
+                    <td>
+                        <i class="bi bi-folder text-warning me-2"></i>
+                        @Html.DisplayFor(modelItem => project.ProjectName)
+                    </td>
+                    <td>
+                        <i class="bi bi-chat-text text-muted me-2"></i>
+                        @Html.DisplayFor(modelItem => project.Description)
+                    </td>
+                    <td>
+                        <i class="bi bi-people text-primary me-2"></i>
+                        @Html.DisplayFor(modelItem => project.TeamName)
+                    </td>
+                    <td data-order="@project.StartDate.ToString("yyyy-MM-dd")">
+                        <i class="bi bi-calendar-plus text-success me-2"></i>
+                        @Html.Raw(@project.StartDate.ToString("d.M.yyyy"))
+                    </td>
+                    <td style="text-align:center;">
+                        <span class="badge bg-info">
+                            <i class="bi bi-list-task me-1"></i>
+                            @Html.DisplayFor(modelItem => project.TaskCount)
+                        </span>
+                    </td>
+                    <td style="text-align:center;">
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>
+                            @Html.DisplayFor(modelItem => project.CompletedTaskCount)
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group w-100">
+                            <a class="btn btn-info" asp-action="Details" asp-route-id="@project.ProjectId">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            @if (project.ManagerId == Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                            {
+                                <a class="btn btn-primary" asp-action="Edit" asp-route-id="@project.ProjectId">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@project.ProjectId">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-<div class="mt-3">
-    <a class="btn btn-custom" asp-action="Create">Create New Project</a>
-</div>
+    <div class="mt-3">
+        <a class="btn btn-custom" asp-action="Create">
+            <i class="bi bi-plus-circle"></i> Create New Project
+        </a>
+    </div>
+}
 
 @section Scripts {
     <script>
-        jQuery.extend(jQuery.fn.dataTable.ext.type.order, {
-            "date-dmy-pre": function (date) {
-                if (!date) return 0;
-                var parts = date.trim().split(".");
-                if (parts.length !== 3) return 0;
-                return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
-            },
-            "date-dmy-asc": function (a, b) {
-                return a - b;
-            },
-            "date-dmy-desc": function (a, b) {
-                return b - a;
-            }
-        });
-
         $(document).ready(function () {
             if (!$.fn.DataTable.isDataTable('#projectsTable')) {
                 var table = $('#projectsTable').DataTable({
-                    columnDefs: [
-                        { type: 'date-dmy', targets: 3 }
-                    ],
+                    "order": [[0, "asc"]], // Sort by project name ascending
+                    "pageLength": 10,
                     dom: 'Bfrtip',
-                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                    "language": {
+                        "search": "Search projects:",
+                        "lengthMenu": "Show _MENU_ projects per page",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ projects",
+                        "infoEmpty": "Showing 0 to 0 of 0 projects",
+                        "infoFiltered": "(filtered from _MAX_ total projects)"
+                    }
                 });
 
                 table.buttons().container()

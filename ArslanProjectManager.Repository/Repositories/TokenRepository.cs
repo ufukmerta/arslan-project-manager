@@ -13,6 +13,14 @@ namespace ArslanProjectManager.Repository.Repositories
             _context = context;
         }
 
+        public async Task<Token?> GetByAcessTokenAsync(string accessToken)
+        {
+            return await _context.Tokens
+                .Include(t => t.User)
+                .OrderBy(t => t.Id)
+                .LastOrDefaultAsync(t => t.AccessToken == accessToken);
+        }
+
         public async Task<Token?> GetByRefreshTokenAsync(string refreshToken)
         {
             return await _context.Tokens

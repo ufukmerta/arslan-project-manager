@@ -13,6 +13,11 @@ body {
     margin: 20px,60px,20px,20px;
 }
 
+.px-10 {
+    padding-right: 10rem !important;
+    padding-left: 10rem !important;
+}
+
 h1, h2 {
     color: #333;
 }

@@ -9,6 +9,6 @@ public partial class Project : BaseEntity
     public int TeamId { get; set; }
     public string? ProjectDetail { get; set; }
     public DateOnly StartDate { get; set; }
-    public virtual ICollection<ProjectTask> ProjectTasks { get; set; } = new List<ProjectTask>();
+    public virtual ICollection<ProjectTask> ProjectTasks { get; set; } = [];
     public virtual Team Team { get; set; } = null!;
 }

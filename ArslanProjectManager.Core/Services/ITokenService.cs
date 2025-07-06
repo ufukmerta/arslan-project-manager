@@ -10,6 +10,7 @@ namespace ArslanProjectManager.Core.Services
 {
     public interface ITokenService : IGenericService<Token>
     {
+        Task<Token?> GetValidTokenByAccessTokenAsync(string accessToken);
         Task<Token?> GetValidTokenByRefreshTokenAsync(string refreshToken);
         Task<List<Token>> GetActiveTokensForUserAsync(int userId);
         Task RevokeTokensForUserAsync(int userId);

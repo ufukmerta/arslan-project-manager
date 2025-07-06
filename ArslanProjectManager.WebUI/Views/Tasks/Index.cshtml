@@ -3,195 +3,256 @@
 @{
     ViewData["Title"] = "Tasks";
 }
-<div class="row">
-    <div class="col-12">
-        <div class="data_table">
-            <table id="entityTable" class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="th-custom py-3">
-                            Task
-                        </th>
-                        <th class="th-custom py-3">
-                            Project
-                        </th>
-                        <th class="th-custom py-3">
-                            Created
-                        </th>
-                        <th class="th-custom py-3">
-                            Updated
-                        </th>
-                        <th class="th-custom py-3">
-                            Ended
-                        </th>
-                        <th class="th-custom py-3">
-                            ECD
-                        </th>
-                        <th class="th-custom py-3">
-                            Priority
-                        </th>
-                        <th class="th-custom py-3">
-                            Category
-                        </th>
-                        <th class="th-custom py-3">
-                            Assignee
-                        </th>
-                        <th class="th-custom py-3">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    @foreach (var item in Model)
-                    {
-                        if (item.ExpectedEndDate.HasValue)
-                        {
-                            if (item.ExpectedEndDate.Value <= DateOnly.FromDateTime(DateTime.Now.Date))
-                            {
-                                <tr class="table-danger">
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TaskName)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.ProjectName)
-                                    </td>
-                                    <td>
-                                        @Html.Raw(item.CreatedDate.ToShortDateString())
-                                    </td>
-                                    <td>
 
-                                        @Html.Raw(item.UpdatedDate?.ToShortDateString())
-                                    </td>
-                                    <td>
-                                        @Html.Raw(item.EndDate?.ToShortDateString())
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.ExpectedEndDate)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Priority)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TaskCategoryName)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.AppointeeName)
-                                    </td>
-                                    <td>
-                                        <div class="btn-group w-100">
-                                            <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">View</a>
-                                            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                                            @if (item.CanDelete)
-                                            {
-                                                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                                            }
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                            else
+@if (Model.Count() == 0)
+{
+    <div class="text-center py-4">
+        <i class="bi bi-list-task fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No tasks found</h5>
+        <p class="text-muted">You haven't been assigned any tasks yet.</p>
+        <a class="btn btn-custom" asp-action="Index" asp-controller="Projects" asp-route-from="Tasks">
+            <i class="bi bi-plus-circle"></i> Create Your First Task
+        </a>
+        <a class="btn btn-custom2" asp-action="Index" asp-controller="Projects">
+            <i class="bi bi-folder"></i> View Projects
+        </a>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="data_table">
+                <table id="entityTable" class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-list-task"></i> Task
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-folder"></i> Project
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-calendar-plus"></i> Created
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-calendar-check"></i> Updated
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-calendar-x"></i> Ended
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-calendar-event"></i> ECD
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-exclamation-triangle"></i> Priority
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-tags"></i> Category
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-person"></i> Assignee
+                            </th>
+                            <th class="th-custom py-3">
+                                <i class="bi bi-gear"></i> Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        @foreach (var item in Model)
+                        {
+                            if (item.ExpectedEndDate.HasValue)
                             {
-                                <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TaskName)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.ProjectName)
-                                    </td>
-                                    <td>
-                                        @Html.Raw(item.CreatedDate.ToShortDateString())
-                                    </td>
-                                    <td>
-                                        @try
-                                        {
-                                            @Html.Raw(item.UpdatedDate?.ToShortDateString())
-                                        }
-                                        catch
-                                        {
-                                            @Html.Raw("")
-                                        }
-                                    </td>
-                                    <td>
-                                        @try
-                                        {
-                                            @Html.Raw(item.EndDate?.ToShortDateString())
-                                        }
-                                        catch
-                                        {
-                                            @Html.Raw("")
-                                        }
-                                    </td>
-                                    <td>
-                                        @try
-                                        {
-                                            @Html.Raw(item.ExpectedEndDate?.ToShortDateString())
-                                        }
-                                        catch
-                                        {
-                                            @Html.Raw("")
-                                        }
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Priority)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TaskCategoryName)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.AppointeeName)
-                                    </td>
-                                    <td>
-                                        <div class="btn-group w-100">
-                                            <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">View</a>
-                                            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                                            @if (item.CanDelete)
+                                if (item.ExpectedEndDate.Value <= DateOnly.FromDateTime(DateTime.Now.Date))
+                                {
+                                    <tr class="table-danger">
+                                        <td>
+                                            <i class="bi bi-list-task text-danger me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.TaskName)
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-folder text-primary me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.ProjectName)
+                                        </td>
+                                        <td data-order="@item.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">
+                                            <i class="bi bi-calendar-plus text-success me-2"></i>
+                                            @Html.Raw(item.CreatedDate.ToShortDateString())
+                                        </td>
+                                        <td data-order="@(item.UpdatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")">
+                                            @if (item.UpdatedDate.HasValue)
                                             {
-                                                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                                <i class="bi bi-calendar-check text-info me-2"></i>
+                                                @Html.Raw(item.UpdatedDate.Value.ToShortDateString())
                                             }
-                                        </div>
-                                    </td>
-                                </tr>
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td data-order="@(item.EndDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")">
+                                            @if (item.EndDate.HasValue)
+                                            {
+                                                <i class="bi bi-calendar-x text-warning me-2"></i>
+                                                @Html.Raw(item.EndDate.Value.ToShortDateString())
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                            }
+                                        </td>
+                                        <td data-order="@(item.ExpectedEndDate?.ToString("yyyy-MM-dd") ?? "")">
+                                            <i class="bi bi-calendar-event text-danger me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.ExpectedEndDate)
+                                        </td>
+                                        <td data-order="@((int)item.Priority)">
+                                            <span class="badge bg-@(item.Priority == ProjectTask.TaskPriority.Low ? "success" : item.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                @Html.DisplayFor(modelItem => item.Priority)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-tags text-secondary me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.TaskCategoryName)
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-person text-info me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.AppointeeName)
+                                        </td>
+                                        <td>
+                                            <div class="btn-group w-100">
+                                                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </a>
+                                                @if (item.CanDelete)
+                                                {
+                                                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">
+                                                        <i class="bi bi-trash"></i> Delete
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-list-task text-primary me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.TaskName)
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-folder text-primary me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.ProjectName)
+                                        </td>
+                                        <td data-order="@item.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">
+                                            <i class="bi bi-calendar-plus text-success me-2"></i>
+                                            @Html.Raw(item.CreatedDate.ToShortDateString())
+                                        </td>
+                                        <td data-order="@(item.UpdatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")">
+                                            @if (item.UpdatedDate.HasValue)
+                                            {
+                                                <i class="bi bi-calendar-check text-info me-2"></i>
+                                                @Html.Raw(item.UpdatedDate.Value.ToShortDateString())
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td data-order="@(item.EndDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")">
+                                            @if (item.EndDate.HasValue)
+                                            {
+                                                <i class="bi bi-calendar-x text-warning me-2"></i>
+                                                @Html.Raw(item.EndDate.Value.ToShortDateString())
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                            }
+                                        </td>
+                                        <td data-order="@(item.ExpectedEndDate?.ToString("yyyy-MM-dd") ?? "")">
+                                            @if (item.ExpectedEndDate.HasValue)
+                                            {
+                                                <i class="bi bi-calendar-event text-info me-2"></i>
+                                                @Html.Raw(item.ExpectedEndDate.Value.ToShortDateString())
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td data-order="@((int)item.Priority)">
+                                            <span class="badge bg-@(item.Priority == ProjectTask.TaskPriority.Low ? "success" : item.Priority == ProjectTask.TaskPriority.Medium ? "warning" : "danger")">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                @Html.DisplayFor(modelItem => item.Priority)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-tags text-secondary me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.TaskCategoryName)
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-person text-info me-2"></i>
+                                            @Html.DisplayFor(modelItem => item.AppointeeName)
+                                        </td>
+                                        <td>
+                                            <div class="btn-group w-100">
+                                                <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </a>
+                                                @if (item.CanDelete)
+                                                {
+                                                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">
+                                                        <i class="bi bi-trash"></i> Delete
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         }
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
-<div class="mt-3">
-    <a class="btn btn-custom" asp-action="Create">Create New Task</a>
-</div>
+    <div class="mt-3">
+        <a class="btn btn-custom" asp-action="Index" asp-controller="Projects" asp-route-from="Tasks">
+            <i class="bi bi-plus-circle"></i> Create New Task
+        </a>
+    </div>
+}
+
 @section Scripts {
     <script>
-                $(document).ready(function () {
-
-            // Özel tarih sıralama formatı (D.MM.YYYY)
-            jQuery.extend(jQuery.fn.dataTable.ext.type.order, {
-                "date-dmy-pre": function (date) {
-                    if (!date) return 0;
-                    var parts = date.trim().split(".");
-                    if (parts.length !== 3) return 0;
-                    return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
-                },
-                "date-dmy-asc": function (a, b) {
-                    return a - b;
-                },
-                "date-dmy-desc": function (a, b) {
-                    return b - a;
-                }
-            });
-
+        $(document).ready(function () {
             var table = $('#entityTable').DataTable({
-                columnDefs: [
-                    { type: 'date-dmy', targets: [2, 3, 4, 5] } // Created On, Updated On, Ended On, ECD
-                ],
+                "order": [[0, "asc"]], // Sort by task name ascending
+                "pageLength": 10,
                 dom: 'Bfrtip',
-                buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+                buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                "language": {
+                    "search": "Search tasks:",
+                    "lengthMenu": "Show _MENU_ tasks per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ tasks",
+                    "infoEmpty": "Showing 0 to 0 of 0 tasks",
+                    "infoFiltered": "(filtered from _MAX_ total tasks)"
+                }
             });
 
             table.buttons().container()
                 .appendTo('#entityTable_wrapper .col-md-6:eq(0)');
         });
-
     </script>
 }
 

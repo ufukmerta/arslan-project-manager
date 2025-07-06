@@ -1,0 +1,169 @@
+@model TeamInviteListViewModel
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Team Invites: " + @Model.TeamName;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-envelope-open"></i> Team Invites: @Model.TeamName
+                </h4>
+                <div>
+                    <a asp-action="Invite" asp-route-id="@Model.TeamId" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Send New Invite
+                    </a>
+                    <a asp-action="Details" asp-route-id="@Model.TeamId" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Team
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!Model.Invites.Any())
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No invites found</h5>
+                        <p class="text-muted">This team hasn't sent any invitations yet.</p>
+                        <a asp-action="Invite" asp-route-id="@Model.TeamId" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Send First Invite
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="invitesTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-envelope"></i> Email</th>
+                                    <th><i class="bi bi-person"></i> Invited By</th>
+                                    <th><i class="bi bi-info-circle"></i> Status</th>
+                                    <th><i class="bi bi-calendar-plus"></i> Date Sent</th>
+                                    <th><i class="bi bi-calendar-check"></i> Last Updated</th>
+                                    <th><i class="bi bi-chat-text"></i> Notes</th>
+                                    <th><i class="bi bi-gear"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int currentUserId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                                }
+                                @foreach (var invite in Model.Invites)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-envelope text-primary me-2"></i>
+                                            <strong>@invite.InvitedEmail</strong>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-person text-info me-2"></i>
+                                            @invite.InvitedByName
+                                        </td>
+                                        <td>
+                                            <span class="@invite.StatusBadgeClass">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                @invite.StatusDisplay
+                                            </span>
+                                        </td>
+                                        <td data-order="@invite.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")">
+                                            <i class="bi bi-calendar-plus text-success me-2"></i>
+                                            <span class="utc-date" data-utc="@invite.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")" title="@invite.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss") UTC">
+                                                @invite.CreatedDate.ToString("MMM dd, yyyy")
+                                            </span>
+                                        </td>
+                                        <td data-order="@(invite.UpdatedDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "")">
+                                            @if (invite.UpdatedDate.HasValue)
+                                            {
+                                                <i class="bi bi-calendar-check text-warning me-2"></i>
+                                                <span class="utc-date" data-utc="@invite.UpdatedDate.Value.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")" title="@invite.UpdatedDate.Value.ToString("yyyy-MM-dd HH:mm:ss") UTC">
+                                                    @invite.UpdatedDate.Value.ToString("MMM dd, yyyy")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(invite.StatusChangeNote))
+                                            {
+                                                <i class="bi bi-chat-text text-muted me-2"></i>
+                                                <span class="text-muted" title="@invite.StatusChangeNote">
+                                                    @(invite.StatusChangeNote.Length > 30 ? invite.StatusChangeNote.Substring(0, 30) + "..." : invite.StatusChangeNote)
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-dash text-muted me-2"></i>
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (invite.Status == TeamInvite.InviteStatus.Pending && 
+                                                 (currentUserId == Model.ManagerId || currentUserId == invite.InvitedById))
+                                            {
+                                                <form asp-action="CancelInvite" method="post" style="display: inline;">
+                                                    <input type="hidden" name="inviteId" value="@invite.Id" />
+                                                    <input type="hidden" name="teamId" value="@Model.TeamId" />
+                                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                                            onclick="return confirm('Are you sure you want to cancel the invitation for @invite.InvitedEmail?')">
+                                                        <i class="bi bi-x-circle"></i> Cancel
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Convert UTC dates to local time
+            $('.utc-date').each(function() {
+                var utcDate = $(this).data('utc');
+                if (utcDate) {
+                    var localDate = new Date(utcDate);
+                    var formattedDate = localDate.toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    var formattedTime = localDate.toLocaleTimeString(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                    
+                    $(this).text(formattedDate);
+                    $(this).attr('title', formattedDate + ' ' + formattedTime + ' (Local Time)');
+                }
+            });
+
+            $('#invitesTable').DataTable({
+                "order": [[3, "desc"]], // Sort by date sent descending
+                "pageLength": 10,
+                "language": {
+                    "search": "Search invites:",
+                    "lengthMenu": "Show _MENU_ invites per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ invites",
+                    "infoEmpty": "Showing 0 to 0 of 0 invites",
+                    "infoFiltered": "(filtered from _MAX_ total invites)"
+                }
+            });
+        });
+    </script>
+} 

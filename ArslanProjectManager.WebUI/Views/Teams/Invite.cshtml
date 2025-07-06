@@ -1,0 +1,63 @@
+﻿@model TeamInviteViewModel
+
+@{
+    ViewData["Title"] = "Invite to Team: " + @Model.TeamName;
+}
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-plus"></i> Invite to Team: @Model.TeamName
+                </h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Invite" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="TeamId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-people"></i> Team Name
+                        </label>
+                        <input type="text" class="form-control" asp-for="@Model.TeamName" value="@Model.TeamName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-person-badge"></i> Inviter Name
+                        </label>
+                        <input type="text" class="form-control" asp-for="@Model.InviterName" value="@Model.InviterName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="InvitedEmail" class="form-label">
+                            <i class="bi bi-envelope"></i> User Email Address
+                        </label>
+                        <input asp-for="InvitedEmail" class="form-control" placeholder="Enter email address to invite" />
+                        <span asp-validation-for="InvitedEmail" class="text-danger"></span>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> Enter the email address of the person you want to invite to the team.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Send Invitation
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.TeamId" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Team
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

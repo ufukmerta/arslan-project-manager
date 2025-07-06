@@ -1,0 +1,84 @@
+@model IEnumerable<PendingInviteViewModel>
+
+@{
+    ViewData["Title"] = "Team Invites";
+}
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-envelope me-2"></i>Team Invites
+            </h4>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-4">
+                    <i class="bi bi-envelope-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No pending invitations</h5>
+                    <p class="text-muted">You don't have any pending team invitations.</p>
+                    <a class="btn btn-custom" asp-action="Index" asp-controller="Teams">
+                        <i class="bi bi-people"></i> View Teams
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="th-custom py-3">
+                                    <i class="bi bi-people"></i> Team
+                                </th>
+                                <th class="th-custom py-3">
+                                    <i class="bi bi-person-badge"></i> Invited By
+                                </th>
+                                <th class="th-custom py-3">
+                                    <i class="bi bi-calendar-plus"></i> Invited On
+                                </th>
+                                <th class="th-custom py-3">
+                                    <i class="bi bi-gear"></i> Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                            @foreach (var invite in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-people text-primary me-2"></i>
+                                        @invite.TeamName
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-person text-info me-2"></i>
+                                        @invite.InvitedByName
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar-plus text-success me-2"></i>
+                                        @invite.InviteDate.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        <div class="btn-group w-100">
+                                            <form asp-action="AcceptInvite" asp-route-id="@invite.TeamInviteId" method="post" style="display:inline;" class="w-100">
+                                                <button type="submit" class="btn btn-success w-100">
+                                                    <i class="bi bi-check-circle"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form asp-action="RejectInvite" asp-route-id="@invite.TeamInviteId" method="post" style="display:inline;" class="w-100">
+                                                <button type="submit" class="btn btn-danger w-100">
+                                                    <i class="bi bi-x-circle"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div> 

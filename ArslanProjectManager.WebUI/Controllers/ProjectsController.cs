@@ -22,7 +22,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? from)
         {
             var token = await _authStorage.GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token))
@@ -32,6 +32,11 @@ namespace ArslanProjectManager.WebUI.Controllers
                     ReturnUrl = Url.Action("Index", "Projects")
                 };
                 return RedirectToAction("Login", "User", loginViewModel);
+            }
+
+            if (from == "Tasks")
+            {
+                TempData["informationMessage"] = "Choose project to create a task.";
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
@@ -66,6 +71,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var projectViewModel = _mapper.Map<IEnumerable<ProjectViewModel>>(wrapper.Data);
+            
             return View(projectViewModel);
         }
 
@@ -102,6 +108,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                     TempData["ForbiddenFrom"] = "project";
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return NotFound();
+                }
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -124,7 +134,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? id)
         {
             string? token = await _authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
@@ -145,6 +155,11 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     TempData["ForbiddenFrom"] = "project";
                     return StatusCode(StatusCodes.Status403Forbidden);
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    TempData["informationMessage"] = "You need to join or create a team to create a project.";
+                    return RedirectToAction(nameof(Index));
                 }
                 else
                 {
@@ -169,7 +184,11 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             ViewData["TeamId"] = new SelectList(teams, "Id", "TeamName");
-            return View(new CreateProjectViewModel());
+            var createProjectViewModel = new CreateProjectViewModel
+            {
+                TeamId = id ?? 0
+            };
+            return View(createProjectViewModel);
         }
 
         [HttpPost]

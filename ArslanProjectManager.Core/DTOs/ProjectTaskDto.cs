@@ -1,12 +1,6 @@
-﻿using ArslanProjectManager.Core.DTOs;
-using ArslanProjectManager.Core.Models;
-using ArslanProjectManager.Core.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
+﻿using ArslanProjectManager.Core.Models;
 
-namespace ArslanProjectManager.Core;
+namespace ArslanProjectManager.Core.DTOs;
 
 public class ProjectTaskDto : BaseDto
 {
@@ -36,5 +30,5 @@ public class ProjectTaskDto : BaseDto
     public int ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
 
-    public List<TaskCommentDto> Comments { get; set; } = new();
+    public List<TaskCommentDto> Comments { get; set; } = [];
 }

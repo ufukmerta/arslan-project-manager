@@ -2,18 +2,25 @@
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TeamService: GenericService<Team>, ITeamService
+    public class TeamService(IGenericRepository<Team> repository, ITeamUserRepository teamUserRepository, IUnitOfWork unitOfWork) : GenericService<Team>(repository, unitOfWork), ITeamService
     {
-        public TeamService(IGenericRepository<Team> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
+        private readonly ITeamUserRepository _teamUserRepository = teamUserRepository;
+
+        public async Task<TeamUser?> GetTeamUserAsync(int teamId, int userId)
         {
+            return await _teamUserRepository
+                .Where(x => x.TeamId == teamId && x.UserId == userId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<TeamUser> AddTeamUserAsync(TeamUser teamUser)
+        {
+            await _teamUserRepository.AddAsync(teamUser);
+            return teamUser;
         }
     }
 }

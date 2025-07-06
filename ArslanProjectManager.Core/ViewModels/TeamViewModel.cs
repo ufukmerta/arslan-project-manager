@@ -23,11 +23,12 @@ namespace ArslanProjectManager.Core.ViewModels
     public class TeamDetailsViewModel
     {
         public int TeamId { get; set; }
-        public string TeamName { get; set; } = string.Empty;
+        public string TeamName { get; set; } = null!;
         public string? Description { get; set; }
-        public string ManagerName { get; set; } = string.Empty;
-        public List<TeamMemberViewModel> Members { get; set; } = new();
-        public List<ProjectViewModel> Projects { get; set; } = new();
+        public int ManagerId { get; set; }
+        public string ManagerName { get; set; } = null!;
+        public List<TeamMemberViewModel> Members { get; set; } = [];
+        public List<ProjectViewModel> Projects { get; set; } = [];
     }
 
     public class TeamCreateViewModel
@@ -52,30 +53,11 @@ namespace ArslanProjectManager.Core.ViewModels
         public int ManagerId { get; set; }
     }
 
-    public class TeamInviteCreateViewModel
-    {
-        [Required]
-        public int TeamId { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        public string TeamName { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(100)]
-        public string ManagerName { get; set; } = string.Empty;
-
-        [Required]
-        [EmailAddress]
-        [StringLength(50)]
-        public string InviteeEmail { get; set; } = string.Empty;
-    }
-
     public class TeamMemberViewModel
     {
+        public int TeamUserId { get; set; }
         public int UserId { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Surname { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
     }
@@ -99,15 +81,12 @@ namespace ArslanProjectManager.Core.ViewModels
         [StringLength(100)]
         public string InviterName { get; set; } = string.Empty;
         
-        // Invitee information
-        public int? InviteeId { get; set; }
+        // Invitee information       
         
         [Required]
         [EmailAddress]
         [StringLength(50)]
         public string InvitedEmail { get; set; } = string.Empty;
-        
-        public string? InviteeName { get; set; }
         
         [Required]
         public DateTime InviteDate { get; set; }

@@ -12,14 +12,17 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
+using ArslanProjectManager.WebUI.Services;
+using System.Text;
 
 namespace ArslanProjectManager.WebUI.Controllers
 {
-    public class UserController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage) : BaseController
+    public class UserController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage, IConfiguration configuration) : BaseController
     {
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly IMapper _mapper = mapper;
         private readonly IAuthStorage _authStorage = authStorage;
+        private readonly IConfiguration _configuration = configuration;
 
         [HttpGet]
         [Authorize]
@@ -371,6 +374,64 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
             TempData["successMessage"] = "Password changed successfully.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize]
+        public async Task<IActionResult> MyInvites()
+        {
+            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var response = await client.GetAsync("user/my-invites");
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["errorMessage"] = await GetErrorMessageAsync(response);
+                return View(new List<PendingInviteViewModel>());
+            }
+
+            var json = await response.Content.ReadAsStreamAsync();
+            var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<List<PendingInviteDto>>>(json, _jsonSerializerOptions);
+            if (wrapper is null || !wrapper.IsSuccess || wrapper.Data is null)
+            {
+                TempData["errorMessage"] = "An error occurred while fetching team invitations. Please try again later.";
+                return View(new List<PendingInviteViewModel>());
+            }
+
+            var inviteDtos = wrapper.Data;
+            var inviteViewModels = _mapper.Map<List<PendingInviteViewModel>>(inviteDtos);
+            return View(inviteViewModels);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptInvite(int id)
+        {
+            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var response = await client.PostAsync($"user/accept-invite/{id}", null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["errorMessage"] = await GetErrorMessageAsync(response);
+                return RedirectToAction(nameof(MyInvites));
+            }
+
+            TempData["successMessage"] = "You have successfully joined the team!";
+            return RedirectToAction(nameof(MyInvites));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectInvite(int id)
+        {
+            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var response = await client.PostAsync($"user/reject-invite/{id}", null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["errorMessage"] = await GetErrorMessageAsync(response);
+                return RedirectToAction(nameof(MyInvites));
+            }
+
+            TempData["successMessage"] = "Invitation rejected successfully.";
+            return RedirectToAction(nameof(MyInvites));
         }
     }
 }

@@ -8,7 +8,9 @@
     <div class="col-md-6 offset-md-3">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0">Edit Task</h4>
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil-square"></i> Edit Task
+                </h4>
             </div>
             <div class="card-body">
                 <form asp-action="Edit" method="post">
@@ -16,37 +18,49 @@
                     <input type="hidden" asp-for="TaskId" />
 
                     <div class="mb-3">
-                        <label asp-for="TaskName" class="form-label">Task Name</label>
+                        <label asp-for="TaskName" class="form-label">
+                            <i class="bi bi-list-task"></i> Task Name
+                        </label>
                         <input asp-for="TaskName" class="form-control" />
                         <span asp-validation-for="TaskName" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Description" class="form-label">Description</label>
+                        <label asp-for="Description" class="form-label">
+                            <i class="bi bi-chat-text"></i> Description
+                        </label>
                         <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="StartDate" class="form-label">Starting Date</label>
+                        <label asp-for="StartDate" class="form-label">
+                            <i class="bi bi-play-circle"></i> Starting Date
+                        </label>
                         <input asp-for="StartDate" class="form-control" type="date" />
                         <span asp-validation-for="StartDate" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="EndDate" class="form-label">End Date</label>
+                        <label asp-for="EndDate" class="form-label">
+                            <i class="bi bi-calendar-x"></i> End Date
+                        </label>
                         <input asp-for="EndDate" class="form-control" type="date" />
                         <span asp-validation-for="EndDate" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="ExpectedEndDate" class="form-label">Expected End Date</label>
+                        <label asp-for="ExpectedEndDate" class="form-label">
+                            <i class="bi bi-calendar-event"></i> Expected End Date
+                        </label>
                         <input asp-for="ExpectedEndDate" class="form-control" type="date" />
                         <span asp-validation-for="ExpectedEndDate" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Priority" class="form-label">Priority</label>
+                        <label asp-for="Priority" class="form-label">
+                            <i class="bi bi-exclamation-triangle"></i> Priority
+                        </label>
                         <select asp-for="Priority" class="form-select">
                             <option value="1">Low</option>
                             <option value="2">Medium</option>
@@ -56,26 +70,36 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="TaskCategoryId" class="form-label">Task Category</label>
+                        <label asp-for="TaskCategoryId" class="form-label">
+                            <i class="bi bi-tags"></i> Task Category
+                        </label>
                         <select asp-for="TaskCategoryId" class="form-select" asp-items="ViewBag.TaskCategoryId"></select>
                         <span asp-validation-for="TaskCategoryId" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="BoardId" class="form-label">Board Status</label>
+                        <label asp-for="BoardId" class="form-label">
+                            <i class="bi bi-kanban"></i> Board Status
+                        </label>
                         <select asp-for="BoardId" class="form-select" asp-items="ViewBag.BoardId"></select>
                         <span asp-validation-for="BoardId" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="AppointeeId" class="form-label">Assign To</label>
+                        <label asp-for="AppointeeId" class="form-label">
+                            <i class="bi bi-person"></i> Assign To
+                        </label>
                         <select asp-for="AppointeeId" class="form-select" asp-items="ViewBag.AppointeeId"></select>
                         <span asp-validation-for="AppointeeId" class="text-danger"></span>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
                     </div>
                 </form>
             </div>

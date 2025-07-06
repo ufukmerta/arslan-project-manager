@@ -18,15 +18,18 @@
 	<header>
 		@await Html.PartialAsync("_Navbar")
 	</header>
-
-	<div class="container pb-3 ">
+	@{
+		var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+		var action = ViewContext.RouteData.Values["action"]?.ToString();
+		action = string.Concat(action!.Select(x => Char.IsUpper(x) ? " " + x : x.ToString())).Trim();
+		var containerClass = (action == "Index" && controller == "Tasks")
+		? "container-fluid pb-3 px-10"
+		: "container pb-3";
+	}
+	<div class="@containerClass">
 		<main role="main" class="pt-3">
 			<!-- Breadcrumb -->
-			@{
-				var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-				var action = ViewContext.RouteData.Values["action"]?.ToString();
-				action = string.Concat(action!.Select(x => Char.IsUpper(x) ? " " + x : x.ToString())).Trim();
-			}
+			
 			@if (action != "Index2" && controller != "Home")
 			{
 				<nav aria-label="breadcrumb" class="main-breadcrumb">
@@ -73,6 +76,13 @@
 				{
 					<div class="alert alert-danger alert-dismissible fade show" role="alert">
 						@TempData["errorMessage"]
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
+				}
+				@if (TempData["informationMessage"] != null)
+				{
+					<div class="alert alert-info alert-dismissible fade show" role="alert">
+						@TempData["informationMessage"]
 						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 					</div>
 				}
