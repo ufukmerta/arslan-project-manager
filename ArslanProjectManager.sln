@@ -19,6 +19,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArslanProjectManager.API", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArslanProjectManager.WebUI", "ArslanProjectManager.WebUI\ArslanProjectManager.WebUI.csproj", "{51F8F31F-5011-9C5D-E711-55561182A8A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArslanProjectManager.MobileUI", "ArslanProjectManager.MobileUI\ArslanProjectManager.MobileUI.csproj", "{716ACE27-EC0E-418B-8D65-47A00B402855}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AD5F289-4081-43C6-BAA7-91D506D2EF1E} = {2AD5F289-4081-43C6-BAA7-91D506D2EF1E}
+		{3704A3D1-8EF3-43BE-A6FF-8D6FABED92F6} = {3704A3D1-8EF3-43BE-A6FF-8D6FABED92F6}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +51,11 @@ Global
 		{51F8F31F-5011-9C5D-E711-55561182A8A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51F8F31F-5011-9C5D-E711-55561182A8A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51F8F31F-5011-9C5D-E711-55561182A8A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{716ACE27-EC0E-418B-8D65-47A00B402855}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{716ACE27-EC0E-418B-8D65-47A00B402855}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{716ACE27-EC0E-418B-8D65-47A00B402855}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{716ACE27-EC0E-418B-8D65-47A00B402855}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{716ACE27-EC0E-418B-8D65-47A00B402855}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
