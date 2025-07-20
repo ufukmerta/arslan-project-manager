@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"  
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"  
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"  
+             x:Class="ArslanProjectManager.MobileUI.Views.LoginPage"  
+             x:DataType="models:LoginViewModel"  
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+    <ContentPage.Resources>
+        <toolkit:IsStringNotNullOrEmptyConverter x:Key="IsStringNotNullOrEmptyConverter" />
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="30" Spacing="20">
+        <Border Style="{StaticResource CardFrameStyle}">
+            <VerticalStackLayout Spacing="15">
+                <Label Text="&#xf090;" Style="{StaticResource FontAwesomeIconXLarge}" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                <Label Text="Login" Style="{StaticResource AccentLabelStyle}" FontSize="22" HorizontalOptions="Center"/>
+
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Label Grid.Column="0" Text="&#xf0e0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Email" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                </Grid>
+                <Entry Text="{Binding Email}" Placeholder="Enter email"/>
+
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Label Grid.Column="0" Text="&#xf023;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Password" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                </Grid>
+                <Entry Text="{Binding Password}" IsPassword="True" Placeholder="Enter password"/>
+
+                <Button Command="{Binding LoginCommand}"
+                    Text="Login"
+                    FontFamily="Default"
+                    StyleClass="PrimaryButton">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="&#xf090;"
+                             FontFamily="FA"
+                             Size="20"
+                             Color="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
+                              />
+                    </Button.ImageSource>
+                </Button>
+
+                <Button Command="{Binding GoToRegisterCommand}"
+                    Text="Register"
+                    FontFamily="Default"
+                    StyleClass="SecondaryButton">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="&#xf234;"
+                             FontFamily="FA"
+                             Size="20"
+                             Color="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
+                              />
+                    </Button.ImageSource>
+                </Button>
+
+                <Label TextColor="Red"
+                       Text="{Binding ErrorMessage}" 
+                       IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"/>
+            </VerticalStackLayout>
+        </Border>
+    </VerticalStackLayout>
+
+</ContentPage>

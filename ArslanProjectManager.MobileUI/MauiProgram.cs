@@ -1,6 +1,9 @@
 ﻿using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.MobileUI.Services;
+using ArslanProjectManager.MobileUI.Services.UIServices;
+using ArslanProjectManager.MobileUI.ViewModels;
 using ArslanProjectManager.Service.Mappings;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 
 namespace ArslanProjectManager.MobileUI
@@ -13,10 +16,12 @@ namespace ArslanProjectManager.MobileUI
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("Font-Awesome-6-Free-Solid-900.otf", "FA");
                 });
 
             // Services
@@ -43,7 +48,16 @@ namespace ArslanProjectManager.MobileUI
             .AddHttpMessageHandler<AuthenticatedHttpMessageHandler>();
 #endif
 
-            
+            // UI Services
+            builder.Services.AddSingleton<UserService>();
+
+            // ViewModels
+            builder.Services.AddTransient<LoginViewModel>();
+            builder.Services.AddTransient<RegisterViewModel>();
+
+            // Views
+            builder.Services.AddTransient<Views.LoginPage>();
+            builder.Services.AddTransient<Views.RegisterPage>();
 
             return builder.Build();
         }
