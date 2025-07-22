@@ -7,5 +7,6 @@
     Title="ArslanProjectManager.MobileUI">
 
     <ShellContent Route="login" ContentTemplate="{DataTemplate local:LoginPage}" />
+    <ShellContent Route="home" ContentTemplate="{DataTemplate local:HomePage}" />
 
 </Shell>

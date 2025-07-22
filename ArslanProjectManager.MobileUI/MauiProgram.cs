@@ -2,6 +2,7 @@
 using ArslanProjectManager.MobileUI.Services;
 using ArslanProjectManager.MobileUI.Services.UIServices;
 using ArslanProjectManager.MobileUI.ViewModels;
+using ArslanProjectManager.MobileUI.Views;
 using ArslanProjectManager.Service.Mappings;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
@@ -50,14 +51,17 @@ namespace ArslanProjectManager.MobileUI
 
             // UI Services
             builder.Services.AddSingleton<UserService>();
+            builder.Services.AddSingleton<HomeService>();
 
             // ViewModels
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
+            builder.Services.AddTransient<HomeViewModel>();
 
             // Views
-            builder.Services.AddTransient<Views.LoginPage>();
-            builder.Services.AddTransient<Views.RegisterPage>();
+            builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<RegisterPage>();
+            builder.Services.AddTransient<HomePage>();
 
             return builder.Build();
         }

@@ -52,8 +52,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 {
                     var token = response.Data;
                     await _authStorage.SaveTokensAsync(token.AccessToken, token.RefreshToken, token.Expiration, token.RefreshTokenExpiration);
-                    //show display message until implementing home page -> await Shell.Current.GoToAsync("//home");
-                    await Shell.Current.DisplayAlert("Success", "Login successful!", "OK");
+                    await Shell.Current.GoToAsync("//home");
                 }
                 else
                 {
