@@ -31,12 +31,12 @@
                 <Button Command="{Binding LoginCommand}"
                     Text="Login"
                     FontFamily="Default"
-                    StyleClass="PrimaryButton">
+                    Style="{StaticResource PrimaryButton}">
                     <Button.ImageSource>
                         <FontImageSource Glyph="&#xf090;"
                              FontFamily="FA"
                              Size="20"
-                             Color="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
+                             Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}"
                               />
                     </Button.ImageSource>
                 </Button>
@@ -44,12 +44,12 @@
                 <Button Command="{Binding GoToRegisterCommand}"
                     Text="Register"
                     FontFamily="Default"
-                    StyleClass="SecondaryButton">
+                    Style="{StaticResource SecondaryButton}">
                     <Button.ImageSource>
                         <FontImageSource Glyph="&#xf234;"
                              FontFamily="FA"
                              Size="20"
-                             Color="{AppThemeBinding Light=#FFFFFF, Dark=#000000}"
+                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}"
                               />
                     </Button.ImageSource>
                 </Button>
