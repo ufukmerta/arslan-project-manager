@@ -56,11 +56,13 @@ namespace ArslanProjectManager.MobileUI
             // ViewModels
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
+            builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<HomeViewModel>();
 
             // Views
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<RegisterPage>();
+            builder.Services.AddTransient<ProfilePage>();
             builder.Services.AddTransient<HomePage>();
 
             return builder.Build();

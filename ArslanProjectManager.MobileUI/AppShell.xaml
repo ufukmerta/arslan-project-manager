@@ -4,9 +4,18 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:ArslanProjectManager.MobileUI.Views"
+    Shell.FlyoutBehavior="Disabled"
     Title="ArslanProjectManager.MobileUI">
 
+    <TabBar Shell.TabBarIsVisible="True">
+        <Tab Title="Home" Route="HomePage" Icon="home.png">
+            <ShellContent Route="home" ContentTemplate="{DataTemplate local:HomePage}" />
+        </Tab>
+        <Tab Title="Profile" Icon="profile_tab.png">
+            <ShellContent Route="profile" ContentTemplate="{DataTemplate local:ProfilePage}" />
+        </Tab>
+    </TabBar>
+
     <ShellContent Route="login" ContentTemplate="{DataTemplate local:LoginPage}" />
-    <ShellContent Route="home" ContentTemplate="{DataTemplate local:HomePage}" />
 
 </Shell>

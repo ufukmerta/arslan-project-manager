@@ -12,6 +12,7 @@
     <Color x:Key="Accent">#00B4D8</Color>
     <Color x:Key="AccentVariant">#48CAE4</Color>
     <Color x:Key="Magenta">#D600AA</Color>
+    <Color x:Key="FederalBlue">#03045E</Color>
     <Color x:Key="MidnightBlue">#190649</Color>
 
     <Color x:Key="White">#FFFFFF</Color>

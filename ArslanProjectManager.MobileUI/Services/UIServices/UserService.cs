@@ -14,6 +14,19 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
             return client;
         }
 
+        public async Task<CustomResponseDto<UserProfileDto>?> GetProfileAsync()
+        {
+            var client = GetClient();
+            var response = await client.GetAsync("user/profile");
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserProfileDto>>();
+                return errorWrapper ?? new CustomResponseDto<UserProfileDto> { IsSuccess = false, Errors = ["Failed to load profile"] };
+            }
+            var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserProfileDto>>();
+            return wrapper;
+        }
+
         public async Task<CustomResponseDto<TokenDto>?> LoginAsync(UserLoginDto loginDto)
         {
             var client = GetClient();
