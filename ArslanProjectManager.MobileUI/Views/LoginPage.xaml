@@ -11,8 +11,8 @@
     </ContentPage.Resources>
 
     <VerticalStackLayout Padding="30" Spacing="20">
-        <Border Style="{StaticResource CardFrameStyle}">
-            <VerticalStackLayout Spacing="15">
+        <Border Style="{StaticResource CardFrameStyle}" Padding="25">
+            <VerticalStackLayout Spacing="20">
                 <Label Text="&#xf090;" Style="{StaticResource FontAwesomeIconXLarge}" HorizontalOptions="Center" Margin="0,0,0,10"/>
                 <Label Text="Login" Style="{StaticResource AccentLabelStyle}" FontSize="22" HorizontalOptions="Center"/>
 
@@ -30,7 +30,6 @@
 
                 <Button Command="{Binding LoginCommand}"
                     Text="Login"
-                    FontFamily="Default"
                     Style="{StaticResource PrimaryButton}">
                     <Button.ImageSource>
                         <FontImageSource Glyph="&#xf090;"
@@ -43,7 +42,6 @@
 
                 <Button Command="{Binding GoToRegisterCommand}"
                     Text="Register"
-                    FontFamily="Default"
                     Style="{StaticResource SecondaryButton}">
                     <Button.ImageSource>
                         <FontImageSource Glyph="&#xf234;"
@@ -54,7 +52,7 @@
                     </Button.ImageSource>
                 </Button>
 
-                <Label TextColor="Red"
+                <Label TextColor="{StaticResource Danger}"
                        Text="{Binding ErrorMessage}" 
                        IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"/>
             </VerticalStackLayout>

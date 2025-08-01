@@ -12,50 +12,50 @@
         <VerticalStackLayout Padding="20" Spacing="24">
 
             <!-- Summary Cards -->
-            <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,16" ColumnSpacing="4">
+            <Grid ColumnDefinitions="*,*,*" Margin="0,10,0,16" ColumnSpacing="8">
                 <!-- Projects Card -->
                 <Border Grid.Column="0" Style="{StaticResource CardFrameStyle}" Margin="2,0" Padding="18">
-                    <VerticalStackLayout Spacing="10">
+                    <VerticalStackLayout Spacing="12">
                         <Label Text="&#xf542;" Style="{StaticResource FontAwesomeIconLarge}" HorizontalOptions="Center"/>
-                        <Label Text="Projects" Style="{StaticResource AccentLabelStyle}" FontSize="20" HorizontalOptions="Center"/>
+                        <Label Text="Projects" Style="{StaticResource AccentLabelStyle}" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding TotalProjects}" Style="{StaticResource TitleLabelStyle}" FontSize="28" HorizontalOptions="Center"/>
                         <Label Text="Completed:" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13"/>
-                        <Label Text="{Binding CompletedProjects}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13"/>
+                        <Label Text="{Binding CompletedProjects}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13" TextColor="{StaticResource Success}"/>
                         <ProgressBar Progress="{Binding ProjectCompletionRate}" />
                     </VerticalStackLayout>
                 </Border>
                 <!-- Tasks Card -->
                 <Border Grid.Column="1" Style="{StaticResource CardFrameStyle}" Margin="2,0" Padding="18">
-                    <VerticalStackLayout Spacing="10">
+                    <VerticalStackLayout Spacing="12">
                         <Label Text="&#xf0ae;" Style="{StaticResource FontAwesomeIconLarge}" HorizontalOptions="Center"/>
-                        <Label Text="Tasks" Style="{StaticResource AccentLabelStyle}" FontSize="20" HorizontalOptions="Center"/>
+                        <Label Text="Tasks" Style="{StaticResource AccentLabelStyle}" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding TotalTasks}" Style="{StaticResource TitleLabelStyle}" FontSize="28" HorizontalOptions="Center"/>
                         <Label Text="Completed:" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13"/>
-                        <Label Text="{Binding CompletedTasks}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13"/>
+                        <Label Text="{Binding CompletedTasks}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13" TextColor="{StaticResource Success}"/>
                         <ProgressBar Progress="{Binding TaskCompletionRate}" />
                     </VerticalStackLayout>
                 </Border>
                 <!-- Teams Card -->
                 <Border Grid.Column="2" Style="{StaticResource CardFrameStyle}" Margin="2,0" Padding="18">
-                    <VerticalStackLayout Spacing="10">
+                    <VerticalStackLayout Spacing="12">
                         <Label Text="&#xf0c0;" Style="{StaticResource FontAwesomeIconLarge}" HorizontalOptions="Center"/>
-                        <Label Text="Teams" Style="{StaticResource AccentLabelStyle}" FontSize="20" HorizontalOptions="Center"/>
+                        <Label Text="Teams" Style="{StaticResource AccentLabelStyle}" FontSize="18" HorizontalOptions="Center"/>
                         <Label Text="{Binding TotalTeams}" Style="{StaticResource TitleLabelStyle}" FontSize="28" HorizontalOptions="Center"/>
                         <Label Text="Members:" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13"/>
-                        <Label Text="{Binding TotalMembers}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13"/>
+                        <Label Text="{Binding TotalMembers}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="13" TextColor="{StaticResource Success}"/>
                     </VerticalStackLayout>
                 </Border>
             </Grid>
 
             <!-- Recent Tasks -->
-            <Label Text="Recent Updated Tasks" Style="{StaticResource AccentLabelStyle}" FontSize="18" Margin="0,20,0,0"/>
+            <Label Text="Recent Updated Tasks" Style="{StaticResource AccentLabelStyle}" FontSize="18" Margin="0,20,0,10"/>
             <CollectionView ItemsSource="{Binding RecentTasks}" Margin="0,0,0,24">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="core:RecentTaskDto">
-                        <Border Margin="0,0,0,12" Padding="10" Style="{StaticResource CardFrameStyle}">
+                        <Border Margin="0,0,0,12" Padding="15" Style="{StaticResource CardFrameStyle}">
                             <Grid>
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding TaskName}" Style="{StaticResource AccentLabelStyle}" />
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="{Binding TaskName}" Style="{StaticResource TitleLabelStyle}" />
                                     <Label Text="{Binding Description}" Style="{StaticResource BodyLabelStyle}" />
                                     <Label Text="{Binding ProjectName, StringFormat='Project: {0}'}" Style="{StaticResource BodyLabelStyle}" />
                                     <Label Text="{Binding UpdatedDate, StringFormat='Updated: {0:dd.MM.yyyy}'}" Style="{StaticResource BodyLabelStyle}" FontSize="10"/>
@@ -67,14 +67,14 @@
             </CollectionView>
 
             <!-- Recent Projects -->
-            <Label Text="Recent Projects" Style="{StaticResource AccentLabelStyle}" FontSize="18" Margin="0,0,0,0"/>
+            <Label Text="Recent Projects" Style="{StaticResource AccentLabelStyle}" FontSize="18" Margin="0,0,0,10"/>
             <CollectionView ItemsSource="{Binding RecentProjects}" Margin="0,0,0,24">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="core:RecentProjectDto">
-                        <Border Margin="0,0,0,12" Padding="10" Style="{StaticResource CardFrameStyle}">
+                        <Border Margin="0,0,0,12" Padding="15" Style="{StaticResource CardFrameStyle}">
                             <Grid>
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding ProjectName}" Style="{StaticResource AccentLabelStyle}" />
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="{Binding ProjectName}" Style="{StaticResource TitleLabelStyle}" />
                                     <Label Text="{Binding Description}" Style="{StaticResource BodyLabelStyle}" />
                                     <Label Text="{Binding TeamName, StringFormat='Team: {0}'}" Style="{StaticResource BodyLabelStyle}" />
                                     <Label Text="{Binding CreatedDate, StringFormat='Created: {0:dd.MM.yyyy}'}" Style="{StaticResource BodyLabelStyle}" FontSize="10"/>

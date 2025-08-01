@@ -4,18 +4,22 @@
              xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
              x:Class="ArslanProjectManager.MobileUI.Views.ProfilePage"
              x:DataType="models:ProfileViewModel"
-             Title="Profile">
+             Title="Profile"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="15" Padding="15">
+        <VerticalStackLayout Spacing="20" Padding="20">
+            
             <!-- Profile Header -->
-            <Border Stroke="#dee2e6" StrokeThickness="1" Padding="20">
+            <Border Style="{StaticResource CardFrameStyle}" Padding="20" Margin="0,10,0,0">
                 <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*">
                     <Border Grid.RowSpan="2"
                            StrokeShape="Ellipse"
                            HeightRequest="100" 
                            WidthRequest="100"
-                           Padding="0">
+                           Padding="0"
+                           Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                           StrokeThickness="2">
                         <Image Source="{Binding ProfileImage}"
                                Aspect="AspectFill"/>
                     </Border>
@@ -24,44 +28,44 @@
                                         VerticalOptions="Center">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                             <Label Grid.Column="0" Text="&#xf007;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
-                            <Label Grid.Column="1" Text="{Binding FullName}" FontSize="24" FontAttributes="Bold" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding FullName}" Style="{StaticResource TitleLabelStyle}" VerticalOptions="Center"/>
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                             <Label Grid.Column="0" Text="&#xf0e0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
-                            <Label Grid.Column="1" Text="{Binding Email}" TextColor="#6c757d" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding Email}" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                             <Label Grid.Column="0" Text="&#xf0c0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
-                            <Label Grid.Column="1" Text="{Binding Role}" TextColor="#28a745" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding Role}" TextColor="{StaticResource Success}" VerticalOptions="Center"/>
                         </Grid>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                             <Label Grid.Column="0" Text="&#xf133;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
-                            <Label Grid.Column="1" Text="{Binding RegisterDate, StringFormat='Registered: {0}'}" FontSize="12" TextColor="#888" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding RegisterDate, StringFormat='Registered: {0}'}" Style="{StaticResource BodyLabelStyle}" FontSize="12" VerticalOptions="Center"/>
                         </Grid>
                     </VerticalStackLayout>
                 </Grid>
             </Border>
 
             <!-- Statistics -->
-            <Border Stroke="#dee2e6" StrokeThickness="1" Padding="15">
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+            <Border Style="{StaticResource CardFrameStyle}" Padding="20">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
                     <VerticalStackLayout Grid.Column="0">
                         <Label Text="&#xf542;" Style="{StaticResource FontAwesomeIconLarge}" HorizontalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenProjectsCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
-                        <Label Text="Projects" HorizontalOptions="Center" FontAttributes="Bold">
+                        <Label Text="Projects" Style="{StaticResource AccentLabelStyle}" HorizontalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenProjectsCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
-                        <Label Text="{Binding ProjectCount}" HorizontalOptions="Center" FontSize="24" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}">
+                        <Label Text="{Binding ProjectCount}" Style="{StaticResource TitleLabelStyle}" FontSize="28" HorizontalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenProjectsCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
-                        <Label Text="{Binding CompletedProjects, StringFormat='Completed: {0}'}" HorizontalOptions="Center" FontSize="12" TextColor="#28a745"/>
+                        <Label Text="{Binding CompletedProjects, StringFormat='Completed: {0}'}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="12" TextColor="{StaticResource Success}"/>
                     </VerticalStackLayout>
                     <VerticalStackLayout Grid.Column="1">
                         <Label Text="&#xf0ae;" Style="{StaticResource FontAwesomeIconLarge}" HorizontalOptions="Center">
@@ -69,48 +73,44 @@
                                 <TapGestureRecognizer Command="{Binding OpenTasksCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
-                        <Label Text="Tasks" HorizontalOptions="Center" FontAttributes="Bold">
+                        <Label Text="Tasks" Style="{StaticResource AccentLabelStyle}" HorizontalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenTasksCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
-                        <Label Text="{Binding TaskCount}" HorizontalOptions="Center" FontSize="24" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}">
+                        <Label Text="{Binding TaskCount}" Style="{StaticResource TitleLabelStyle}" FontSize="28" HorizontalOptions="Center">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenTasksCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
-                        <Label Text="{Binding CompletedTasks, StringFormat='Completed: {0}'}" HorizontalOptions="Center" FontSize="12" TextColor="#28a745"/>
+                        <Label Text="{Binding CompletedTasks, StringFormat='Completed: {0}'}" Style="{StaticResource BodyLabelStyle}" HorizontalOptions="Center" FontSize="12" TextColor="{StaticResource Success}"/>
                     </VerticalStackLayout>
                 </Grid>
             </Border>
 
-            <!-- Settings Button -->
-            <Grid ColumnSpacing="12" Margin="0,0,0,0">
+            <!-- Settings Buttons -->
+            <Grid ColumnSpacing="15" Margin="0,10,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="0"
-            Command="{Binding EditProfileCommand}"
-            Text="Edit Profile"
-            FontFamily="Default"
-            TextColor="White"
-            BackgroundColor="#6c757d">
+                        Command="{Binding EditProfileCommand}"
+                        Text="Edit Profile"
+                        Style="{StaticResource SecondaryButton}">
                     <Button.ImageSource>
                         <FontImageSource Glyph="&#xf044;"
                              FontFamily="FA"
                              Size="20"
-                             Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
+                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}" />
                     </Button.ImageSource>
                 </Button>
 
                 <Button Grid.Column="1"
-            Command="{Binding OpenInvitationsCommand}"
-            Text="My Invitations"
-            FontFamily="Default"
-            TextColor="White"
-            BackgroundColor="#007bff">
+                        Command="{Binding OpenInvitationsCommand}"
+                        Text="My Invitations"
+                        Style="{StaticResource PrimaryButton}">
                     <Button.ImageSource>
                         <FontImageSource Glyph="&#xf0e0;"
                              FontFamily="FA"
@@ -120,18 +120,16 @@
                 </Button>
             </Grid>
 
-
+            <!-- Logout Button -->
             <Button Command="{Binding LogoutCommand}"
                     Text="Logout"
-                    FontFamily="Default"
-                    TextColor="White"
-                    BackgroundColor="Red"
-                    Margin="0,0,0,10">
+                    Style="{StaticResource DangerButton}"
+                    Margin="0,10,0,10">
                 <Button.ImageSource>
                     <FontImageSource Glyph="&#xf08b;"
-                             FontFamily="FA"
-                             Size="20"
-                             Color="White" />
+                         FontFamily="FA"
+                         Size="20"
+                         Color="White" />
                 </Button.ImageSource>
             </Button>
         </VerticalStackLayout>
