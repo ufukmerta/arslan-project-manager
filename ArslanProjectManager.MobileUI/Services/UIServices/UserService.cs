@@ -1,5 +1,6 @@
 ﻿using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
+using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using System.Net.Http.Json;
 
 namespace ArslanProjectManager.MobileUI.Services.UIServices
@@ -53,6 +54,44 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
             }
             var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserDto>>();
             return wrapper;
+        }
+
+        public async Task<CustomResponseDto<UserUpdateDto>?> GetUpdateProfileAsync()
+        {
+            var client = GetClient();
+            var response = await client.GetAsync("user/update");
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserUpdateDto>>();
+                return errorWrapper ?? new CustomResponseDto<UserUpdateDto> { IsSuccess = false, Errors = ["Failed to retrieve user data."] };
+            }
+            var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserUpdateDto>>();
+            return wrapper;
+        }
+
+        public async Task<CustomResponseDto<NoContentDto>?> UpdateProfileAsync(UserUpdateDto dto)
+        {
+            var client = GetClient();
+            var response = await client.PutAsJsonAsync("user/update", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<NoContentDto>>();
+                return errorWrapper ?? new CustomResponseDto<NoContentDto> { IsSuccess = false, Errors = ["Failed to update profile"] };
+            }
+            return new CustomResponseDto<NoContentDto> { IsSuccess = true};
+        }
+
+        public async Task<CustomResponseDto<NoContentDto>?> ChangePasswordAsync(string currentPassword, string newPassword)
+        {
+            var client = GetClient();
+            var dto = new UserPasswordUpdateDto{ Password = currentPassword, NewPassword = newPassword };
+            var response = await client.PutAsJsonAsync("user/update-password", dto);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<NoContentDto>>();
+                return errorWrapper ?? new CustomResponseDto<NoContentDto> { IsSuccess = false, Errors = ["Failed to change password"] };
+            }
+            return new CustomResponseDto<NoContentDto> { IsSuccess = true};
         }
     }
 }

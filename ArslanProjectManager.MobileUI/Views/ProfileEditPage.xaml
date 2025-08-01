@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             x:Class="ArslanProjectManager.MobileUI.Views.ProfileEditPage"
+             x:DataType="models:ProfileEditViewModel"
+             Title="Edit Profile"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+
+    <ContentPage.Resources>
+        <toolkit:IsStringNotNullOrEmptyConverter x:Key="IsStringNotNullOrEmptyConverter" />
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="30" Spacing="20">
+        <Border Style="{StaticResource CardFrameStyle}" Padding="25">
+            <VerticalStackLayout Spacing="20">
+                <!-- Header with Profile Info -->
+                <Label Text="&#xf007;" Style="{StaticResource FontAwesomeIconXLarge}" HorizontalOptions="Center" Margin="0,0,0,10"/>
+                <Label Text="Edit Profile" Style="{StaticResource AccentLabelStyle}" FontSize="22" HorizontalOptions="Center"/>
+
+                <!-- Profile Summary -->
+                <Border Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" 
+                       StrokeThickness="1" 
+                       Padding="15" 
+                       StrokeShape="RoundRectangle 10">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="15">
+                        <Border Grid.Column="0" 
+                               StrokeShape="Ellipse"
+                               WidthRequest="60" 
+                               HeightRequest="60"
+                               Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                               StrokeThickness="2"
+                               Padding="0">
+                            <Image Source="profile.png" 
+                                   Aspect="AspectFill" 
+                                   HorizontalOptions="Center" 
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                            <Label Text="{Binding Name}" Style="{StaticResource TitleLabelStyle}" />
+                            <Label Text="{Binding Email}" Style="{StaticResource BodyLabelStyle}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Name Field -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Label Grid.Column="0" Text="&#xf007;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Name" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                </Grid>
+                <Entry Text="{Binding Name}" Placeholder="Enter your name" Keyboard="Text" />
+                <Label Text="{Binding NameError}" TextColor="{StaticResource Danger}" FontSize="12" IsVisible="{Binding NameError, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
+
+                <!-- Email Field -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Label Grid.Column="0" Text="&#xf0e0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Email" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                </Grid>
+                <Entry Text="{Binding Email}" Placeholder="Enter your email" Keyboard="Email"/>
+                <Label Text="{Binding EmailError}" TextColor="{StaticResource Danger}" FontSize="12" IsVisible="{Binding EmailError, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
+
+                <!-- Change Password Button -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Label Grid.Column="0" Text="&#xf023;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Password" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                </Grid>
+                <Button Text="Change Password" 
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type models:ProfileEditViewModel}}, Path=NavigateToChangePasswordCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        Margin="0,10,0,0">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="&#xf023;"
+                             FontFamily="FA"
+                             Size="20"
+                             Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}" />
+                    </Button.ImageSource>
+                </Button>
+
+                <!-- Error Message -->
+                <Label TextColor="{StaticResource Danger}" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"/>
+
+                <!-- Action Buttons -->
+                <Grid Margin="0,10,0,0" HorizontalOptions="Fill">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" 
+                            Style="{StaticResource DangerButton}" 
+                            Command="{Binding CancelCommand}" 
+                            Margin="5,0,5,0" 
+                            Text="Cancel">
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="&#xf00d;"
+                                 FontFamily="FA"
+                                 Size="20"
+                                 Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
+                        </Button.ImageSource>
+                    </Button>
+                    <Button Grid.Column="1" 
+                            Style="{StaticResource PrimaryButton}" 
+                            Command="{Binding SaveCommand}" 
+                            Margin="5,0,5,0" 
+                            Text="Save Changes">
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="&#xf0c7;"
+                                 FontFamily="FA"
+                                 Size="20"
+                                 Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
+                        </Button.ImageSource>
+                    </Button>
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </VerticalStackLayout>
+</ContentPage>

@@ -7,6 +7,7 @@
     Shell.FlyoutBehavior="Disabled"
     Title="ArslanProjectManager.MobileUI">
 
+    <ShellContent Route="login" ContentTemplate="{DataTemplate local:LoginPage}" />
     <TabBar Shell.TabBarIsVisible="True">
         <Tab Title="Home" Route="HomePage" Icon="home.png">
             <ShellContent Route="home" ContentTemplate="{DataTemplate local:HomePage}" />
@@ -15,7 +16,5 @@
             <ShellContent Route="profile" ContentTemplate="{DataTemplate local:ProfilePage}" />
         </Tab>
     </TabBar>
-
-    <ShellContent Route="login" ContentTemplate="{DataTemplate local:LoginPage}" />
 
 </Shell>

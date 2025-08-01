@@ -1,5 +1,6 @@
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.MobileUI.Services.UIServices;
+using ArslanProjectManager.MobileUI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -94,7 +95,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         private async void OnEditProfile()
         {
-            // This will be implemented later -> await Shell.Current.GoToAsync("nameof(ProfileEditPage)");
+            await Shell.Current.GoToAsync(nameof(ProfileEditPage));
         }
 
         private async void OnOpenProjects()
