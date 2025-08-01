@@ -15,6 +15,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.API.Controllers
 {
+    /// <summary>
+    /// Manages project-related operations including CRUD operations for projects
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ProjectsController(ProjectManagerDbContext context, IProjectService projectService, ITokenService tokenService, IMapper mapper) : CustomBaseController(tokenService)
@@ -23,6 +26,13 @@ namespace ArslanProjectManager.API.Controllers
         private readonly IProjectService _projectService = projectService;
         private readonly IMapper _mapper = mapper;
 
+        /// <summary>
+        /// Retrieves all projects for the authenticated user
+        /// </summary>
+        /// <returns>List of projects that the user has access to</returns>
+        /// <response code="200">Returns the list of user's projects</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If no projects are found for the user</response>
         [HttpGet()]
         [Authorize]
         public async Task<IActionResult> GetByToken()
@@ -48,6 +58,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<IEnumerable<UserProjectDto>>.Success(projects, 200));
         }
 
+        /// <summary>
+        /// Retrieves detailed information about a specific project
+        /// </summary>
+        /// <param name="id">The unique identifier of the project</param>
+        /// <returns>Detailed project information including tasks and team members</returns>
+        /// <response code="200">Returns the project details</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this project</response>
+        /// <response code="404">If the project is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
@@ -81,6 +100,12 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectDetailsDto>.Success(projectDetailsDto, 200));
         }
 
+        /// <summary>
+        /// Retrieves the form data needed to create a new project
+        /// </summary>
+        /// <returns>Teams that the user can create projects for</returns>
+        /// <response code="200">Returns available teams for project creation</response>
+        /// <response code="401">If the user is not authenticated</response>
         [HttpGet("[action]")]
         [Authorize]
         public async Task<IActionResult> Create()
@@ -109,6 +134,17 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<List<MiniTeamDto>>.Success(userTeamDto, 200));
         }
 
+        /// <summary>
+        /// Creates a new project
+        /// </summary>
+        /// <param name="model">The project creation data</param>
+        /// <returns>The created project's details</returns>
+        /// <response code="201">Returns the created project</response>
+        /// <response code="400">If the model is invalid</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to the team</response>
+        /// <response code="404">If the team is not found</response>
+        /// <response code="500">If the project creation fails</response>
         [HttpPost("[action]")]
         [Authorize]
         public async Task<IActionResult> Create(ProjectCreateDto model)
@@ -157,6 +193,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(createdProjectDto, 201));
         }
 
+        /// <summary>
+        /// Retrieves the form data needed to edit a specific project
+        /// </summary>
+        /// <param name="id">The unique identifier of the project</param>
+        /// <returns>The project data for editing</returns>
+        /// <response code="200">Returns the project data for editing</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this project</response>
+        /// <response code="404">If the project is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
@@ -194,6 +239,16 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectUpdateDto>.Success(projectUpdateDto, 200));
         }
 
+        /// <summary>
+        /// Updates an existing project
+        /// </summary>
+        /// <param name="model">The updated project data</param>
+        /// <returns>The updated project's details</returns>
+        /// <response code="200">Returns the updated project</response>
+        /// <response code="400">If the model is invalid</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this project</response>
+        /// <response code="404">If the project is not found</response>
         [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> Edit(ProjectUpdateDto model)
@@ -238,6 +293,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(updatedProjectDto, 200));
         }
 
+        /// <summary>
+        /// Retrieves the data needed to confirm project deletion
+        /// </summary>
+        /// <param name="id">The unique identifier of the project</param>
+        /// <returns>The project data for deletion confirmation</returns>
+        /// <response code="200">Returns the project data for deletion confirmation</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this project</response>
+        /// <response code="404">If the project is not found</response>
         [Authorize]
         [HttpGet("delete/{id}")]
         public async Task<IActionResult> DeleteConfirm(int id)
@@ -275,6 +339,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectDeleteDto>.Success(projectDeleteDto, 200));
         }
 
+        /// <summary>
+        /// Deletes a specific project
+        /// </summary>
+        /// <param name="id">The unique identifier of the project</param>
+        /// <returns>No content response</returns>
+        /// <response code="204">Project deleted successfully</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this project</response>
+        /// <response code="404">If the project is not found</response>
         [Authorize]
         [HttpDelete("[action]/{id}")]
         public async Task<IActionResult> Delete(int id)

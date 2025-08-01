@@ -14,6 +14,9 @@ using System.Text.RegularExpressions;
 
 namespace ArslanProjectManager.API.Controllers
 {
+    /// <summary>
+    /// Manages user operations including authentication, profile management, and team invitations
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController(IUserService userService, ITokenService tokenService, ITokenHandler tokenHandler, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper) : CustomBaseController(tokenService)
@@ -25,6 +28,13 @@ namespace ArslanProjectManager.API.Controllers
         private readonly ITeamService _teamService = teamService;
         private readonly IMapper _mapper = mapper;
 
+        /// <summary>
+        /// Retrieves the profile information of the authenticated user
+        /// </summary>
+        /// <returns>User profile information</returns>
+        /// <response code="200">Returns the user profile</response>
+        /// <response code="401">If the user is not authenticated or token is expired</response>
+        /// <response code="404">If the user is not found</response>
         [HttpGet("[action]")]
         [Authorize]
         public async Task<IActionResult> Profile()
@@ -50,6 +60,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<UserProfileDto>.Success(userProfileDto, 200));
         }
 
+        /// <summary>
+        /// Retrieves the current user's token information
+        /// </summary>
+        /// <returns>User token information</returns>
+        /// <response code="200">Returns the user token information</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the user is not found</response>
         [Authorize]
         [HttpGet()]
         public async Task<IActionResult> GetByToken()
@@ -70,6 +87,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
+        /// <summary>
+        /// Refreshes the access token using a refresh token
+        /// </summary>
+        /// <param name="dto">The refresh token request</param>
+        /// <returns>New access token</returns>
+        /// <response code="200">Returns the new access token</response>
+        /// <response code="401">If the refresh token is invalid or expired</response>
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
         {
@@ -126,6 +150,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
+        /// <summary>
+        /// Logs in a user and returns an access token
+        /// </summary>
+        /// <param name="userLoginDto">User login credentials</param>
+        /// <returns>Access token and refresh token</returns>
+        /// <response code="200">Returns the access token and refresh token</response>
+        /// <response code="404">If the user credentials are invalid</response>
         [HttpPost("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginDto userLoginDto)
@@ -173,6 +204,11 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
+        /// <summary>
+        /// Logs out the current user by invalidating their access token
+        /// </summary>
+        /// <returns>No content response</returns>
+        /// <response code="204">User logged out successfully</response>
         [HttpPost("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
@@ -197,6 +233,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        /// <summary>
+        /// Registers a new user
+        /// </summary>
+        /// <param name="userDto">User registration details</param>
+        /// <returns>Created user information</returns>
+        /// <response code="201">Returns the created user</response>
+        /// <response code="400">If the email is already in use</response>
         [HttpPost("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(UserCreateDto userDto)
@@ -228,6 +271,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<UserDto>.Success(savedUserDto, 201));
         }
 
+        /// <summary>
+        /// Retrieves the update profile form for the authenticated user
+        /// </summary>
+        /// <returns>User update form</returns>
+        /// <response code="200">Returns the user update form</response>
+        /// <response code="403">If the user is not authenticated</response>
+        /// <response code="404">If the user is not found</response>
         [HttpGet("[action]")]
         [Authorize]
         public async Task<IActionResult> Update()
@@ -250,6 +300,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<UserUpdateDto>.Success(userUpdateDto, 200));
         }
 
+        /// <summary>
+        /// Updates the profile information of the authenticated user
+        /// </summary>
+        /// <param name="userDto">Updated user information</param>
+        /// <returns>No content response</returns>
+        /// <response code="204">User profile updated successfully</response>
+        /// <response code="403">If the user is not authenticated</response>
+        /// <response code="404">If the user is not found</response>
+        /// <response code="409">If the email is already in use by another user</response>
         [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> Update(UserUpdateDto userDto)
@@ -293,6 +352,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        /// <summary>
+        /// Removes the profile picture of the authenticated user
+        /// </summary>
+        /// <returns>No content response</returns>
+        /// <response code="204">Profile picture removed successfully</response>
+        /// <response code="403">If the user is not authenticated</response>
+        /// <response code="404">If the user is not found</response>
         [HttpDelete("remove-picture")]
         [Authorize]
         public async Task<IActionResult> RemovePicture()
@@ -314,6 +380,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        /// <summary>
+        /// Updates the password for the authenticated user
+        /// </summary>
+        /// <param name="userPasswordUpdateDto">New password and current password</param>
+        /// <returns>No content response</returns>
+        /// <response code="204">Password updated successfully</response>
+        /// <response code="400">If new password or current password is empty</response>
+        /// <response code="403">If the user is not authenticated</response>
+        /// <response code="404">If the user is not found</response>
         [HttpPut("update-password")]
         [Authorize]
         public async Task<IActionResult> UpdatePassword(UserPasswordUpdateDto userPasswordUpdateDto)
@@ -348,6 +423,13 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
+        /// <summary>
+        /// Retrieves the list of pending team invitations for the authenticated user
+        /// </summary>
+        /// <returns>List of pending invitations</returns>
+        /// <response code="200">Returns the list of pending invitations</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the user is not found</response>
         [HttpGet("my-invites")]
         [Authorize]
         public async Task<IActionResult> MyInvites()
@@ -376,6 +458,15 @@ namespace ArslanProjectManager.API.Controllers
         }
 
 
+        /// <summary>
+        /// Accepts a pending team invitation
+        /// </summary>
+        /// <param name="id">The ID of the invitation to accept</param>
+        /// <returns>No content response</returns>
+        /// <response code="204">Invitation accepted successfully</response>
+        /// <response code="400">If the invitation is already processed</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the invitation is not found</response>
         [HttpPost("accept-invite/{id}")]
         [Authorize]
         public async Task<IActionResult> AcceptInvite(int id)
@@ -440,6 +531,15 @@ namespace ArslanProjectManager.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Rejects a pending team invitation
+        /// </summary>
+        /// <param name="id">The ID of the invitation to reject</param>
+        /// <returns>No content response</returns>
+        /// <response code="204">Invitation rejected successfully</response>
+        /// <response code="400">If the invitation is already processed</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the invitation is not found</response>
         [HttpPost("reject-invite/{id}")]
         [Authorize]
         public async Task<IActionResult> RejectInvite(int id)

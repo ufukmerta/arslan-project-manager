@@ -14,6 +14,9 @@ using static ArslanProjectManager.Core.Models.TeamInvite;
 
 namespace ArslanProjectManager.API.Controllers
 {
+    /// <summary>
+    /// Manages team operations including team creation, member management, and team invitations
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TeamsController(ProjectManagerDbContext context, ITokenService tokenService, ITeamService teamService, ITeamInviteService teamInviteService, IUserService userService) : CustomBaseController(tokenService)
@@ -23,6 +26,13 @@ namespace ArslanProjectManager.API.Controllers
         private readonly ITeamInviteService _teamInviteService = teamInviteService;
         private readonly IUserService _userService = userService;
 
+        /// <summary>
+        /// Retrieves all teams for the authenticated user (as manager or member)
+        /// </summary>
+        /// <returns>List of teams that the user has access to</returns>
+        /// <response code="200">Returns the list of user's teams</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If no teams are found for the user</response>
         [HttpGet()]
         [Authorize]
         public async Task<IActionResult> GetByToken()
@@ -60,6 +70,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<IEnumerable<TeamDto>>.Success(teams, 200));
         }
 
+        /// <summary>
+        /// Retrieves detailed information about a specific team
+        /// </summary>
+        /// <param name="id">The unique identifier of the team</param>
+        /// <returns>Detailed team information including members and projects</returns>
+        /// <response code="200">Returns the team details</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this team</response>
+        /// <response code="404">If the team is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Team>))]
@@ -122,6 +141,14 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<TeamDetailsDto>.Success(teamDetailsDto, 200));
         }
 
+        /// <summary>
+        /// Creates a new team
+        /// </summary>
+        /// <param name="model">The team creation details</param>
+        /// <returns>The ID of the created team</returns>
+        /// <response code="200">Returns the ID of the created team</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="500">If the team creation fails</response>
         [HttpPost("[action]")]
         [Authorize]
         public async Task<IActionResult> Create(TeamCreateDto model)
@@ -164,6 +191,14 @@ namespace ArslanProjectManager.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves an invitation link for a specific team
+        /// </summary>
+        /// <param name="id">The unique identifier of the team</param>
+        /// <returns>An invitation link</returns>
+        /// <response code="200">Returns the invitation link</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the team is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Invite(int id)
@@ -199,6 +234,16 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<TeamInviteCreateViewDto>.Success(teamInviteCreateViewDto, 200));
         }
 
+        /// <summary>
+        /// Sends an invitation to join a team
+        /// </summary>
+        /// <param name="model">The invitation details</param>
+        /// <returns>Success or failure</returns>
+        /// <response code="201">Invitation sent successfully</response>
+        /// <response code="400">If the invitation already exists or user is already a member</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the team is not found</response>
+        /// <response code="500">If invitation sending fails</response>
         [HttpPost("[action]")]
         [Authorize]
         public async Task<IActionResult> Invite(TeamInviteCreateDto model)
@@ -251,6 +296,14 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(201));
         }
 
+        /// <summary>
+        /// Retrieves all invitations for a specific team
+        /// </summary>
+        /// <param name="id">The unique identifier of the team</param>
+        /// <returns>List of invitations</returns>
+        /// <response code="200">Returns the list of invitations</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the team is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Invites(int id)
@@ -299,6 +352,16 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<IEnumerable<TeamInviteListDto>>.Success(teamInvites, 200));
         }
 
+        /// <summary>
+        /// Cancels an invitation
+        /// </summary>
+        /// <param name="model">The invitation ID to cancel</param>
+        /// <returns>Success or failure</returns>
+        /// <response code="200">Invitation cancelled successfully</response>
+        /// <response code="400">If the invitation ID is invalid</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user is not authorized to cancel the invitation</response>
+        /// <response code="404">If the invitation is not found</response>
         [HttpPost("[action]")]
         [Authorize]
         public async Task<IActionResult> CancelInvite(CancelInviteDto model)

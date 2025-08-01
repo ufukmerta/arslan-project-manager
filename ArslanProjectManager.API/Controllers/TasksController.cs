@@ -15,6 +15,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.API.Controllers
 {
+    /// <summary>
+    /// Manages project task operations including CRUD operations, task assignments, and comments
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController(ProjectManagerDbContext context, IProjectTaskService taskService, ITokenService tokenService,
@@ -27,11 +30,24 @@ namespace ArslanProjectManager.API.Controllers
         private readonly ITaskCommentService _commentService = commentService;
         private readonly IMapper _mapper = mapper;
 
+        /// <summary>
+        /// Board status constants for task management
+        /// </summary>
         public static class BoardStatus
         {
+            /// <summary>
+            /// Task completion status
+            /// </summary>
             public const string Done = "Done";
         }
 
+        /// <summary>
+        /// Retrieves all tasks for the authenticated user (assigned to or created by)
+        /// </summary>
+        /// <returns>List of tasks that the user has access to</returns>
+        /// <response code="200">Returns the list of user's tasks</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If no tasks are found for the user</response>
         [HttpGet()]
         [Authorize]
         public async Task<IActionResult> GetByToken()
@@ -73,6 +89,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<List<ProjectTaskDto>>.Success(tasks, 200));
         }
 
+        /// <summary>
+        /// Retrieves detailed information about a specific task
+        /// </summary>
+        /// <param name="id">The unique identifier of the task</param>
+        /// <returns>Detailed task information including comments and assignments</returns>
+        /// <response code="200">Returns the task details</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="403">If the user doesn't have access to this task</response>
+        /// <response code="404">If the task is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<ProjectTask>))]
@@ -115,6 +140,14 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectTaskDto>.Success(taskDto, 200));
         }
 
+        /// <summary>
+        /// Retrieves the data needed to create a new task for a specific project
+        /// </summary>
+        /// <param name="projectId">The unique identifier of the project</param>
+        /// <returns>Data for creating a new task, including team members, board tags, and task categories</returns>
+        /// <response code="200">Returns the data for creating a new task</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the project is not found</response>
         [HttpGet("[action]/{projectId}")]
         [Authorize]
         public async Task<IActionResult> Create(int projectId)
@@ -174,6 +207,17 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectTaskCreateViewDto>.Success(projectTaskCreateViewDto, 200));
         }
 
+        /// <summary>
+        /// Creates a new task for a specific project
+        /// </summary>
+        /// <param name="model">The data for creating the task</param>
+        /// <returns>The created task's minimal details</returns>
+        /// <response code="201">Returns the created task's minimal details</response>
+        /// <response code="400">If the model is invalid</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the project is not found</response>
+        /// <response code="403">If the user doesn't have access to the project or team</response>
+        /// <response code="500">If task creation fails</response>
         [HttpPost("[action]")]
         [Authorize]
         public async Task<IActionResult> Create(ProjectTaskCreateDto model)
@@ -233,6 +277,17 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<MiniProjectTaskDto>.Success(new MiniProjectTaskDto { Id = createdTask.Id }, 201));
         }
 
+        /// <summary>
+        /// Adds a comment to a specific task
+        /// </summary>
+        /// <param name="model">The data for creating the comment</param>
+        /// <returns>Success response</returns>
+        /// <response code="201">Returns success response</response>
+        /// <response code="400">If the model is invalid</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the task is not found</response>
+        /// <response code="403">If the user doesn't have access to the task's team</response>
+        /// <response code="500">If comment creation fails</response>
         [HttpPost("[action]")]
         [Authorize]
         public async Task<IActionResult> Comment(TaskCommentCreateDto model)
@@ -286,6 +341,14 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(201));
         }
 
+        /// <summary>
+        /// Retrieves the data needed to edit a specific task
+        /// </summary>
+        /// <param name="id">The unique identifier of the task</param>
+        /// <returns>Data for editing the task, including team members, board tags, and task categories</returns>
+        /// <response code="200">Returns the data for editing the task</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the task is not found</response>
         [HttpGet("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Edit(int id)
@@ -354,6 +417,17 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectTaskUpdateDto>.Success(projectTaskUpdateDto, 200));
         }
 
+        /// <summary>
+        /// Updates an existing task
+        /// </summary>
+        /// <param name="model">The updated task data</param>
+        /// <returns>The updated task's minimal details</returns>
+        /// <response code="201">Returns the updated task's minimal details</response>
+        /// <response code="400">If the model is invalid</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the task is not found</response>
+        /// <response code="403">If the user doesn't have access to the task's project or team</response>
+        /// <response code="500">If task update fails</response>
         [HttpPut("[action]")]
         [Authorize]
         public async Task<IActionResult> Edit(ProjectTaskUpdateDto model)
@@ -417,6 +491,15 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<MiniProjectTaskDto>.Success(new MiniProjectTaskDto { Id = model.Id }, 201));
         }
 
+        /// <summary>
+        /// Retrieves the data needed to confirm task deletion
+        /// </summary>
+        /// <param name="id">The unique identifier of the task</param>
+        /// <returns>Task deletion confirmation data</returns>
+        /// <response code="200">Returns the task deletion confirmation data</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the task is not found</response>
+        /// <response code="403">If the user doesn't have access to this task</response>
         [HttpGet("delete/{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteConfirm(int id)
@@ -464,6 +547,16 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<ProjectTaskDeleteDto>.Success(taskDeleteDto, 200));
         }
 
+        /// <summary>
+        /// Deletes a specific task
+        /// </summary>
+        /// <param name="id">The unique identifier of the task</param>
+        /// <returns>Success response</returns>
+        /// <response code="204">Returns success response</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="404">If the task is not found</response>
+        /// <response code="403">If the user doesn't have access to this task</response>
+        /// <response code="500">If task deletion fails</response>
         [HttpDelete("[action]/{id}")]
         [Authorize]
         public async Task<IActionResult> Delete(int id)

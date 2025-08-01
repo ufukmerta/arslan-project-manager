@@ -7,12 +7,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ArslanProjectManager.API.Controllers
 {
+    /// <summary>
+    /// Manages home dashboard operations including user summary and statistics
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class HomeController(IHomeService homeService, ITokenService tokenService) : CustomBaseController(tokenService)
     {
         private readonly IHomeService _homeService = homeService;
 
+        /// <summary>
+        /// Retrieves the home dashboard summary for the authenticated user
+        /// </summary>
+        /// <returns>User's home dashboard summary including recent activities and statistics</returns>
+        /// <response code="200">Returns the home dashboard summary</response>
+        /// <response code="401">If the user is not authenticated</response>
+        /// <response code="500">If there's an error processing the home summary</response>
         [HttpGet("")]
         [Authorize]
         public async Task<IActionResult> IndexAsync()
