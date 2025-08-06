@@ -5,19 +5,11 @@ using System.Net.Http.Json;
 
 namespace ArslanProjectManager.MobileUI.Services.UIServices
 {
-    public class UserService(IHttpClientFactory httpClientFactory)
+    public class UserService(IHttpClientFactory httpClientFactory) : GenericService(httpClientFactory)
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-
-        private HttpClient GetClient()
-        {
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            return client;
-        }
-
         public async Task<CustomResponseDto<UserProfileDto>?> GetProfileAsync()
         {
-            var client = GetClient();
+            var client = base.GetClient();
             var response = await client.GetAsync("user/profile");
             if (!response.IsSuccessStatusCode)
             {
@@ -30,7 +22,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
 
         public async Task<CustomResponseDto<TokenDto>?> LoginAsync(UserLoginDto loginDto)
         {
-            var client = GetClient();
+            var client = base.GetClient();
             client.DefaultRequestHeaders.Add("SkipTokenRefresher", "true");
             var response = await client.PostAsJsonAsync("user/login", loginDto);
             if (!response.IsSuccessStatusCode)
@@ -44,7 +36,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
 
         public async Task<CustomResponseDto<UserDto>?> RegisterAsync(UserCreateDto registerDto)
         {
-            var client = GetClient();
+            var client = base.GetClient();
             client.DefaultRequestHeaders.Add("SkipTokenRefresher", "true");
             var response = await client.PostAsJsonAsync("user/register", registerDto);
             if (!response.IsSuccessStatusCode)
@@ -58,7 +50,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
 
         public async Task<CustomResponseDto<UserUpdateDto>?> GetUpdateProfileAsync()
         {
-            var client = GetClient();
+            var client = base.GetClient();
             var response = await client.GetAsync("user/update");
             if (!response.IsSuccessStatusCode)
             {
@@ -71,7 +63,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
 
         public async Task<CustomResponseDto<NoContentDto>?> UpdateProfileAsync(UserUpdateDto dto)
         {
-            var client = GetClient();
+            var client = base.GetClient();
             var response = await client.PutAsJsonAsync("user/update", dto);
             if (!response.IsSuccessStatusCode)
             {
@@ -83,7 +75,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
 
         public async Task<CustomResponseDto<NoContentDto>?> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            var client = GetClient();
+            var client = base.GetClient();
             var dto = new UserPasswordUpdateDto{ Password = currentPassword, NewPassword = newPassword };
             var response = await client.PutAsJsonAsync("user/update-password", dto);
             if (!response.IsSuccessStatusCode)

@@ -3,13 +3,11 @@ using System.Net.Http.Json;
 
 namespace ArslanProjectManager.MobileUI.Services.UIServices
 {
-    public class HomeService(IHttpClientFactory httpClientFactory)
+    public class HomeService(IHttpClientFactory httpClientFactory) : GenericService(httpClientFactory)
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-
         public async Task<CustomResponseDto<HomeDto>?> GetHomeSummaryAsync()
         {
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = base.GetClient();
             var response = await client.GetAsync("home");
             if (!response.IsSuccessStatusCode)
             {
