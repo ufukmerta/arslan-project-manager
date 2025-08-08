@@ -52,6 +52,8 @@ namespace ArslanProjectManager.MobileUI
             // UI Services
             builder.Services.AddSingleton<UserService>();
             builder.Services.AddSingleton<HomeService>();
+            builder.Services.AddSingleton<ProjectService>();
+            builder.Services.AddSingleton<ProjectTaskService>();
 
             // ViewModels
             builder.Services.AddTransient<LoginViewModel>();
@@ -60,6 +62,9 @@ namespace ArslanProjectManager.MobileUI
             builder.Services.AddTransient<ProfileEditViewModel>();
             builder.Services.AddTransient<ChangePasswordViewModel>();
             builder.Services.AddTransient<HomeViewModel>();
+            builder.Services.AddTransient<ProjectsViewModel>();
+            builder.Services.AddTransient<ProjectTaskViewModel>();
+
 
             // Views
             builder.Services.AddTransient<LoginPage>();
@@ -68,6 +73,8 @@ namespace ArslanProjectManager.MobileUI
             builder.Services.AddTransient<ProfileEditPage>();
             builder.Services.AddTransient<ChangePasswordPage>();
             builder.Services.AddTransient<HomePage>();
+            builder.Services.AddTransient<ProjectsPage>();
+            builder.Services.AddTransient<TasksPage>();
 
             return builder.Build();
         }

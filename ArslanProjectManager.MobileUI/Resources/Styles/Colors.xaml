@@ -61,6 +61,20 @@
     <Color x:Key="TextSecondaryLight">#404040</Color>
     <Color x:Key="TextSecondaryDark">#C8C8C8</Color>
 
+    <Color x:Key="Blue700">#1976D2</Color>
+    <Color x:Key="Cyan400">#26C6DA</Color>
+    <Color x:Key="Cyan700">#0097A7</Color>
+    <Color x:Key="Cyan800">#006064</Color>
+    <Color x:Key="Primary100">#E8E2F3</Color>
+    <Color x:Key="Primary700">#2B0B98</Color>
+    <Color x:Key="Purple700">#7B1FA2</Color>
+    <Color x:Key="Purple400">#AB47BC</Color>
+    <Color x:Key="Green">#4CAF50</Color>
+    <Color x:Key="Green700">#388E3C</Color>
+    <Color x:Key="Green400">#66BB6A</Color>
+    <Color x:Key="Red700">#D32F2F</Color>
+    <Color x:Key="Red400">#EF5350</Color>
+
     <Color x:Key="Danger">#DC3545</Color>
     <Color x:Key="Success">#28A745</Color>
 </ResourceDictionary>

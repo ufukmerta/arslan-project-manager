@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:core="clr-namespace:ArslanProjectManager.Core.DTOs;assembly=ArslanProjectManager.Core"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="ArslanProjectManager.MobileUI.Views.TasksPage"
+             x:DataType="models:ProjectTaskViewModel"
+             Title="Tasks"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:IsNotNullConverter x:Key="IsNotNullConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" 
+              ColumnDefinitions="*,Auto" 
+              Padding="15">
+            <SearchBar Grid.Column="0"
+                      Placeholder="Search tasks..."
+                      HorizontalOptions="Fill"
+                      Text="{Binding SearchText, Mode=TwoWay}"/>
+        </Grid>
+
+        <RefreshView Grid.Row="1">
+            <CollectionView ItemsSource="{Binding Tasks}">
+                <!--SelectionMode="Single"
+                          SelectionChanged="OnTaskSelectionChanged"-->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Start"
+                                       HorizontalOptions="Start">
+                        <Image Source="no_tasks.png"
+                               HeightRequest="150"
+                               Opacity="0.7"/>
+                        <Label Text="No tasks found"
+                               Style="{StaticResource SubtitleLabel}"
+                               Margin="0,10,0,0"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="core:ProjectTaskDto">
+                        <Border Stroke="{AppThemeBinding Light={StaticResource CardBorderLight}, Dark={StaticResource CardBorderDark}}"
+                                StrokeThickness="1.5"
+                                StrokeShape="RoundRectangle 12"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                                Margin="15,7.5">
+                            <VerticalStackLayout Padding="16" Spacing="8">
+                                <HorizontalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="&#xf0ae;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                                        <Label Grid.Column="1" Text="{Binding TaskName, TargetNullValue='-'}" FontSize="17" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan400}}" VerticalOptions="Center"/>
+                                    </Grid>
+                                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Blue700}, Dark={StaticResource Cyan800}}" Padding="8,2" StrokeShape="RoundRectangle 8">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="5">
+                                            <Label Grid.Column="0" Text="&#xf542;" Style="{StaticResource FontAwesomeIconSmall}" TextColor="White" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="{Binding ProjectName, TargetNullValue='-'}" FontSize="13" TextColor="{StaticResource White}" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </HorizontalStackLayout>
+                                <VerticalStackLayout Spacing="4" Margin="0,4,0,0">
+                                    <!-- Row 1: Priority & Category -->
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}" Padding="8,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding Priority, TargetNullValue='-'}" FontSize="13" TextColor="{StaticResource White}"/>
+                                        </Border>
+                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Purple700}, Dark={StaticResource Purple400}}" Padding="8,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding TaskCategoryName, TargetNullValue='-'}" FontSize="13" TextColor="{StaticResource White}"/>
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    <!-- Row 2: Expected End Date & End Date -->
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Green700}, Dark={StaticResource Green400}}" Padding="8,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding ExpectedEndDate, StringFormat='Expected End: {0:dd.MM.yyyy}', TargetNullValue='-'}" FontSize="13" TextColor="{StaticResource White}"/>
+                                        </Border>
+                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Red700}, Dark={StaticResource Red400}}" 
+                                                Padding="8,2" 
+                                                StrokeShape="RoundRectangle 8"
+                                                IsVisible="{Binding EndDate, Converter={StaticResource IsNotNullConverter}}">
+                                            <Label
+                                                Text="{Binding EndDate, StringFormat='End: {0:dd.MM.yyyy}', TargetNullValue=''}"
+                                                FontSize="13"
+                                                TextColor="{StaticResource White}">                                        
+                                            </Label>
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    <!-- Row 3: Assigned By & Assigned To -->
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Primary700}, Dark={StaticResource PrimaryVariant}}" Padding="8,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding AppointerName, StringFormat='By: {0}', TargetNullValue='-'}" FontSize="13" TextColor="{StaticResource White}"/>
+                                        </Border>
+                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Cyan700}, Dark={StaticResource Cyan400}}" Padding="8,2" StrokeShape="RoundRectangle 8">
+                                            <Label Text="{Binding AppointeeName, StringFormat='To: {0}', TargetNullValue='-'}" FontSize="13" TextColor="{StaticResource White}"/>
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage> 

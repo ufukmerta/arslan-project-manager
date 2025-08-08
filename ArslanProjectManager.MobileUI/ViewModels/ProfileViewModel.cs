@@ -100,11 +100,11 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         private async void OnOpenProjects()
         {
-            // This will be implemented later -> await Shell.Current.GoToAsync("//projects");
+            await Shell.Current.GoToAsync("//projects");
         }
         private async void OnOpenTasks()
         {
-            // This will be implemented later -> await Shell.Current.GoToAsync("//tasks");
+            await Shell.Current.GoToAsync("//tasks");
         }
         private async void OnOpenInvitations()
         {
