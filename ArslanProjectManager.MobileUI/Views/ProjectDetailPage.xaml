@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:dto="clr-namespace:ArslanProjectManager.Core.DTOs;assembly=ArslanProjectManager.Core"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="ArslanProjectManager.MobileUI.Views.ProjectDetailPage"
+             x:DataType="models:ProjectDetailViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}"
+             Title="Project Detail">
+    <VerticalStackLayout Padding="20,18,20,8">
+        <ScrollView Orientation="Both">
+            <HorizontalStackLayout Spacing="10" Padding="20,0,40,0" HorizontalOptions="Start" MaximumHeightRequest="600">
+                <!-- To Do -->
+                <Border Stroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan700}}"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 14"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                        Margin="4,0" Padding="14" MinimumWidthRequest="280" MaximumWidthRequest="400"
+                        HorizontalOptions="Center" WidthRequest="340">
+                    <VerticalStackLayout>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xf0ae;" FontFamily="FA" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="To Do" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid RowDefinitions="Auto,Auto">
+                            <CollectionView Grid.Row="0" ItemsSource="{Binding ToDoTasks}"
+                                            SelectionMode="Single" 
+                                            MinimumHeightRequest="1"
+                                            MaximumHeightRequest="475"
+                                            SelectionChanged="OnTaskSelected">
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:MiniProjectTaskDto">
+                                        <Border Stroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan700}}" Padding="10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" StrokeShape="RoundRectangle 8" Margin="0,0,0,8">
+                                            <VerticalStackLayout Spacing="4">
+                                                <Label Text="{Binding TaskName}" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
+                                                <Label Text="{Binding AppointeeName}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"/>
+                                                <Border Padding="6,2" StrokeShape="RoundRectangle 6" BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}" HorizontalOptions="Start">
+                                                    <Label Text="{Binding Priority}" FontSize="12" TextColor="White"/>
+                                                </Border>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Label Text="No tasks yet"
+                                IsVisible="{Binding ToDoTasks.Count, Converter={StaticResource ZeroToBoolConverter}}"
+                                FontSize="14"
+                                TextColor="Gray"
+                                HorizontalOptions="Center"
+                                Margin="0,16,0,0" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+                <!-- In Progress -->
+                <Border Stroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan700}}"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 14"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                        Margin="4,0" Padding="14" MinimumWidthRequest="280" MaximumWidthRequest="400"
+                        HorizontalOptions="Center" WidthRequest="340">
+                    <VerticalStackLayout>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xf021;" FontFamily="FA" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="In Progress" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid RowDefinitions="Auto,Auto">
+                            <CollectionView Grid.Row="0" ItemsSource="{Binding InProgressTasks}" 
+                                            SelectionMode="Single" 
+                                            MinimumHeightRequest="1"
+                                            MaximumHeightRequest="475"
+                                            SelectionChanged="OnTaskSelected">
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:MiniProjectTaskDto">
+                                        <Border Stroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan700}}" Padding="10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" StrokeShape="RoundRectangle 8" Margin="0,0,0,8">
+                                            <VerticalStackLayout Spacing="4">
+                                                <Label Text="{Binding TaskName}" FontSize="15" TextColor="Red"/>
+                                                <Label Text="{Binding AppointeeName}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"/>
+                                                <Border Padding="6,2" StrokeShape="RoundRectangle 6" BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}" HorizontalOptions="Start">
+                                                    <Label Text="{Binding Priority}" FontSize="12" TextColor="White"/>
+                                                </Border>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Label Text="No tasks yet"
+                                IsVisible="{Binding InProgressTasks.Count, Converter={StaticResource ZeroToBoolConverter}}"
+                                FontSize="14"
+                                TextColor="Gray"
+                                HorizontalOptions="Center"
+                                Margin="0,16,0,0" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+                <!-- Done -->
+                <Border Stroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan700}}"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 14"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                        Margin="4,0" Padding="14" MinimumWidthRequest="280" MaximumWidthRequest="400"
+                        HorizontalOptions="Center" WidthRequest="340">
+                    <VerticalStackLayout>
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xf00c;" FontFamily="FA" FontSize="18" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="Done" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid RowDefinitions="Auto,Auto">
+                            <CollectionView Grid.Row="0" ItemsSource="{Binding DoneTasks}" 
+                                            SelectionMode="Single"
+                                            MinimumHeightRequest="1"
+                                            MaximumHeightRequest="475"
+                                            SelectionChanged="OnTaskSelected">
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="dto:MiniProjectTaskDto">
+                                        <Border Stroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Cyan700}}" Padding="10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" StrokeShape="RoundRectangle 8" Margin="0,0,0,8">
+                                            <VerticalStackLayout Spacing="4">
+                                                <Label Text="{Binding TaskName}" FontSize="15" TextColor="Red"/>
+                                                <Label Text="{Binding AppointeeName}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"/>
+                                                <Border Padding="6,2" StrokeShape="RoundRectangle 6" BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}" HorizontalOptions="Start">
+                                                    <Label Text="{Binding Priority}" FontSize="12" TextColor="White"/>
+                                                </Border>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Label Text="No tasks yet"
+                                IsVisible="{Binding DoneTasks.Count, Converter={StaticResource ZeroToBoolConverter}}"
+                                FontSize="14"
+                                TextColor="Gray"
+                                HorizontalOptions="Center"
+                                Margin="0,16,0,0" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </HorizontalStackLayout>
+        </ScrollView>
+    </VerticalStackLayout>
+</ContentPage>

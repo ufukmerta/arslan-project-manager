@@ -25,9 +25,9 @@
         </Grid>
 
         <RefreshView Grid.Row="1">
-            <CollectionView ItemsSource="{Binding Tasks}">
-                <!--SelectionMode="Single"
-                          SelectionChanged="OnTaskSelectionChanged"-->
+            <CollectionView ItemsSource="{Binding Tasks}"
+                SelectionMode="Single"
+                SelectionChanged="OnTaskSelected">
                 <CollectionView.EmptyView>
                     <VerticalStackLayout VerticalOptions="Start"
                                        HorizontalOptions="Start">
@@ -82,7 +82,7 @@
                                             <Label
                                                 Text="{Binding EndDate, StringFormat='End: {0:dd.MM.yyyy}', TargetNullValue=''}"
                                                 FontSize="13"
-                                                TextColor="{StaticResource White}">                                        
+                                                TextColor="{StaticResource White}">
                                             </Label>
                                         </Border>
                                     </HorizontalStackLayout>

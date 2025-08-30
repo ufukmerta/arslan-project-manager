@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using ArslanProjectManager.MobileUI.Services.UIServices;
+using ArslanProjectManager.MobileUI.Views;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
@@ -85,7 +86,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [RelayCommand]
         public async Task ViewProjectAsync(int id)
         {
-            // To be implemented => await Shell.Current.GoToAsync($"{nameof(ProjectDetailPage)}?id={id}");
+            await Shell.Current.GoToAsync($"{nameof(ProjectDetailPage)}?id={id}");
         }
 
         [RelayCommand]

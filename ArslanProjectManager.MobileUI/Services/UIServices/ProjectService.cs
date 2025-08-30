@@ -17,5 +17,18 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
             var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<IEnumerable<UserProjectDto>>>();
             return wrapper;
         }
+
+        public async Task<CustomResponseDto<ProjectDetailsDto>?> GetProjectDetailsAsync(int id)
+        {
+            var client = GetClient();
+            var response = await client.GetAsync($"projects/details/{id}");
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<ProjectDetailsDto>>();
+                return errorWrapper ?? new CustomResponseDto<ProjectDetailsDto> { IsSuccess = false, Errors = ["Failed to load project details"] };
+            }
+            var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<ProjectDetailsDto>>();
+            return wrapper;
+        }
     }
 }

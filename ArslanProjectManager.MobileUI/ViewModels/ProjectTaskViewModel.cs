@@ -1,8 +1,10 @@
 ﻿using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.MobileUI.Services.UIServices;
+using ArslanProjectManager.MobileUI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
@@ -84,9 +86,9 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         }
 
         [RelayCommand]
-        public async Task ViewTaskAsync(int id)
+        public async Task OpenTaskDetailAsync(ProjectTaskDto task)
         {
-            // To be implemented => await Shell.Current.GoToAsync($"{nameof(ProjectTaskDetailPage)}?id={id}");
+            await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={task.Id}");
         }
 
         [RelayCommand]

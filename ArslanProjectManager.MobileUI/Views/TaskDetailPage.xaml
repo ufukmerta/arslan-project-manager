@@ -1,0 +1,86 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:dto="clr-namespace:ArslanProjectManager.Core.DTOs;assembly=ArslanProjectManager.Core"
+             x:Class="ArslanProjectManager.MobileUI.Views.TaskDetailPage"
+             x:DataType="models:TaskDetailViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}" Title="Task Detail">
+    <ContentPage.Resources>
+        <toolkit:IsStringNotNullOrEmptyConverter x:Key="IsStringNotNullOrEmptyConverter" />
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Grid IsVisible="{Binding IsCommentError, Converter={StaticResource InvertedBoolConverter}}">
+                <Label Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"/>
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Label Grid.Column="0" Text="&#xf0ae;" Style="{StaticResource FontAwesomeIconLarge}" VerticalOptions="Center"/>
+                <Label Grid.Column="1" Text="{Binding SelectedTask.TaskName}" Style="{StaticResource AccentLabelStyle}" FontSize="26" VerticalOptions="Center"/>
+            </Grid>
+            <Label Text="{Binding SelectedTask.Description}" Style="{StaticResource BodyLabelStyle}" FontSize="16"/>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Label Grid.Column="0" Text="&#xf542;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                <Label Grid.Column="1" Text="{Binding SelectedTask.ProjectName, StringFormat='Project: {0}'}" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Label Grid.Column="0" Text="&#xf133;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                <Label Grid.Column="1" Text="{Binding SelectedTask.UpdatedDate, StringFormat='Updated: {0:dd.MM.yyyy}'}" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+            </Grid>
+            <HorizontalStackLayout Spacing="8">
+                <Border Padding="8,2" StrokeShape="RoundRectangle 8" Margin="0,0,8,0" BackgroundColor="{Binding SelectedTask.Priority, Converter={StaticResource PriorityToColorConverter}}" VerticalOptions="Center">
+                    <HorizontalStackLayout Spacing="4">
+                        <Label Text="{Binding SelectedTask.Priority, StringFormat='Priority: {0}'}" TextColor="White" FontSize="13" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+                <Border Padding="6,2" Style="{StaticResource CardFrameStyle}">
+                    <Label Text="{Binding SelectedTask.BoardName}" Style="{StaticResource BodyLabelStyle}" />
+                </Border>
+                <Border Padding="6,2" Style="{StaticResource CardFrameStyle}">
+                    <Label Text="{Binding SelectedTask.TaskCategoryName}" Style="{StaticResource BodyLabelStyle}" />
+                </Border>
+            </HorizontalStackLayout>
+            <Border Style="{StaticResource CardFrameStyle}">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto">
+                    <Label Grid.Row="0" Grid.Column="0" Text="Start:" Style="{StaticResource TitleLabelStyle}" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedTask.StartDate, StringFormat='{0:dd.MM.yyyy}'}" Style="{StaticResource BodyLabelStyle}" />
+                    <Label Grid.Row="1" Grid.Column="0" Text="End:" Style="{StaticResource TitleLabelStyle}" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedTask.EndDate, StringFormat='{0:dd.MM.yyyy HH:mm}'}" Style="{StaticResource BodyLabelStyle}" />
+                    <Label Grid.Row="2" Grid.Column="0" Text="Expected:" Style="{StaticResource TitleLabelStyle}" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedTask.ExpectedEndDate, StringFormat='{0:dd.MM.yyyy}'}" Style="{StaticResource BodyLabelStyle}" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource CardFrameStyle}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Assigned To:" Style="{StaticResource TitleLabelStyle}" />
+                    <Label Text="{Binding SelectedTask.AppointeeName}" Style="{StaticResource BodyLabelStyle}" />
+                    <Label Text="Assigned By:" Style="{StaticResource TitleLabelStyle}" />
+                    <Label Text="{Binding SelectedTask.AppointerName}" Style="{StaticResource BodyLabelStyle}" />
+                </VerticalStackLayout>
+            </Border>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Label Grid.Column="0" Text="&#xf075;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                <Label Grid.Column="1" Text="Comments" Style="{StaticResource AccentLabelStyle}" FontSize="20" VerticalOptions="Center"/>
+            </Grid>
+            <Entry Text="{Binding NewComment}" Placeholder="Add a comment..." Style="{StaticResource Entry}" />
+            <Grid IsVisible="{Binding IsCommentError}">
+                <Label TextColor="{StaticResource Danger}" Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}"/>
+            </Grid>
+            <Button Text="Post Comment" Command="{Binding AddCommentCommand}" Style="{StaticResource Button}" IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}" FontFamily=""/>
+            <CollectionView ItemsSource="{Binding Comments}" Margin="0,10,0,0">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dto:TaskCommentDto">
+                        <Border Style="{StaticResource CardFrameStyle}" Margin="0,0,0,10" Padding="10">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{Binding CommenterName}" Style="{StaticResource TitleLabelStyle}" />
+                                <Label Text="{Binding CreatedDate, Converter={StaticResource UtcToLocalTimeConverter}, StringFormat='{0:dd.MM.yyyy HH:mm}'}" Style="{StaticResource BodyLabelStyle}" FontSize="12"/>
+                                <Label Text="{Binding Comment}" Style="{StaticResource BodyLabelStyle}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage> 

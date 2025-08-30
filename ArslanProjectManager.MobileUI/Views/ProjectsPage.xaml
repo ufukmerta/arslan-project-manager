@@ -25,7 +25,7 @@
         </Grid>
         <!-- Projects List -->
         <ScrollView Grid.Row="1">
-            <CollectionView x:Name="ProjectsList" Margin="20,0,20,0" ItemsSource="{Binding Projects}"> <!-- SelectionMode="Single" SelectionChanged="OnProjectSelected" -->
+            <CollectionView x:Name="ProjectsList" Margin="20,0,20,0" ItemsSource="{Binding Projects}" SelectionMode="Single" SelectionChanged="OnProjectSelected">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="16"/>
                 </CollectionView.ItemsLayout>

@@ -11,6 +11,8 @@ namespace ArslanProjectManager.MobileUI
             Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
             Routing.RegisterRoute(nameof(ProfileEditPage), typeof(ProfileEditPage));
             Routing.RegisterRoute(nameof(ChangePasswordPage), typeof(ChangePasswordPage));
+            Routing.RegisterRoute(nameof(ProjectDetailPage), typeof(ProjectDetailPage));
+            Routing.RegisterRoute(nameof(TaskDetailPage), typeof(TaskDetailPage));
         }
     }
 }

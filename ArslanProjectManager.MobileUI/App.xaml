@@ -11,6 +11,8 @@
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:PriorityToColorConverter x:Key="PriorityToColorConverter" />
+            <conv:UtcToLocalTimeConverter x:Key="UtcToLocalTimeConverter" />
+            <conv:ZeroToBoolConverter x:Key="ZeroToBoolConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
