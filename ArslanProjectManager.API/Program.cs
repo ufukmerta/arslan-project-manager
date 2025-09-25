@@ -105,11 +105,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1");
-    });
+        options.RoutePrefix = "api-docs";
 
+    });
     app.UseReDoc(options =>
     {
         options.SpecUrl = "/openapi/v1.json";
+        options.RoutePrefix = "api-docs/redoc";
     });
 
     app.MapScalarApiReference();

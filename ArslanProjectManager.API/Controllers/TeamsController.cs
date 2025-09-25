@@ -362,7 +362,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user is not authorized to cancel the invitation</response>
         /// <response code="404">If the invitation is not found</response>
-        [HttpPost("[action]")]
+        [HttpPost("cancel-invite")]
         [Authorize]
         public async Task<IActionResult> CancelInvite(CancelInviteDto model)
         {

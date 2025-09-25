@@ -15,7 +15,17 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "api-docs",
+      "applicationUrl": "https://localhost:7069",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "https-lan": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "api-docs",
       "applicationUrl": "https://0.0.0.0:7069",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

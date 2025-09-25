@@ -362,7 +362,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var cancelInviteDto = new CancelInviteDto { InviteId = inviteId };
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.PostAsJsonAsync("teams/cancelinvite", cancelInviteDto);
+            var response = await client.PostAsJsonAsync("teams/cancel-invite", cancelInviteDto);
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessage = await GetErrorMessageAsync(response);
