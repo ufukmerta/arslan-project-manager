@@ -7,9 +7,9 @@ using ArslanProjectManager.Core.Constants;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class RegisterViewModel(UserService userService) : ObservableValidator
+    public partial class RegisterViewModel(AuthService authService) : ObservableValidator
     {
-        private readonly UserService _userService = userService;
+        private readonly AuthService _authService = authService;
         
         [ObservableProperty]
         [Required]
@@ -127,7 +127,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             try
             {
                 var registerDto = new UserCreateDto { Name = Name, Email = Email, Password = Password };
-                var response = await _userService.RegisterAsync(registerDto);
+                var response = await _authService.RegisterAsync(registerDto);
                 if (response != null && response.IsSuccess)
                 {
                     await Shell.Current.DisplayAlert("Success", $"Account Created!", "OK");

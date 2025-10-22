@@ -1,16 +1,14 @@
 ﻿using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
-using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
-using ArslanProjectManager.Core.Constants;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text.RegularExpressions;
 
 namespace ArslanProjectManager.API.Controllers
 {
@@ -19,11 +17,9 @@ namespace ArslanProjectManager.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService, ITokenService tokenService, ITokenHandler tokenHandler, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper) : CustomBaseController(tokenService)
+    public class UserController(IUserService userService, ITokenService tokenService, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper) : CustomBaseController(tokenService)
     {
         private readonly IUserService _userService = userService;
-        private readonly ITokenService _tokenService = tokenService;
-        private readonly ITokenHandler _tokenHandler = tokenHandler;
         private readonly ITeamInviteService _teamInviteService = teamInviteService;
         private readonly ITeamService _teamService = teamService;
         private readonly IMapper _mapper = mapper;
@@ -63,7 +59,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <summary>
         /// Retrieves the current user's token information
         /// </summary>
-        /// <returns>User token information</returns>
+        /// <returns>User token information including access token and refresh token details</returns>
         /// <response code="200">Returns the user token information</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the user is not found</response>
@@ -87,200 +83,18 @@ namespace ArslanProjectManager.API.Controllers
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
-        /// <summary>
-        /// Refreshes the access token using a refresh token
-        /// </summary>
-        /// <param name="dto">The refresh token request</param>
-        /// <returns>New access token</returns>
-        /// <response code="200">Returns the new access token</response>
-        /// <response code="401">If the refresh token is invalid or expired</response>
-        [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
-        {
-            var token = await _tokenService.GetValidTokenByRefreshTokenAsync(dto.RefreshToken);
-            if (token is null || !token.IsActive)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenMissing));
-            }
 
-            if (token.RefreshTokenExpiration < DateTime.UtcNow)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenExpired));
-            }
-
-            var newToken = _tokenHandler.CreateToken(token.User, []);
-            if (newToken is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.TokenGenerationFailed));
-            }
-
-            // Update the new token with the existing token's refresh token and expiration
-            // to allow user to not login more than refresh token's expiration time. Maximum 7 days authorization.
-            newToken.RefreshToken = token.RefreshToken;
-            newToken.RefreshTokenExpiration = token.RefreshTokenExpiration;
-
-            var registeredToken = await _tokenService.AddAsync(newToken);
-
-            token.IsActive = false;
-            _tokenService.ChangeStatus(token);
-
-            var accessCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = newToken.Expiration,
-                Path = "/"
-            };
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Append("AccessToken", newToken.AccessToken, accessCookieOptions);
-
-            var refreshCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = newToken.RefreshTokenExpiration,
-                Path = "/"
-            };
-            Response.Cookies.Delete("RefreshToken");
-            Response.Cookies.Append("RefreshToken", newToken.RefreshToken, refreshCookieOptions);
-
-            var tokenDto = _mapper.Map<TokenDto>(registeredToken);
-            return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
-        }
 
         /// <summary>
-        /// Logs in a user and returns an access token
+        /// Retrieves the edit profile form metadata for the authenticated user
         /// </summary>
-        /// <param name="userLoginDto">User login credentials</param>
-        /// <returns>Access token and refresh token</returns>
-        /// <response code="200">Returns the access token and refresh token</response>
-        /// <response code="404">If the user credentials are invalid</response>
-        [HttpPost("[action]")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Login(UserLoginDto userLoginDto)
-        {
-            var token = await _userService.Login(userLoginDto);
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InvalidCredentials));
-            }
-
-            var handler = new JwtSecurityTokenHandler();
-            if (!handler.CanReadToken(token.AccessToken))
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.TokenGenerationFailed));
-            }
-
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Delete("RefreshToken");
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = token.Expiration,
-                Path = "/",
-                Domain = null
-            };
-
-            Response.Cookies.Append("AccessToken", token.AccessToken, cookieOptions);
-
-            var refreshTokenOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = token.RefreshTokenExpiration,
-                Path = "/",
-                Domain = null
-            };
-            Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshTokenOptions);
-
-            Token registeredToken = await _tokenService.AddAsync(token);
-            var tokenDto = _mapper.Map<TokenDto>(registeredToken);
-            return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
-        }
-
-        /// <summary>
-        /// Logs out the current user by invalidating their access token
-        /// </summary>
-        /// <returns>No content response</returns>
-        /// <response code="204">User logged out successfully</response>
-        [HttpPost("[action]")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Logout()
-        {
-            var accessToken = (await GetToken())?.AccessToken ?? Request.Cookies["AccessToken"];
-            // Firstly, clear the access and refresh tokens from cookies before processing the logout. So, error handling will be easier.
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Delete("RefreshToken");
-
-            if (!string.IsNullOrEmpty(accessToken))
-            {
-                var token = await _tokenService
-                    .Where(t => t.AccessToken == accessToken && t.IsActive)
-                    .FirstOrDefaultAsync();
-                if (token is not null)
-                {
-                    token.IsActive = false;
-                    _tokenService.Update(token);
-                }
-            }
-
-            return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
-        }
-
-        /// <summary>
-        /// Registers a new user
-        /// </summary>
-        /// <param name="userDto">User registration details</param>
-        /// <returns>Created user information</returns>
-        /// <response code="201">Returns the created user</response>
-        /// <response code="400">If the email is already in use</response>
-        [HttpPost("[action]")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register(UserCreateDto userDto)
-        {
-            var existingUser = await _userService.AnyAsync(x => x.Email == userDto.Email);
-            if (existingUser)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.EmailAlreadyExists));
-            }
-
-            var user = _mapper.Map<User>(userDto);
-
-            if (userDto.ProfilePicture is not null && userDto.ProfilePicture.Length > 0)
-            {
-                var byteArray = Convert.FromBase64String(userDto.ProfilePicture);
-                user.ProfilePicture = byteArray;
-            }
-
-            var emailValidation = ValidateEmail(userDto.Email);
-            if (emailValidation != null) return emailValidation;
-
-            var passwordValidation = ValidatePassword(userDto.Password);
-            if (passwordValidation != null) return passwordValidation;
-
-            user.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
-
-            var savedUser = await _userService.AddAsync(user);
-            var savedUserDto = _mapper.Map<UserDto>(savedUser);
-            return CreateActionResult(CustomResponseDto<UserDto>.Success(savedUserDto, 201));
-        }
-
-        /// <summary>
-        /// Retrieves the update profile form for the authenticated user
-        /// </summary>
-        /// <returns>User update form</returns>
-        /// <response code="200">Returns the user update form</response>
+        /// <returns>User edit form metadata</returns>
+        /// <response code="200">Returns the user edit form metadata</response>
         /// <response code="403">If the user is not authenticated</response>
         /// <response code="404">If the user is not found</response>
-        [HttpGet("[action]")]
+        [HttpGet("[action]-meta")]
         [Authorize]
-        public async Task<IActionResult> Update()
+        public async Task<IActionResult> Edit()
         {
             var token = await GetToken();
             if (token is null)
@@ -303,15 +117,15 @@ namespace ArslanProjectManager.API.Controllers
         /// <summary>
         /// Updates the profile information of the authenticated user
         /// </summary>
-        /// <param name="userDto">Updated user information</param>
+        /// <param name="userDto">Updated user information including name, email, and profile picture</param>
         /// <returns>No content response</returns>
         /// <response code="204">User profile updated successfully</response>
         /// <response code="403">If the user is not authenticated</response>
         /// <response code="404">If the user is not found</response>
         /// <response code="409">If the email is already in use by another user</response>
-        [HttpPut("[action]")]
+        [HttpPut()]
         [Authorize]
-        public async Task<IActionResult> Update(UserUpdateDto userDto)
+        public async Task<IActionResult> Edit(UserUpdateDto userDto)
         {
             var token = await GetToken();
             if (token is null)
@@ -329,7 +143,7 @@ namespace ArslanProjectManager.API.Controllers
 
             if (!string.IsNullOrEmpty(userDto.Email))
             {
-                var existingEmailUser = await _userService.GetByEmail(userDto.Email);
+                var existingEmailUser = await _userService.GetByEmailAsync(userDto.Email);
                 if (existingEmailUser != null && existingEmailUser.Id != userDto.Id)
                 {
                     return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(409, ErrorMessages.EmailAlreadyExistsForUpdate));
@@ -359,7 +173,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="204">Profile picture removed successfully</response>
         /// <response code="403">If the user is not authenticated</response>
         /// <response code="404">If the user is not found</response>
-        [HttpDelete("remove-picture")]
+        [HttpDelete("picture")]
         [Authorize]
         public async Task<IActionResult> RemovePicture()
         {
@@ -383,15 +197,15 @@ namespace ArslanProjectManager.API.Controllers
         /// <summary>
         /// Updates the password for the authenticated user
         /// </summary>
-        /// <param name="userPasswordUpdateDto">New password and current password</param>
+        /// <param name="userPasswordUpdateDto">Password update data including current password and new password</param>
         /// <returns>No content response</returns>
         /// <response code="204">Password updated successfully</response>
-        /// <response code="400">If new password or current password is empty</response>
+        /// <response code="400">If new password or current password is empty or current password is incorrect</response>
         /// <response code="403">If the user is not authenticated</response>
         /// <response code="404">If the user is not found</response>
-        [HttpPut("update-password")]
+        [HttpPut("password")]
         [Authorize]
-        public async Task<IActionResult> UpdatePassword(UserPasswordUpdateDto userPasswordUpdateDto)
+        public async Task<IActionResult> ChangePassword(UserPasswordUpdateDto userPasswordUpdateDto)
         {
             var token = await GetToken();
             if (token is null)
@@ -430,7 +244,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="200">Returns the list of pending invitations</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the user is not found</response>
-        [HttpGet("my-invites")]
+        [HttpGet("invites")]
         [Authorize]
         public async Task<IActionResult> MyInvites()
         {
@@ -467,7 +281,8 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="400">If the invitation is already processed</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the invitation is not found</response>
-        [HttpPost("accept-invite/{id}")]
+        [HttpPost("invites/{id:int}/accept")]
+        [ServiceFilter(typeof(NotFoundFilter<TeamInvite>))]
         [Authorize]
         public async Task<IActionResult> AcceptInvite(int id)
         {
@@ -488,12 +303,7 @@ namespace ArslanProjectManager.API.Controllers
                 .Include(x => x.Team)
                 .FirstOrDefaultAsync();
 
-            if (invite is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InviteNotFound));
-            }
-
-            if (invite.Status != TeamInvite.InviteStatus.Pending)
+            if (invite!.Status != TeamInvite.InviteStatus.Pending)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InviteAlreadyProcessed));
             }
@@ -511,7 +321,7 @@ namespace ArslanProjectManager.API.Controllers
                 {
                     TeamId = invite.TeamId,
                     UserId = user.Id,
-                    RoleId = 1 // Default member role
+                    RoleId = 2 // Role 1 = Admin, Role 2 = Member
                 };
 
                 await _teamService.AddTeamUserAsync(teamUser);
@@ -540,7 +350,8 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="400">If the invitation is already processed</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the invitation is not found</response>
-        [HttpPost("reject-invite/{id}")]
+        [HttpPost("invites/{id:int}/reject")]
+        [ServiceFilter(typeof(NotFoundFilter<TeamInvite>))]
         [Authorize]
         public async Task<IActionResult> RejectInvite(int id)
         {
@@ -560,12 +371,7 @@ namespace ArslanProjectManager.API.Controllers
                 .Where(x => x.Id == id && x.InvitedEmail == user.Email)
                 .FirstOrDefaultAsync();
 
-            if (invite is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InviteNotFound));
-            }
-
-            if (invite.Status != TeamInvite.InviteStatus.Pending)
+            if (invite!.Status != TeamInvite.InviteStatus.Pending)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InviteAlreadyProcessed));
             }

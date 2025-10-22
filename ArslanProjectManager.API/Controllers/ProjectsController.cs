@@ -67,7 +67,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user doesn't have access to this project</response>
         /// <response code="404">If the project is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Details(int id)
@@ -101,12 +101,12 @@ namespace ArslanProjectManager.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves the form data needed to create a new project
+        /// Retrieves the metadata needed to create a new project
         /// </summary>
         /// <returns>Teams that the user can create projects for</returns>
         /// <response code="200">Returns available teams for project creation</response>
         /// <response code="401">If the user is not authenticated</response>
-        [HttpGet("[action]")]
+        [HttpGet("[action]-meta")]
         [Authorize]
         public async Task<IActionResult> Create()
         {
@@ -145,7 +145,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="403">If the user doesn't have access to the team</response>
         /// <response code="404">If the team is not found</response>
         /// <response code="500">If the project creation fails</response>
-        [HttpPost("[action]")]
+        [HttpPost()]
         [Authorize]
         public async Task<IActionResult> Create(ProjectCreateDto model)
         {
@@ -194,15 +194,15 @@ namespace ArslanProjectManager.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves the form data needed to edit a specific project
+        /// Retrieves the metadata needed to edit a specific project
         /// </summary>
         /// <param name="id">The unique identifier of the project</param>
-        /// <returns>The project data for editing</returns>
-        /// <response code="200">Returns the project data for editing</response>
+        /// <returns>The project metadata for editing</returns>
+        /// <response code="200">Returns the project metadata for editing</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user doesn't have access to this project</response>
         /// <response code="404">If the project is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}/[action]-meta")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Edit(int id)
@@ -249,7 +249,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user doesn't have access to this project</response>
         /// <response code="404">If the project is not found</response>
-        [HttpPut("[action]")]
+        [HttpPut()]
         [Authorize]
         public async Task<IActionResult> Edit(ProjectUpdateDto model)
         {
@@ -303,7 +303,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="403">If the user doesn't have access to this project</response>
         /// <response code="404">If the project is not found</response>
         [Authorize]
-        [HttpGet("delete/{id}")]
+        [HttpGet("{id:int}/delete-confirm")]
         public async Task<IActionResult> DeleteConfirm(int id)
         {
             var tokenValidation = await ValidateToken();
@@ -349,7 +349,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="403">If the user doesn't have access to this project</response>
         /// <response code="404">If the project is not found</response>
         [Authorize]
-        [HttpDelete("[action]/{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var tokenValidation = await ValidateToken();

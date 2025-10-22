@@ -95,7 +95,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync($"projects/details/{id}");
+            var response = await client.GetAsync($"projects/{id}");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -143,7 +143,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync("projects/create");
+            var response = await client.GetAsync("projects/create-meta");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -211,7 +211,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             if (!ModelState.IsValid)
             {
                 var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-                var response = await client.GetAsync("projects/create");
+                var response = await client.GetAsync("projects/create-meta");
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -252,7 +252,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var projectDto = _mapper.Map<ProjectCreateDto>(model);
             var client2 = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response2 = await client2.PostAsJsonAsync("projects/create", projectDto);
+            var response2 = await client2.PostAsJsonAsync("projects", projectDto);
             if (!response2.IsSuccessStatusCode)
             {
                 if (response2.StatusCode == HttpStatusCode.Unauthorized)
@@ -301,7 +301,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync($"projects/edit/{id}");
+            var response = await client.GetAsync($"projects/{id}/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -358,7 +358,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var projectUpdateDto = _mapper.Map<ProjectUpdateDto>(model);
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.PutAsJsonAsync($"projects/edit", projectUpdateDto);
+            var response = await client.PutAsJsonAsync($"projects", projectUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -407,7 +407,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync($"projects/delete/{id}");
+            var response = await client.GetAsync($"projects/{id}/delete-confirm");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -458,7 +458,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.DeleteAsync($"projects/delete/{ProjectId}");
+            var response = await client.DeleteAsync($"projects/{ProjectId}");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)

@@ -50,6 +50,7 @@ namespace ArslanProjectManager.MobileUI
 #endif
 
             // UI Services
+            builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<UserService>();
             builder.Services.AddSingleton<HomeService>();
             builder.Services.AddSingleton<ProjectService>();

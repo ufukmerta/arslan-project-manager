@@ -27,7 +27,7 @@ namespace ArslanProjectManager.WebUI.Services
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             client.DefaultRequestHeaders.Add("SkipTokenRefresher", "true");
-            var response = await client.PostAsJsonAsync("user/refresh-token", new { RefreshToken = refreshToken });
+            var response = await client.PostAsJsonAsync("auth/refresh-token", new { RefreshToken = refreshToken });
 
 
             if (!response.IsSuccessStatusCode)

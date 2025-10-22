@@ -9,9 +9,9 @@ using ArslanProjectManager.Core.Constants;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class LoginViewModel(UserService userService, IAuthStorage authStorage) : ObservableValidator, IQueryAttributable
+    public partial class LoginViewModel(AuthService authService, IAuthStorage authStorage) : ObservableValidator, IQueryAttributable
     {
-        private readonly UserService _userService = userService;
+        private readonly AuthService _authService = authService;
         private readonly IAuthStorage _authStorage = authStorage;
 
         [ObservableProperty]
@@ -47,7 +47,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             try
             {
                 var loginDto = new UserLoginDto { Email = Email, Password = Password };
-                var response = await _userService.LoginAsync(loginDto);
+                var response = await _authService.LoginAsync(loginDto);
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     var token = response.Data;

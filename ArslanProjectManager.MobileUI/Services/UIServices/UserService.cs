@@ -20,38 +20,10 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
             return wrapper;
         }
 
-        public async Task<CustomResponseDto<TokenDto>?> LoginAsync(UserLoginDto loginDto)
-        {
-            var client = base.GetClient();
-            client.DefaultRequestHeaders.Add("SkipTokenRefresher", "true");
-            var response = await client.PostAsJsonAsync("user/login", loginDto);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<TokenDto>>();
-                return errorWrapper ?? new CustomResponseDto<TokenDto> { IsSuccess = false, Errors = ["Login failed"] };
-            }
-            var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<TokenDto>>();
-            return wrapper;
-        }
-
-        public async Task<CustomResponseDto<UserDto>?> RegisterAsync(UserCreateDto registerDto)
-        {
-            var client = base.GetClient();
-            client.DefaultRequestHeaders.Add("SkipTokenRefresher", "true");
-            var response = await client.PostAsJsonAsync("user/register", registerDto);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserDto>>();
-                return errorWrapper ?? new CustomResponseDto<UserDto> { IsSuccess = false, Errors = ["Register failed"] };
-            }
-            var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserDto>>();
-            return wrapper;
-        }
-
         public async Task<CustomResponseDto<UserUpdateDto>?> GetUpdateProfileAsync()
         {
             var client = base.GetClient();
-            var response = await client.GetAsync("user/update");
+            var response = await client.GetAsync("user/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
                 var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<UserUpdateDto>>();
@@ -64,7 +36,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
         public async Task<CustomResponseDto<NoContentDto>?> UpdateProfileAsync(UserUpdateDto dto)
         {
             var client = base.GetClient();
-            var response = await client.PutAsJsonAsync("user/update", dto);
+            var response = await client.PutAsJsonAsync("user", dto);
             if (!response.IsSuccessStatusCode)
             {
                 var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<NoContentDto>>();
@@ -77,7 +49,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
         {
             var client = base.GetClient();
             var dto = new UserPasswordUpdateDto{ Password = currentPassword, NewPassword = newPassword };
-            var response = await client.PutAsJsonAsync("user/update-password", dto);
+            var response = await client.PutAsJsonAsync("user/password", dto);
             if (!response.IsSuccessStatusCode)
             {
                 var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<NoContentDto>>();

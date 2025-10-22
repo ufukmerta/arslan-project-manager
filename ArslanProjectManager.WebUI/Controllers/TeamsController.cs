@@ -89,7 +89,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync($"teams/details/{id}");
+            var response = await client.GetAsync($"teams/{id}");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -147,7 +147,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var teamDto = _mapper.Map<TeamCreateDto>(model);
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.PostAsJsonAsync("teams/create", teamDto);
+            var response = await client.PostAsJsonAsync("teams", teamDto);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -192,7 +192,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync($"teams/invite/{id}");
+            var response = await client.GetAsync($"teams/{id}/invite-meta");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -247,7 +247,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             var teamInviteCreateDto = _mapper.Map<TeamInviteCreateDto>(model);
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
 
-            var response = await client.PostAsJsonAsync("teams/invite", teamInviteCreateDto);
+            var response = await client.PostAsJsonAsync($"teams/{model.TeamId}/invites", teamInviteCreateDto);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -297,7 +297,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync($"teams/invites/{id}");
+            var response = await client.GetAsync($"teams/{id}/invites");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -360,9 +360,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Invites", new { id = teamId });
             }
 
-            var cancelInviteDto = new CancelInviteDto { InviteId = inviteId };
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.PostAsJsonAsync("teams/cancel-invite", cancelInviteDto);
+            var response = await client.DeleteAsync($"invites/{inviteId}");
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessage = await GetErrorMessageAsync(response);

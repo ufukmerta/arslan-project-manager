@@ -108,7 +108,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var loginDto = _mapper.Map<UserLoginDto>(loginViewModel);
-            var response = await client.PostAsJsonAsync("user/login", loginDto);
+            var response = await client.PostAsJsonAsync("auth/login", loginDto);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -195,7 +195,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var registerDto = _mapper.Map<UserCreateDto>(registerViewModel);
-            var response = await client.PostAsJsonAsync("user/register", registerDto);
+            var response = await client.PostAsJsonAsync("auth/register", registerDto);
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
@@ -228,7 +228,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         public async Task<IActionResult> Logout()
         {
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            await client.GetAsync("user/logout");
+            await client.GetAsync("auth/logout");
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("AccessToken");
             Response.Cookies.Delete("RefreshToken");
@@ -247,7 +247,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync("user/update");
+            var response = await client.GetAsync("user/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -278,11 +278,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction(nameof(Login), nameof(User));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var userUpdateDto = _mapper.Map<UserUpdateDto>(editUserViewModel);
+            userUpdateDto.ProfilePicture = string.Empty;
 
             var imgFile = editUserViewModel.ProfilePictureFile;
-            var base64Image = string.Empty;
             string[] allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
             if (imgFile != null && imgFile.Length > 0 && allowedImageTypes.Contains(editUserViewModel.ProfilePictureFile!.ContentType.ToLower()))
             {
@@ -295,11 +294,11 @@ namespace ArslanProjectManager.WebUI.Controllers
                 using var memoryStream = new MemoryStream();
                 await imgFile.CopyToAsync(memoryStream);
                 var imageBytes = memoryStream.ToArray();
-                base64Image = Convert.ToBase64String(imageBytes);
+                userUpdateDto.ProfilePicture = Convert.ToBase64String(imageBytes);
             }
 
-            userUpdateDto.ProfilePicture = base64Image;
-            var response = await client.PutAsJsonAsync("user/update", userUpdateDto);
+            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var response = await client.PutAsJsonAsync("user", userUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -314,7 +313,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> RemovePicture()
         {
-            var token = await _authStorage.GetAccessTokenAsync();
+            var token = await _authStorage.GetAccessTokenAsync();            
             if (string.IsNullOrEmpty(token))
             {
                 TempData["errorMessage"] = "You must be logged in to delete your avatar.";
@@ -322,7 +321,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.DeleteAsync("user/remove-picture");
+            var response = await client.DeleteAsync("user/picture");
             if (!response.IsSuccessStatusCode)
             {
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -366,7 +365,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var changePasswordDto = _mapper.Map<UserPasswordUpdateDto>(changePasswordViewModel);
-            var response = await client.PutAsJsonAsync("user/update-password", changePasswordDto);
+            var response = await client.PutAsJsonAsync("user/password", changePasswordDto);
             if (!response.IsSuccessStatusCode)
             {
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -380,7 +379,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         public async Task<IActionResult> MyInvites()
         {
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.GetAsync("user/my-invites");
+            var response = await client.GetAsync("user/invites");
             if (!response.IsSuccessStatusCode)
             {
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -405,7 +404,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         public async Task<IActionResult> AcceptInvite(int id)
         {
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.PostAsync($"user/accept-invite/{id}", null);
+            var response = await client.PostAsync($"user/invites/{id}/accept", null);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -422,7 +421,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         public async Task<IActionResult> RejectInvite(int id)
         {
             var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var response = await client.PostAsync($"user/reject-invite/{id}", null);
+            var response = await client.PostAsync($"user/invites/{id}/reject", null);
 
             if (!response.IsSuccessStatusCode)
             {

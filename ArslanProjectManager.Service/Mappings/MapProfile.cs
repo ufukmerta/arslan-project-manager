@@ -456,7 +456,6 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.InviterName, opt => opt.MapFrom(src => src.InviterName)).ReverseMap();
 
             CreateMap<TeamInviteViewModel, TeamInviteCreateDto>()
-                .ForMember(dest => dest.TeamId, opt => opt.MapFrom(src => src.TeamId))
                 .ForMember(dest => dest.InvitedEmail, opt => opt.MapFrom(src => src.InvitedEmail)).ReverseMap();
 
             //Teams/Invites

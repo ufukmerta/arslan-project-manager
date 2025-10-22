@@ -7,18 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class UserService(IGenericRepository<User> repository, IUnitOfWork unitOfWork, IUserRepository userRepository, ITokenHandler tokenHandler) : GenericService<User>(repository, unitOfWork), IUserService
+    public class UserService(IGenericRepository<User> repository, IUnitOfWork unitOfWork, IUserRepository userRepository) : GenericService<User>(repository, unitOfWork), IUserService
     {
         private readonly IUserRepository _repository = userRepository;
-        private readonly ITokenHandler _tokenHandler = tokenHandler;
-
-        public async Task<User?> GetByEmail(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             User? user = await _repository.Where(u => u.Email == email)
                 .FirstOrDefaultAsync();
             return user;
         }
-
         public async Task<UserProfileDto?> GetUserProfileAsync(int userId)
         {
             var user = await _repository.GetUserWithTeamsProjectsTasksAsync(userId);
@@ -76,27 +73,6 @@ namespace ArslanProjectManager.Service.Services
             }
 
             return userProfileDto;
-        }
-
-        public async Task<Token?> Login(UserLoginDto userLoginDto)
-        {
-            var user = await GetByEmail(userLoginDto.Email);
-            if (user == null)
-            {
-                return null;
-            }
-
-            var result = BCrypt.Net.BCrypt.Verify(userLoginDto.Password, user.Password);
-            List<Role> roles = [];
-            if (result)
-            {
-                Token token = _tokenHandler.CreateToken(user, roles);
-                return token;
-            }
-            else
-            {
-                return null;
-            }
         }
     }
 }

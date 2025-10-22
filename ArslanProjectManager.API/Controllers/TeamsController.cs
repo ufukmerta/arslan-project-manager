@@ -3,10 +3,8 @@ using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
-using ArslanProjectManager.Core.ViewModels;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Repository;
-using ArslanProjectManager.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -79,7 +77,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user doesn't have access to this team</response>
         /// <response code="404">If the team is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<Team>))]
         public async Task<IActionResult> Details(int id)
@@ -91,13 +89,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var validationResult = ValidateModel(id, x => x > 0, ErrorMessages.InvalidTeamId);
-            if (validationResult != null) return validationResult;
-
-            var doesTeamExist = await _teamService.AnyAsync(x => x.Id == id);
-            if (!doesTeamExist)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
-            }
+            if (validationResult != null) return validationResult;            
 
             var teamAccessResult = await ValidateTeamAccess(id, token.UserId);
             if (teamAccessResult != null) return teamAccessResult;
@@ -149,7 +141,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="200">Returns the ID of the created team</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="500">If the team creation fails</response>
-        [HttpPost("[action]")]
+        [HttpPost()]
         [Authorize]
         public async Task<IActionResult> Create(TeamCreateDto model)
         {
@@ -192,14 +184,15 @@ namespace ArslanProjectManager.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves an invitation link for a specific team
+        /// Retrieves invitation metadata for a specific team
         /// </summary>
         /// <param name="id">The unique identifier of the team</param>
-        /// <returns>An invitation link</returns>
-        /// <response code="200">Returns the invitation link</response>
+        /// <returns>Team invitation metadata including team name and inviter information</returns>
+        /// <response code="200">Returns the invitation metadata</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the team is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}/[action]-meta")]
+        [ServiceFilter(typeof(NotFoundFilter<Team>))]
         [Authorize]
         public async Task<IActionResult> Invite(int id)
         {
@@ -216,17 +209,12 @@ namespace ArslanProjectManager.API.Controllers
                .ThenInclude(x => x.User)
                .FirstOrDefaultAsync(x => x.Id == id);
 
-            if (team is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
-            }
-
             var teamAccessResult = await ValidateTeamAccess(id, token.UserId);
             if (teamAccessResult != null) return teamAccessResult;
 
             var teamInviteCreateViewDto = new TeamInviteCreateViewDto
             {
-                TeamId = team.Id,
+                TeamId = team!.Id,
                 TeamName = team.TeamName,
                 InviterName = user.Name,
             };
@@ -237,6 +225,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <summary>
         /// Sends an invitation to join a team
         /// </summary>
+        /// <param name="id">The unique identifier of the team</param>
         /// <param name="model">The invitation details</param>
         /// <returns>Success or failure</returns>
         /// <response code="201">Invitation sent successfully</response>
@@ -244,45 +233,46 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the team is not found</response>
         /// <response code="500">If invitation sending fails</response>
-        [HttpPost("[action]")]
+        [HttpPost("{id:int}/invites")]
+        [ServiceFilter(typeof(NotFoundFilter<Team>))]
         [Authorize]
-        public async Task<IActionResult> Invite(TeamInviteCreateDto model)
+        public async Task<IActionResult> Invite(int id, TeamInviteCreateDto model)
         {
             Token? token = await GetToken();
             if (token is null)
             {
-                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
+            }
+
+            if (id <= 0)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InvalidTeamId));
             }
 
             var team = await _context.Teams
                 .Include(x => x.TeamUsers)
                 .ThenInclude(x => x.User)
                 .Include(x => x.TeamInvites)
-                .FirstOrDefaultAsync(x => x.Id == model.TeamId);
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-            if (team is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
-            }
-
-            var teamAccessResult = await ValidateTeamAccess(model.TeamId, token.UserId);
+            var teamAccessResult = await ValidateTeamAccess(id, token.UserId);
             if (teamAccessResult != null) return teamAccessResult;
 
-            var invitedUser = await _userService.GetByEmail(model.InvitedEmail);
+            var invitedUser = await _userService.GetByEmailAsync(model.InvitedEmail);
 
-            if (invitedUser != null && team.TeamUsers.Any(x => x.UserId == invitedUser.Id))
+            if (invitedUser != null && team!.TeamUsers.Any(x => x.UserId == invitedUser.Id))
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.UserAlreadyTeamMember));
             }
 
-            if (team.TeamInvites.Any(x => x.InvitedEmail == model.InvitedEmail && x.Status == InviteStatus.Pending))
+            if (team!.TeamInvites.Any(x => x.InvitedEmail == model.InvitedEmail && x.Status == InviteStatus.Pending))
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InvitationAlreadySent));
             }
 
             var teamInvite = new TeamInvite
             {
-                TeamId = model.TeamId,
+                TeamId = id,
                 InvitedEmail = model.InvitedEmail,
                 InvitedById = token.UserId,
                 Status = InviteStatus.Pending,
@@ -304,7 +294,8 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="200">Returns the list of invitations</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the team is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}/[action]")]
+        [ServiceFilter(typeof(NotFoundFilter<Team>))]
         [Authorize]
         public async Task<IActionResult> Invites(int id)
         {
@@ -323,15 +314,10 @@ namespace ArslanProjectManager.API.Controllers
                 .ThenInclude(x => x.InvitedBy)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-            if (team is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
-            }
-
             var teamAccessResult = await ValidateTeamAccess(id, token.UserId);
             if (teamAccessResult != null) return teamAccessResult;
 
-            var teamInvites = team.TeamInvites
+            var teamInvites = team!.TeamInvites
                 .OrderByDescending(x => x.CreatedDate)
                 .Select(x => new TeamInviteListDto
                 {
@@ -355,16 +341,18 @@ namespace ArslanProjectManager.API.Controllers
         /// <summary>
         /// Cancels an invitation
         /// </summary>
-        /// <param name="model">The invitation ID to cancel</param>
+        /// <param name="teamId">The unique identifier of the team</param>
+        /// <param name="id">The invitation ID to cancel</param>
         /// <returns>Success or failure</returns>
         /// <response code="200">Invitation cancelled successfully</response>
         /// <response code="400">If the invitation ID is invalid</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user is not authorized to cancel the invitation</response>
         /// <response code="404">If the invitation is not found</response>
-        [HttpPost("cancel-invite")]
+        [HttpDelete("/api/invites/{id:int}")]
+        [ServiceFilter(typeof(NotFoundFilter<TeamInvite>))]
         [Authorize]
-        public async Task<IActionResult> CancelInvite(CancelInviteDto model)
+        public async Task<IActionResult> CancelInvite(int id, int teamId)
         {
             Token? token = await GetToken();
             if (token is null)
@@ -372,26 +360,21 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
             }
 
-            if (model.InviteId <= 0)
+            if (id <= 0)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InvalidInviteId));
             }
 
             var teamInvite = await _context.TeamInvites
                 .Include(x => x.Team)
-                .FirstOrDefaultAsync(x => x.Id == model.InviteId);
+                .FirstOrDefaultAsync(x => x.Id == id && x.TeamId ==teamId);
 
-            if (teamInvite is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InvitationNotFound));
-            }
-
-            if (teamInvite.Status != InviteStatus.Pending)
+            if (teamInvite!.Status != InviteStatus.Pending)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.OnlyPendingInvitationsCanBeCanceled));
             }
-            
-            var isAuthorized = teamInvite.Team.ManagerId == token.UserId || 
+
+            var isAuthorized = teamInvite.Team.ManagerId == token.UserId ||
                               teamInvite.InvitedById == token.UserId;
 
             if (!isAuthorized)

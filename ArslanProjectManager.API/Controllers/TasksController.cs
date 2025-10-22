@@ -98,7 +98,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="403">If the user doesn't have access to this task</response>
         /// <response code="404">If the task is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}")]
         [Authorize]
         [ServiceFilter(typeof(NotFoundFilter<ProjectTask>))]
         public async Task<IActionResult> Details(int id)
@@ -141,14 +141,14 @@ namespace ArslanProjectManager.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves the data needed to create a new task for a specific project
+        /// Retrieves the metadata needed to create a new task for a specific project
         /// </summary>
         /// <param name="projectId">The unique identifier of the project</param>
-        /// <returns>Data for creating a new task, including team members, board tags, and task categories</returns>
-        /// <response code="200">Returns the data for creating a new task</response>
+        /// <returns>Task creation metadata including team members, board tags, and task categories</returns>
+        /// <response code="200">Returns the task creation metadata</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the project is not found</response>
-        [HttpGet("[action]/{projectId}")]
+        [HttpGet("{projectId}/[action]-meta")]
         [Authorize]
         public async Task<IActionResult> Create(int projectId)
         {
@@ -218,7 +218,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="404">If the project is not found</response>
         /// <response code="403">If the user doesn't have access to the project or team</response>
         /// <response code="500">If task creation fails</response>
-        [HttpPost("[action]")]
+        [HttpPost()]
         [Authorize]
         public async Task<IActionResult> Create(ProjectTaskCreateDto model)
         {
@@ -342,14 +342,14 @@ namespace ArslanProjectManager.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves the data needed to edit a specific task
+        /// Retrieves the metadata needed to edit a specific task
         /// </summary>
         /// <param name="id">The unique identifier of the task</param>
-        /// <returns>Data for editing the task, including team members, board tags, and task categories</returns>
-        /// <response code="200">Returns the data for editing the task</response>
+        /// <returns>Task edit metadata including team members, board tags, and task categories</returns>
+        /// <response code="200">Returns the task edit metadata</response>
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the task is not found</response>
-        [HttpGet("[action]/{id}")]
+        [HttpGet("{id:int}/[action]-meta")]
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
@@ -428,7 +428,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="404">If the task is not found</response>
         /// <response code="403">If the user doesn't have access to the task's project or team</response>
         /// <response code="500">If task update fails</response>
-        [HttpPut("[action]")]
+        [HttpPut()]
         [Authorize]
         public async Task<IActionResult> Edit(ProjectTaskUpdateDto model)
         {
@@ -500,7 +500,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="401">If the user is not authenticated</response>
         /// <response code="404">If the task is not found</response>
         /// <response code="403">If the user doesn't have access to this task</response>
-        [HttpGet("delete/{id}")]
+        [HttpGet("{id:int}/delete-confirm")]
         [Authorize]
         public async Task<IActionResult> DeleteConfirm(int id)
         {
@@ -557,7 +557,7 @@ namespace ArslanProjectManager.API.Controllers
         /// <response code="404">If the task is not found</response>
         /// <response code="403">If the user doesn't have access to this task</response>
         /// <response code="500">If task deletion fails</response>
-        [HttpDelete("[action]/{id}")]
+        [HttpDelete("{id:int}")]
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {

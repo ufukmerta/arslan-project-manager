@@ -21,7 +21,7 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
         public async Task<CustomResponseDto<ProjectTaskDto>?> GetTaskDetailsAsync(int id)
         {
             var client = GetClient();
-            var response = await client.GetAsync($"tasks/details/{id}");
+            var response = await client.GetAsync($"tasks/{id}");
             if (!response.IsSuccessStatusCode)
             {
                 var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<ProjectTaskDto>>();

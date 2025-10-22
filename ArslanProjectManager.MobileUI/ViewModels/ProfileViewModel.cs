@@ -9,6 +9,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class ProfileViewModel : ObservableObject
     {
         private readonly UserService _userService;
+        private readonly AuthService _authService;
         private readonly IAuthStorage _authStorage;
 
         [ObservableProperty] private string? fullName;
@@ -90,6 +91,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         private async void OnLogout()
         {
             await _authStorage.ClearTokensAsync();
+            await _authService.LogoutAsync();
             await Shell.Current.GoToAsync("//login");
         }
 
