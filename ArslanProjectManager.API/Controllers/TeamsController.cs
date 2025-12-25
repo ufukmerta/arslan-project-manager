@@ -352,7 +352,7 @@ namespace ArslanProjectManager.API.Controllers
         [HttpDelete("/api/invites/{id:int}")]
         [ServiceFilter(typeof(NotFoundFilter<TeamInvite>))]
         [Authorize]
-        public async Task<IActionResult> CancelInvite(int id, int teamId)
+        public async Task<IActionResult> CancelInvite(int id)
         {
             Token? token = await GetToken();
             if (token is null)
@@ -367,7 +367,7 @@ namespace ArslanProjectManager.API.Controllers
 
             var teamInvite = await _context.TeamInvites
                 .Include(x => x.Team)
-                .FirstOrDefaultAsync(x => x.Id == id && x.TeamId ==teamId);
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (teamInvite!.Status != InviteStatus.Pending)
             {

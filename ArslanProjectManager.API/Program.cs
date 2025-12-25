@@ -45,7 +45,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
+                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                {
+                    context.Token = authHeader["Bearer ".Length..].Trim();
+                }
+                else if (context.Request.Cookies.ContainsKey("AccessToken"))
+                {
                 context.Token = context.Request.Cookies["AccessToken"];
+                }
                 return Task.CompletedTask;
             },
             OnAuthenticationFailed = context =>

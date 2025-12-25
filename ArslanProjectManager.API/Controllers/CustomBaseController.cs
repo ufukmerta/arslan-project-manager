@@ -1,8 +1,9 @@
-﻿using ArslanProjectManager.Core.DTOs;
+﻿using ArslanProjectManager.Core.Constants;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
-using ArslanProjectManager.Core.Constants;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -32,6 +33,10 @@ namespace ArslanProjectManager.API.Controllers
         [NonAction]
         protected async Task<Token?> GetToken()
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub");
+            if (userIdClaim == null) return null;
+
+            var userId = int.Parse(userIdClaim.Value);                        
             var authHeader = HttpContext.Request.Headers.Authorization.ToString();
 
             if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer "))
