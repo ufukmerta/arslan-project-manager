@@ -11,37 +11,39 @@
 		@{
 			var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 			<div class="collapse navbar-collapse">
-				<ul class="navbar-nav">
-					<li class="nav-item active px-1">
-						<a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index2">Home</a>
-					</li>
-					<li class="nav-item px-1">
-						<a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Index">Projects</a>
-					</li>
-					<li class="nav-item px-1">
-						<a class="nav-link" asp-area="" asp-controller="Tasks" asp-action="Index">Tasks</a>
-					</li>
-					<li class="nav-item px-1">
-						<a class="nav-link" asp-area="" asp-controller="Teams" asp-action="Index">Teams</a>
-					</li>
-				</ul>
-				<ul class="navbar-nav ms-auto">
 					@if (isAuthenticated)
 					{
+						<ul class="navbar-nav">
+							<li class="nav-item active px-1">
+								<a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index2">Home</a>
+							</li>
+							<li class="nav-item px-1">
+								<a class="nav-link" asp-area="" asp-controller="Projects" asp-action="Index">Projects</a>
+							</li>
+							<li class="nav-item px-1">
+								<a class="nav-link" asp-area="" asp-controller="Tasks" asp-action="Index">Tasks</a>
+							</li>
+							<li class="nav-item px-1">
+								<a class="nav-link" asp-area="" asp-controller="Teams" asp-action="Index">Teams</a>
+							</li>
+						</ul>
+					<ul class="navbar-nav ms-auto">
 						<li class="nav-item px-1 navbar-text">@User.Identity?.Name</li>
 						<li class="nav-item px-1"><a class="nav-link " asp-area="" asp-controller="User" asp-action="Index">Profile</a></li>
 						<li class="nav-item px-1"><a class="nav-link " asp-area="" asp-controller="User" asp-action="Logout">Logout</a></li>
+					</ul>
 					}
 					else
 					{
+						<ul class="navbar-nav ms-auto">
 						<li class="nav-item px-1">
 							<a class="nav-link " asp-area="" asp-controller="User" asp-action="Login">Login</a>
 						</li>
 						<li class="nav-item px-1">
 							<a class="nav-link " asp-area="" asp-controller="User" asp-action="Register">Register</a>
 						</li>
+					</ul>
 					}
-				</ul>
 			</div>
 		}
 	</div>

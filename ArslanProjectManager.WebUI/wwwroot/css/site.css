@@ -8,7 +8,9 @@ html {
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Noto Sans Math", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     background-color: #e9ecef;
     margin: 20px,60px,20px,20px;
 }

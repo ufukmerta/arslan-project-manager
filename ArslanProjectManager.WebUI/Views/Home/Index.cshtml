@@ -12,8 +12,8 @@
                     <h1 class="display-4 fw-bold mb-4">Manage Your Projects with Ease</h1>
                     <p class="lead mb-4">Arslan Project Manager helps teams collaborate, track progress, and deliver projects on time.</p>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                        <a asp-controller="User" asp-action="Login" asp-route-RedirectUrl="Home" class="btn btn-light btn-lg px-4 me-md-2" style="text-decoration:none;">Login</a>
-                        <a asp-controller="User" asp-action="Register" asp-route-RedirectUrl="Home" class="btn btn-outline-light btn-lg px-4">Sign Up</a>
+                        <a asp-controller="User" asp-action="Login" asp-route-RedirectUrl="Home" class="btn btn-light btn-lg px-4 me-md-2 landing-login-btn" style="text-decoration:none;">Login</a>
+                        <a asp-controller="User" asp-action="Register" asp-route-RedirectUrl="Home" class="btn btn-outline-light btn-lg px-4 landing-signup-btn">Sign Up</a>
                     </div>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block">
@@ -29,7 +29,7 @@
             <h2 class="text-center mb-5">Why Choose Arslan Project Manager?</h2>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-body text-center">
                             <i class="bi bi-people-fill fs-1 text-primary mb-3"></i>
                             <h3 class="card-title h5">Team Collaboration</h3>
@@ -38,7 +38,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-body text-center">
                             <i class="bi bi-kanban fs-1 text-primary mb-3"></i>
                             <h3 class="card-title h5">Task Management</h3>
@@ -47,7 +47,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-body text-center">
                             <i class="bi bi-graph-up fs-1 text-primary mb-3"></i>
                             <h3 class="card-title h5">Progress Tracking</h3>
@@ -60,34 +60,34 @@
     </section>
 
     <!-- How It Works Section -->
-    <section class="how-it-works py-5 bg-light">
+    <section class="how-it-works py-5">
         <div class="container">
             <h2 class="text-center mb-5">How It Works</h2>
             <div class="row g-4">
                 <div class="col-md-3">
                     <div class="text-center">
-                        <div class="circle-step mb-3">1</div>
+                        <div class="circle-step mb-3"><i class="bi bi-people-fill fs-3 mt-1"></i></div>
                         <h4>Create Team</h4>
                         <p>Set up your team and invite members to collaborate</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center">
-                        <div class="circle-step mb-3">2</div>
+                        <div class="circle-step mb-3"><i class="bi bi-folder-plus fs-3 mt-1"></i></div>
                         <h4>Add Projects</h4>
                         <p>Create projects and define their scope and objectives</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center">
-                        <div class="circle-step mb-3">3</div>
+                        <div class="circle-step mb-3"><i class="bi bi-list-check fs-3 mt-1"></i></div>
                         <h4>Manage Tasks</h4>
                         <p>Break down projects into manageable tasks</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center">
-                        <div class="circle-step mb-3">4</div>
+                        <div class="circle-step mb-3"><i class="bi bi-graph-up-arrow fs-3 mt-1"></i></div>
                         <h4>Track Progress</h4>
                         <p>Monitor progress and achieve your goals</p>
                     </div>
@@ -109,17 +109,29 @@
 @section Styles {
     <style>
         .hero-section {
-            background: linear-gradient(135deg, #48CAE4 0%, #0077B6 100%);
+            background: linear-gradient(135deg, #00B4D8 0%, #023E8A 100%);
         }
 
         .text-primary {
-            color: #0077B6 !important;
+            color: #023E8A !important;
+        }
+
+        h1{
+            color: white;
+        }
+        
+        .features-section {
+            background-color: #FFFFFF;
+        }
+
+        .how-it-works {
+            background-color: #CAF0F8;
         }
 
         .circle-step {
             width: 60px;
             height: 60px;
-            background-color: #0077B6;
+            background-color: #023E8A;
             color: white;
             border-radius: 50%;
             display: flex;
@@ -137,13 +149,33 @@
             .card:hover {
                 transform: translateY(-5px);
             }
+      
+        .features-section .card {
+            background-color: #FFFFFF;
+            border: 1px solid #90E0EF; /* light blue border */
+            border-top: 4px solid #00B4D8; /* accent */
+            box-shadow: 0 6px 16px rgba(3, 4, 94, 0.08);
+            border-radius: 12px;
+            transition: border-color .15s ease, border-width .15s ease, box-shadow .15s ease, transform .2s ease;
+        }
+
+        .features-section .card:hover {
+            box-shadow: 0 20px 24px rgba(3, 4, 94, 0.15);
+            border-color: #00B4D8;
+            border-width: 2px;
+            border-top-width: 6px;
+        }
+
+        .features-section .card-title {
+            color: #023E8A;
+        }
 
         .bg-primary {
-            background-color: #0077B6 !important;
+            background-color: #023E8A !important;
         }
 
         .link {
-            color: #0077B6 !important;
+            color: #023E8A !important;
         }
 
             .link:hover {
@@ -158,6 +190,16 @@
         .btn-outline-light:hover {
             --bs-btn-border-color: #f8f9fa;
             --bs-btn-hover-color: #000;
+        }
+        
+        .landing-login-btn {
+            color: #03045E !important;
+            background-color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+        .landing-signup-btn:hover,
+        .landing-signup-btn:focus {
+            color: #03045E !important;
         }
     </style>
 }
