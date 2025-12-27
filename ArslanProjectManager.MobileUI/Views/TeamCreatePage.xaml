@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             x:Class="ArslanProjectManager.MobileUI.Views.TeamCreatePage"
+             x:DataType="models:TeamCreateViewModel"
+             Title="Create Team">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="15" Padding="15">
+            <!-- Form Fields -->
+            <Border Stroke="#dee2e6" 
+                    StrokeThickness="1" 
+                    Padding="15">
+                <VerticalStackLayout Spacing="15">
+                    <VerticalStackLayout>
+                        <Label Text="Team Name" 
+                               FontAttributes="Bold"/>
+                        <Entry Text="{Binding Name}" 
+                               Placeholder="Enter team name"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout>
+                        <Label Text="Description" 
+                               FontAttributes="Bold"/>
+                        <Editor Text="{Binding Description}" 
+                                Placeholder="Enter team description"
+                                HeightRequest="100"/>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Validation Messages -->
+            <Label Text="{Binding ValidationMessage}"
+                   TextColor="#dc3545"
+                   IsVisible="{Binding HasValidationErrors}"/>
+
+            <!-- Action Buttons -->
+
+            <VerticalStackLayout Spacing="16" Margin="0,24,0,0">
+                <Button Text="Create Team"
+                        Command="{Binding CreateCommand}"
+                        BackgroundColor="#28a745"
+                        TextColor="White">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="plus"
+                             FontFamily="FA"
+                             Size="20"
+                             Color="White" />
+                    </Button.ImageSource>
+                </Button>
+                <Button Text="Cancel"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="#6c757d"
+                        TextColor="White">
+                    <Button.ImageSource>
+                        <FontImageSource Glyph="arrow-left-long"
+                             FontFamily="FA"
+                             Size="20"
+                             Color="White" />
+                    </Button.ImageSource>
+                </Button>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage> 

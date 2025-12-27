@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:dto="clr-namespace:ArslanProjectManager.Core.DTOs;assembly=ArslanProjectManager.Core"
+             x:Class="ArslanProjectManager.MobileUI.Views.TeamInvitesPage"
+             x:Name="TeamInvitesPageRoot"
+             x:DataType="models:TeamInvitesViewModel"
+             Title="Team Invites"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="New Invite"
+                     Command="{Binding SendInviteCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FA" Size="Subtitle" Glyph="&#xf0e0;" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*">
+        <ActivityIndicator Grid.RowSpan="2"
+                           IsRunning="{Binding IsLoading}"
+                           IsVisible="{Binding IsLoading}"
+                           Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+        <Label Grid.Row="0"
+               Text="{Binding ErrorMessage}"
+               TextColor="{StaticResource Danger}"
+               HorizontalOptions="Center"
+               Margin="0,12"
+               IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+
+        <RefreshView Grid.Row="1"
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Invites}"
+                            SelectionMode="None"
+                            Margin="20,0,20,0">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.Header>
+                    <VerticalStackLayout Spacing="18" Padding="0,0,0,16"
+                                        IsVisible="{Binding Invites.Count, Converter={StaticResource ZeroToBoolConverter}, ConverterParameter=Invert}">
+                        <Border Style="{StaticResource CardFrameStyle}">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Text="{Binding TeamName}"
+                                       Style="{StaticResource AccentLabelStyle}"
+                                       FontSize="24"
+                                       HorizontalOptions="Center" />
+                                <Label Text="{Binding InviterName, StringFormat='Invites managed by: {0}'}"
+                                       Style="{StaticResource BodyLabelStyle}"
+                                       HorizontalOptions="Center"
+                                       IsVisible="{Binding InviterName, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </CollectionView.Header>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Spacing="12"
+                                         Margin="0,40,0,0">
+                        <Label Text="&#xf0e0;"
+                               Style="{StaticResource FontAwesomeIconLarge}"
+                               Opacity="0.5"
+                               HorizontalOptions="Center" />
+                        <Label Text="No invites found"
+                               Style="{StaticResource SubtitleLabel}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="You haven't sent any invitations for this team yet."
+                               Style="{StaticResource BodyLabelStyle}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               Opacity="0.7" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dto:TeamInviteListDto">
+                        <Border Style="{StaticResource CardFrameStyle}" 
+                                Margin="0,8"
+                                Padding="18">
+                            <VerticalStackLayout Spacing="12">
+                                <!-- Header with Email and Cancel Button -->
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding InvitedEmail}"
+                                           Style="{StaticResource TitleLabelStyle}"
+                                           VerticalOptions="Center" />
+                                    <Button Grid.Column="1"
+                                            Clicked="OnCancelInviteClicked"
+                                            IsVisible="False"
+                                            Style="{StaticResource DangerButton}"
+                                            Padding="8"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            MinimumWidthRequest="40"
+                                            MinimumHeightRequest="40"
+                                            CornerRadius="20"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="Start">
+                                        <Button.ImageSource>
+                                            <FontImageSource Glyph="&#xf00d;"
+                                                          FontFamily="FA"
+                                                          Size="16"
+                                                          Color="{StaticResource White}" />
+                                        </Button.ImageSource>
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button"
+                                                         Binding="{Binding Status}"
+                                                         Value="Pending">
+                                                <Setter Property="IsVisible" Value="True" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                    <Label Grid.Column="0"
+                                                   Text="&#xf007;"
+                                                   Style="{StaticResource FontAwesomeIcon}"
+                                                   VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                                   Text="{Binding InvitedByName, StringFormat='Invited by: {0}'}"
+                                                   Style="{StaticResource BodyLabelStyle}" />
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                    <Label Grid.Column="0"
+                                                   Text="&#xf017;"
+                                                   Style="{StaticResource FontAwesomeIcon}"
+                                                   VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                                   Text="{Binding CreatedDate, Converter={StaticResource UtcToLocalTimeConverter}, StringFormat='Sent: {0:dd.MM.yyyy HH:mm}'}"
+                                                   Style="{StaticResource BodyLabelStyle}" />
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8"
+                                              IsVisible="False">
+                                    <Grid.Triggers>
+                                        <DataTrigger TargetType="Grid"
+                                                             Binding="{Binding UpdatedDate.HasValue}"
+                                                             Value="True">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                    </Grid.Triggers>
+                                    <Label Grid.Column="0"
+                                                   Text="&#xf274;"
+                                                   Style="{StaticResource FontAwesomeIcon}"
+                                                   VerticalOptions="Center" />
+                                    <Label Grid.Column="1"
+                                                   Text="{Binding UpdatedDate, Converter={StaticResource UtcToLocalTimeConverter}, StringFormat='Updated: {0:dd.MM.yyyy HH:mm}'}"
+                                                   Style="{StaticResource BodyLabelStyle}" />
+                                </Grid>
+
+                                <!-- Status Badge -->
+                                <Border Padding="6,2"
+                                        StrokeShape="RoundRectangle 10"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                                        HorizontalOptions="Start">
+                                    <Label Text="{Binding Status}"
+                                           FontAttributes="Bold"
+                                           FontSize="12"
+                                           HorizontalOptions="Center" />
+                                </Border>
+
+                                <Label Text="{Binding StatusChangeNote}"
+                                               Style="{StaticResource BodyLabelStyle}"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}"
+                                               IsVisible="{Binding StatusChangeNote, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>
+

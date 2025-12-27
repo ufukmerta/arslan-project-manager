@@ -30,9 +30,10 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         public IRelayCommand OpenTasksCommand { get; }
         public IRelayCommand OpenInvitationsCommand { get; }
 
-        public ProfileViewModel(UserService userService, IAuthStorage authStorage)
+        public ProfileViewModel(UserService userService, AuthService authService, IAuthStorage authStorage)
         {
             _userService = userService;
+            _authService = authService;
             _authStorage = authStorage;
             LogoutCommand = new RelayCommand(OnLogout);
             EditProfileCommand = new RelayCommand(OnEditProfile);
@@ -110,7 +111,14 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         }
         private async void OnOpenInvitations()
         {
-            // This will be implemented later -> await Shell.Current.GoToAsync("nameof(MyInvitationsPage)");
+            try
+            {
+                await Shell.Current.GoToAsync(nameof(MyInvitesPage));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to load invites: {ex.Message}");
+            }
         }
     }
 }

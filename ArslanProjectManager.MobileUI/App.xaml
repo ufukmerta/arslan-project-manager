@@ -13,6 +13,9 @@
             <conv:PriorityToColorConverter x:Key="PriorityToColorConverter" />
             <conv:UtcToLocalTimeConverter x:Key="UtcToLocalTimeConverter" />
             <conv:ZeroToBoolConverter x:Key="ZeroToBoolConverter" />
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
+            <conv:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter" />
+            <conv:RoleToColorConverter x:Key="RoleToColorConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

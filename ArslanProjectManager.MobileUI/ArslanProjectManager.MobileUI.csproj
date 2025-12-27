@@ -16,6 +16,7 @@
 		<OutputType>Exe</OutputType>
 		<RootNamespace>ArslanProjectManager.MobileUI</RootNamespace>
 		<UseMaui>true</UseMaui>
+		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -102,12 +103,21 @@
 	  <MauiXaml Update="Views\TasksPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="Views\TaskDetailPage.xaml">
+	  <MauiXaml Update="Views\TeamCreatePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
-	  </None>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\TeamDetailPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\TeamInvitePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+		<MauiXaml Update="Views\TeamInvitesPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+	  <MauiXaml Update="Views\TeamsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 	<PropertyGroup>

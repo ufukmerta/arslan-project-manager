@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:core="clr-namespace:ArslanProjectManager.Core.ViewModels;assembly=ArslanProjectManager.Core"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="ArslanProjectManager.MobileUI.Views.TeamsPage"
+             x:DataType="models:TeamsViewModel"
+             Title="Teams"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:IsNotNullConverter x:Key="IsNotNullConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header with Search and Create Button -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="20,18,20,8">
+            <SearchBar Grid.Column="0"
+                      Placeholder="Search teams..."
+                      HorizontalOptions="Fill"
+                      Text="{Binding SearchText, Mode=TwoWay}"/>
+            <Button Grid.Column="1"
+                    WidthRequest="50"
+                    HeightRequest="50"
+                    CornerRadius="25"
+                    Style="{StaticResource PrimaryButton}"
+                    Text="&#xf067;"
+                    FontFamily="FA"
+                    Command="{Binding CreateTeamCommand}"/>
+        </Grid>
+        <!-- Teams List -->
+        <ScrollView Grid.Row="1">
+            <CollectionView x:Name="TeamsList" Margin="20,0,20,0" ItemsSource="{Binding Teams}" SelectionMode="Single" SelectionChanged="OnTeamSelected">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Start"
+                                       HorizontalOptions="Start">
+                        <Image Source="no_teams.png"
+                               HeightRequest="150"
+                               Opacity="0.7"/>
+                        <Label Text="No teams found"
+                               Style="{StaticResource SubtitleLabel}"
+                               Margin="0,10,0,0"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="core:TeamViewModel">
+                        <Border Stroke="{AppThemeBinding Light={StaticResource CardBorderLight}, Dark={StaticResource CardBorderDark}}"
+                                StrokeThickness="2"
+                                StrokeShape="RoundRectangle 14"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                                Margin="0,8">
+                            <VerticalStackLayout Padding="18" Spacing="12">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="&#xf0c0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding TeamName}" Style="{StaticResource AccentLabelStyle}" VerticalOptions="Center"/>
+                                </Grid>
+                                <Label Text="{Binding Description, TargetNullValue=''}" 
+                                       FontSize="15" 
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray800}, Dark={StaticResource Gray200}}"
+                                       IsVisible="{Binding Description, Converter={StaticResource IsNotNullConverter}}"/>
+                                <HorizontalStackLayout Spacing="10" Margin="0,4,0,0">
+                                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Blue700}, Dark={StaticResource Cyan800}}" Padding="10,3" StrokeShape="RoundRectangle 8">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="5">
+                                            <Label Grid.Column="0" Text="&#xf0c0;" Style="{StaticResource FontAwesomeIconSmall}" TextColor="White" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="{Binding MemberCount, StringFormat='{0} members'}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark=White}" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Cyan700}, Dark={StaticResource Cyan400}}" Padding="10,3" StrokeShape="RoundRectangle 8">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="5">
+                                            <Label Grid.Column="0" Text="&#xf542;" Style="{StaticResource FontAwesomeIconSmall}" TextColor="White" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="{Binding ProjectCount, StringFormat='{0} projects'}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark=White}" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+                                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Purple700}, Dark={StaticResource Purple400}}" 
+                                            Padding="10,3" 
+                                            StrokeShape="RoundRectangle 8"
+                                            IsVisible="{Binding ManagerName, Converter={StaticResource IsNotNullConverter}}">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="5">
+                                            <Label Grid.Column="0" Text="&#xf007;" Style="{StaticResource FontAwesomeIconSmall}" TextColor="White" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="{Binding ManagerName, TargetNullValue='-'}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark=White}" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
+</ContentPage> 

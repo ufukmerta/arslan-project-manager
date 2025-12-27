@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:dto="clr-namespace:ArslanProjectManager.Core.DTOs;assembly=ArslanProjectManager.Core"
+             x:Class="ArslanProjectManager.MobileUI.Views.TeamDetailPage"
+             x:DataType="models:TeamDetailViewModel"
+             x:Name="TeamDetailPageRoot"
+             Title="Team Details"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Manage Invites"
+                     Command="{Binding ManageInvitesCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FA" Size="Subtitle" Glyph="&#xf0e0;" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+        <ToolbarItem Text="Invite"
+              Command="{Binding InviteCommand}">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="FA" Size="Subtitle" Glyph="&#xf234;" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.RowSpan="2" 
+                          IsVisible="{Binding IsLoading}" 
+                          IsRunning="{Binding IsLoading}"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"
+                          Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"/>
+
+        <!-- Error Message -->
+        <Label Grid.Row="0" 
+               Text="{Binding ErrorMessage}" 
+               TextColor="Red" 
+               IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+               Margin="20,10"
+               HorizontalOptions="Center"/>
+
+        <!-- Main Content -->
+        <ScrollView Grid.Row="1" IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}">
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <!-- Team Info Card -->
+                <Border Style="{StaticResource CardFrameStyle}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Label Grid.Column="0" Text="&#xf0c0;" Style="{StaticResource FontAwesomeIconLarge}" VerticalOptions="Center"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                <Label Text="{Binding TeamName}" Style="{StaticResource AccentLabelStyle}" FontSize="24"/>
+                                <Label Text="{Binding Description}" Style="{StaticResource BodyLabelStyle}" IsVisible="{Binding Description, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xf007;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding ManagerName, StringFormat='Manager: {0}'}" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Members Section -->
+                <Border Style="{StaticResource CardFrameStyle}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xf0c0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="Members" Style="{StaticResource AccentLabelStyle}" FontSize="18" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <CollectionView ItemsSource="{Binding Members}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="dto:TeamUserDto">
+                                    <Border HeightRequest="60" 
+                                           WidthRequest="150" 
+                                           StrokeShape="RoundRectangle 30" 
+                                           Padding="0" 
+                                           BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
+                                           Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                           StrokeThickness="1">
+                                        <VerticalStackLayout VerticalOptions="Center" 
+                                                            HorizontalOptions="Center">
+                                            <Label Text="{Binding Name}" 
+                                                   FontSize="13" 
+                                                   HorizontalOptions="Center" 
+                                                   VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                            <Label Text="{Binding Role}" 
+                                                   FontSize="11" 
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" 
+                                                   HorizontalOptions="Center" />
+
+                                <!-- Role Badge -->
+                                            <Border Padding="4,2" 
+                                                    BackgroundColor="{Binding Role, Converter={StaticResource RoleToColorConverter}}" 
+                                                    StrokeShape="RoundRectangle 4"
+                                                    Margin="0,2,0,0">
+                                                <Label Text="{Binding Role}" 
+                                                       FontSize="10" 
+                                                       FontAttributes="Bold" 
+                                                       TextColor="White" 
+                                                       HorizontalOptions="Center"/>
+                                            </Border>
+
+                                <!-- Remove Button (Manager Only, not self) -->
+                                            <Button FontSize="10" 
+                                                    Padding="0" 
+                                                    Margin="0,2,0,0"
+                                        Command="{Binding Source={x:Reference Name=TeamDetailPageRoot}, Path=BindingContext.RemoveMemberCommand}"
+                                        CommandParameter="{Binding .}"
+                                                    IsVisible="{Binding Source={x:Reference Name=TeamDetailPageRoot}, Path=BindingContext.IsCurrentUserManager}"
+                                                    Text="&#xf1f8; Remove"
+                                                    StyleClass="DangerButton"
+                                                    FontFamily="FA"/>
+                            </VerticalStackLayout>
+                                    </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+                        <Label Text="No members found" 
+                               Style="{StaticResource BodyLabelStyle}" 
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding Members.Count, Converter={StaticResource ZeroToBoolConverter}}"/>
+                    </VerticalStackLayout>
+                </Border>
+
+            <!-- Projects Section -->
+                <Border Style="{StaticResource CardFrameStyle}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="&#xf542;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="Projects" Style="{StaticResource AccentLabelStyle}" FontSize="18" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <CollectionView ItemsSource="{Binding Projects}">
+                <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="dto:TeamProjectDto">
+                                    <Border Padding="12" 
+                                           Margin="0,4" 
+                                           Style="{StaticResource CardFrameStyle}">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Tapped="OnProjectTapped" />
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout Spacing="8">
+                                            <Label Text="{Binding ProjectName}" 
+                                                   Style="{StaticResource TitleLabelStyle}" />
+                                            <Label Text="{Binding Description}" 
+                                                   Style="{StaticResource BodyLabelStyle}" />
+                                            <HorizontalStackLayout Spacing="8">
+                                                <Label Text="{Binding TaskCount, StringFormat='Tasks: {0}'}" 
+                                                       Style="{StaticResource BodyLabelStyle}" />
+                                                <Label Text="{Binding CompletedTaskCount, StringFormat='Completed: {0}'}" 
+                                                       Style="{StaticResource BodyLabelStyle}" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                                    </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+                        <Label Text="No projects found" 
+                               Style="{StaticResource BodyLabelStyle}" 
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding Projects.Count, Converter={StaticResource ZeroToBoolConverter}}"/>
+                    </VerticalStackLayout>
+                </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+    </Grid>
+</ContentPage> 

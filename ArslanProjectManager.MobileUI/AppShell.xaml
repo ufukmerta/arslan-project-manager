@@ -18,6 +18,9 @@
         <Tab Title="Tasks" Icon="tasks.png">
             <ShellContent Route="tasks" ContentTemplate="{DataTemplate local:TasksPage}" />
         </Tab>
+        <Tab Title="Teams" Icon="teams.png">
+            <ShellContent Route="teams" ContentTemplate="{DataTemplate local:TeamsPage}" />
+        </Tab>
         <Tab Title="Profile" Icon="profile_tab.png">
             <ShellContent Route="profile" ContentTemplate="{DataTemplate local:ProfilePage}" />
         </Tab>

@@ -55,6 +55,7 @@ namespace ArslanProjectManager.MobileUI
             builder.Services.AddSingleton<HomeService>();
             builder.Services.AddSingleton<ProjectService>();
             builder.Services.AddSingleton<ProjectTaskService>();
+            builder.Services.AddSingleton<TeamService>();
 
             // ViewModels
             builder.Services.AddTransient<LoginViewModel>();
@@ -67,6 +68,12 @@ namespace ArslanProjectManager.MobileUI
             builder.Services.AddTransient<ProjectDetailViewModel>();
             builder.Services.AddTransient<ProjectTaskViewModel>();
             builder.Services.AddTransient<TaskDetailViewModel>();
+            builder.Services.AddTransient<TeamsViewModel>();
+            builder.Services.AddTransient<TeamCreateViewModel>();
+            builder.Services.AddTransient<TeamDetailViewModel>();
+            builder.Services.AddTransient<TeamInvitesViewModel>();
+            builder.Services.AddTransient<TeamInviteViewModel>();
+            builder.Services.AddTransient<MyInvitesViewModel>();
 
 
             // Views
@@ -80,6 +87,12 @@ namespace ArslanProjectManager.MobileUI
             builder.Services.AddTransient<ProjectDetailPage>();
             builder.Services.AddTransient<TasksPage>();
             builder.Services.AddTransient<TaskDetailPage>();
+            builder.Services.AddTransient<TeamsPage>();
+            builder.Services.AddTransient<TeamCreatePage>();
+            builder.Services.AddTransient<TeamDetailPage>();
+            builder.Services.AddTransient<TeamInvitesPage>();
+            builder.Services.AddTransient<TeamInvitePage>();
+            builder.Services.AddTransient<MyInvitesPage>();            
 
             return builder.Build();
         }

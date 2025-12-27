@@ -57,5 +57,46 @@ namespace ArslanProjectManager.MobileUI.Services.UIServices
             }
             return new CustomResponseDto<NoContentDto> { IsSuccess = true};
         }
+
+
+        public async Task<CustomResponseDto<List<PendingInviteDto>>?> GetMyInvitesAsync()
+        {
+            var client = base.GetClient();
+            var response = await client.GetAsync("user/invites");
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<List<PendingInviteDto>>>();
+                return errorWrapper ?? new CustomResponseDto<List<PendingInviteDto>> { IsSuccess = false, Errors = ["Failed to load invitations"] };
+            }
+
+            var wrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<List<PendingInviteDto>>>();
+            return wrapper;
+        }
+
+        public async Task<CustomResponseDto<NoContentDto>?> AcceptInviteAsync(int inviteId)
+        {
+            var client = base.GetClient();
+            var response = await client.PostAsync($"user/invites/{inviteId}/accept", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<NoContentDto>>();
+                return errorWrapper ?? new CustomResponseDto<NoContentDto> { IsSuccess = false, Errors = ["Failed to accept invitation"] };
+            }
+
+            return new CustomResponseDto<NoContentDto> { IsSuccess = true };
+        }
+
+        public async Task<CustomResponseDto<NoContentDto>?> RejectInviteAsync(int inviteId)
+        {
+            var client = base.GetClient();
+            var response = await client.PostAsync($"user/invites/{inviteId}/reject", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorWrapper = await response.Content.ReadFromJsonAsync<CustomResponseDto<NoContentDto>>();
+                return errorWrapper ?? new CustomResponseDto<NoContentDto> { IsSuccess = false, Errors = ["Failed to reject invitation"] };
+            }
+
+            return new CustomResponseDto<NoContentDto> { IsSuccess = true };
+        }
     }
 }

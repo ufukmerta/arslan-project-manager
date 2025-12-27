@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             x:Class="ArslanProjectManager.MobileUI.Views.TeamInvitePage"
+             x:DataType="models:TeamInviteViewModel"
+             Title="Invite Member"
+             NavigationPage.HasNavigationBar="True"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+    
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="18">
+            <Label Text="&#xf0e0;" Style="{StaticResource FontAwesomeIconXLarge}" HorizontalOptions="Center" Margin="0,0,0,10"/>
+            <Label Text="Invite Member" Style="{StaticResource AccentLabelStyle}" FontSize="24" HorizontalOptions="Center"/>
+            <Label Text="{Binding TeamName, StringFormat='Team: {0}'}"
+                   Style="{StaticResource BodyLabelStyle}"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding TeamName, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+            <Label Text="{Binding InviterName, StringFormat='Inviter: {0}'}"
+                   Style="{StaticResource BodyLabelStyle}"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding InviterName, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+            
+            <Border Style="{StaticResource CardFrameStyle}">
+                <VerticalStackLayout Spacing="15">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label Grid.Column="0" Text="&#xf0e0;" Style="{StaticResource FontAwesomeIcon}" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="Email Address" Style="{StaticResource BodyLabelStyle}" VerticalOptions="Center"/>
+                    </Grid>
+                    <Entry Text="{Binding Email}" 
+                           Placeholder="Enter email address" 
+                           Keyboard="Email"
+                           StyleClass="PrimaryEntry"/>
+                    
+
+                    
+                    <Label Text="{Binding ErrorMessage}" 
+                           TextColor="Red" 
+                           IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
+                    
+                    <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                        <Button Text="Send Invite" 
+                                Command="{Binding SendInviteCommand}"
+                                Style="{StaticResource PrimaryButton}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xf0e0;"
+                                                FontFamily="FA"
+                                                Size="20"
+                                                Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
+                            </Button.ImageSource>
+                        </Button>
+                        <Button Text="Cancel" 
+                                Command="{Binding CancelCommand}"
+                                Style="{StaticResource SecondaryButton}">
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="&#xf00d;"
+                                                FontFamily="FA"
+                                                Size="16"
+                                                Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}" />
+                            </Button.ImageSource>
+                        </Button>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage> 

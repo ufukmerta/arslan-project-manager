@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ArslanProjectManager.MobileUI.ViewModels"
+             xmlns:dto="clr-namespace:ArslanProjectManager.Core.DTOs;assembly=ArslanProjectManager.Core"
+             x:Class="ArslanProjectManager.MobileUI.Views.MyInvitesPage"
+             x:Name="MyInvitesPageRoot"
+             x:DataType="models:MyInvitesViewModel"
+             Title="Team Invites"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource BackgroundDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Pending Invitations"
+                   Style="{StaticResource TitleLabelStyle}"
+                   HorizontalOptions="Start"
+                   IsVisible="{Binding Invites.Count, Converter={StaticResource ZeroToBoolConverter}, ConverterParameter=Invert}" />
+
+            <CollectionView ItemsSource="{Binding Invites}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
+                </CollectionView.ItemsLayout>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Spacing="12"
+                                         Margin="0,40,0,0">
+                        <Label Text="&#xf0e0;"
+                               Style="{StaticResource FontAwesomeIconLarge}"
+                               Opacity="0.5"
+                               HorizontalOptions="Center" />
+                        <Label Text="No pending invitations"
+                               Style="{StaticResource SubtitleLabel}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                        <Label Text="You don't have any pending team invitations."
+                               Style="{StaticResource BodyLabelStyle}"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               Opacity="0.7" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dto:PendingInviteDto">
+                        <Border Stroke="{AppThemeBinding Light={StaticResource CardBorderLight}, Dark={StaticResource CardBorderDark}}"
+                                StrokeThickness="2"
+                                StrokeShape="RoundRectangle 14"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+                                Padding="18">
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0"
+                                           Text="&#xf0c0;"
+                                           Style="{StaticResource FontAwesomeIcon}"
+                                           VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Accent}}" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding TeamName}"
+                                           Style="{StaticResource AccentLabelStyle}"
+                                           VerticalOptions="Center"
+                                           FontSize="18" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0"
+                                           Text="&#xf007;"
+                                           Style="{StaticResource FontAwesomeIcon}"
+                                           VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource Info}, Dark={StaticResource Cyan400}}" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding InvitedByName, StringFormat='Invited by: {0}'}"
+                                           Style="{StaticResource BodyLabelStyle}"
+                                           VerticalOptions="Center" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                    <Label Grid.Column="0"
+                                           Text="&#xf073;"
+                                           Style="{StaticResource FontAwesomeIcon}"
+                                           VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource Green400}}" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding InviteDate, StringFormat='Invited on: {0:dd.MM.yyyy}'}"
+                                           Style="{StaticResource BodyLabelStyle}"
+                                           VerticalOptions="Center" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,8,0,0">
+                                    <Button Grid.Column="0"
+                                            Text="Accept"
+                                            Clicked="OnAcceptInviteClicked"
+                                            Style="{StaticResource PrimaryButton}" />
+                                    <Button Grid.Column="1"
+                                            Text="Reject"
+                                            Clicked="OnRejectInviteClicked"
+                                            Style="{StaticResource DangerButton}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
+
