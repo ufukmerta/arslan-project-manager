@@ -1,5 +1,6 @@
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.MobileUI.Services.UIServices;
+using ArslanProjectManager.MobileUI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -55,6 +56,38 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             {
                 ErrorMessage = ex.Message;
             }
+        }
+
+        [RelayCommand]
+        public async Task OpenProjectsAsync()
+        {
+            await Shell.Current.GoToAsync("//projects");
+        }
+
+        [RelayCommand]
+        public async Task OpenTasksAsync()
+        {
+            await Shell.Current.GoToAsync("//tasks");
+        }
+
+        [RelayCommand]
+        public async Task OpenTeamsAsync()
+        {
+            await Shell.Current.GoToAsync("//teams");
+        }
+
+        [RelayCommand]
+        public async Task OpenTaskDetailAsync(RecentTaskDto task)
+        {
+            if (task is not null)
+                await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?id={task.Id}");
+        }
+
+        [RelayCommand]
+        public async Task OpenProjectDetailAsync(RecentProjectDto project)
+        {
+            if (project is not null)
+                await Shell.Current.GoToAsync($"{nameof(ProjectDetailPage)}?id={project.Id}");
         }
     }
 }
