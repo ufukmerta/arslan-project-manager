@@ -27,13 +27,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> IndexAsync()
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
-            var token = await GetToken();
+            var token = (await GetToken())!;
             HomeDto homeDto = await _homeService.GetHomeSummaryAsync(token!.UserId);
             if (homeDto is null)
             {

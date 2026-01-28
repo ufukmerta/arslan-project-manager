@@ -37,13 +37,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetByToken()
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var doesProjectExist = await _projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token!.UserId));
             if (!doesProjectExist)
             {
@@ -72,19 +66,13 @@ namespace ArslanProjectManager.API.Controllers
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Details(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
             if (idValidation is not null)
             {
                 return idValidation;
             }
 
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, id);
             if (accessValidation is not null)
             {
@@ -110,13 +98,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Create()
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var userTeamDto = await _context.TeamUsers
                 .Include(tu => tu.Team)
                 .Where(tu => tu.UserId == token!.UserId)
@@ -149,12 +131,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Create(ProjectCreateDto model)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var validationResult = ValidateModel(
                 model,
                 m => m != null && !string.IsNullOrWhiteSpace(m.ProjectName) && m.TeamId > 0,
@@ -165,7 +141,7 @@ namespace ArslanProjectManager.API.Controllers
                 return validationResult;
             }
 
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var team = await _context.Teams
                 .Include(t => t.TeamUsers)
                 .AnyAsync(t => t.Id == model.TeamId);
@@ -207,19 +183,13 @@ namespace ArslanProjectManager.API.Controllers
         [ServiceFilter(typeof(NotFoundFilter<Project>))]
         public async Task<IActionResult> Edit(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
             if (idValidation is not null)
             {
                 return idValidation;
             }
 
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
             if (accessValidation is not null)
             {
@@ -253,12 +223,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(ProjectUpdateDto model)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var validationResult = ValidateModel(
                 model,
                 m => m != null && m.Id > 0 && !string.IsNullOrWhiteSpace(m.ProjectName),
@@ -269,7 +233,7 @@ namespace ArslanProjectManager.API.Controllers
                 return validationResult;
             }
 
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, model.Id, requireManagerAccess: true);
             if (accessValidation is not null)
             {
@@ -306,19 +270,13 @@ namespace ArslanProjectManager.API.Controllers
         [HttpGet("{id:int}/delete-confirm")]
         public async Task<IActionResult> DeleteConfirm(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
             if (idValidation is not null)
             {
                 return idValidation;
             }
 
-            var token = await GetToken();
+            var token = (await GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
             if (accessValidation is not null)
             {
@@ -352,20 +310,13 @@ namespace ArslanProjectManager.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var idValidation = ValidateId(id, ErrorMessages.InvalidProjectId);
             if (idValidation is not null)
             {
                 return idValidation;
             }
 
-            var token = await GetToken();
-
+            var token = (await GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
             if (accessValidation is not null)
             {

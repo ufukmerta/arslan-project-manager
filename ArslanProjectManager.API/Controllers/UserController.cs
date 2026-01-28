@@ -35,12 +35,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
-
+            var token = (await GetToken())!;
             JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token.AccessToken);
             if (jwtToken.ValidTo < DateTime.UtcNow)
             {
@@ -67,12 +62,7 @@ namespace ArslanProjectManager.API.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetByToken()
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
-
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
@@ -96,11 +86,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit()
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
-            }
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
@@ -127,12 +113,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(UserUpdateDto userDto)
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
-            }
-
+            var token = (await GetToken())!;
             var existingUser = await _userService.GetByIdAsync(userDto.Id);
             if (existingUser is null)
             {
@@ -177,12 +158,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> RemovePicture()
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
-            }
-
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
@@ -207,12 +183,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword(UserPasswordUpdateDto userPasswordUpdateDto)
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
-            }
-
+            var token = (await GetToken())!;
             var existingUser = await _userService.GetByIdAsync(token.UserId);
             if (existingUser is null)
             {
@@ -248,12 +219,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> MyInvites()
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
-
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
@@ -286,12 +252,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> AcceptInvite(int id)
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
-
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
@@ -355,12 +316,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> RejectInvite(int id)
         {
-            var token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
-
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
             if (user is null)
             {

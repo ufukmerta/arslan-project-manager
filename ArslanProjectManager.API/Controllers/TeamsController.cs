@@ -35,12 +35,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetByToken()
         {
-            var token = await GetToken();
-            if (token == null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
-
+            var token = (await GetToken())!;
             var doesTeamExist = await _teamService.AnyAsync(x => x.TeamUsers.Any(x => x.UserId == token.UserId));
             if (!doesTeamExist)
             {
@@ -82,11 +77,7 @@ namespace ArslanProjectManager.API.Controllers
         [ServiceFilter(typeof(NotFoundFilter<Team>))]
         public async Task<IActionResult> Details(int id)
         {
-            Token? token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
+            var token = (await GetToken())!;
 
             var validationResult = ValidateModel(id, x => x > 0, ErrorMessages.InvalidTeamId);
             if (validationResult != null) return validationResult;            
@@ -145,11 +136,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Create(TeamCreateDto model)
         {
-            Token? token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
+            var token = (await GetToken())!;
 
             var team = new Team
             {
@@ -196,11 +183,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Invite(int id)
         {
-            Token? token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
+            var token = (await GetToken())!;
             var user = await _userService.GetByIdAsync(token.UserId);
 
             var team = await _context.Teams
@@ -238,11 +221,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Invite(int id, TeamInviteCreateDto model)
         {
-            Token? token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
+            var token = (await GetToken())!;
 
             if (id <= 0)
             {
@@ -299,11 +278,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Invites(int id)
         {
-            Token? token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
+            var token = (await GetToken())!;
 
             var validationResult = ValidateModel(id, x => x > 0, ErrorMessages.InvalidTeamId);
             if (validationResult != null) return validationResult;
@@ -354,11 +329,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> CancelInvite(int id)
         {
-            Token? token = await GetToken();
-            if (token is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.Unauthorized));
-            }
+            var token = (await GetToken())!;
 
             if (id <= 0)
             {
@@ -390,8 +361,8 @@ namespace ArslanProjectManager.API.Controllers
 
         protected async Task<IActionResult?> ValidateTeamAccess(int teamId, int userId)
         {
-            var token = await GetToken();
-            if (token?.UserId != userId)
+            var token = (await GetToken())!;
+            if (token.UserId != userId)
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
 
             var team = await _context.Teams

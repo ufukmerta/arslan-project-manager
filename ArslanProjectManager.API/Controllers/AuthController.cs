@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Constants;
+using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.Models;
@@ -11,16 +11,13 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace ArslanProjectManager.API.Controllers
 {
+    /// <summary>
+    /// Handles authentication: login, register, refresh token, and logout.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IAuthService authService, IUserService userService, ITokenService tokenService, ITokenHandler tokenHandler, IMapper mapper) : CustomBaseController(tokenService)
+    public class AuthController(IAuthService authService, ITokenService tokenService, ITokenHandler tokenHandler, IMapper mapper) : CustomBaseController(tokenService)
     {
-        private readonly IAuthService _authService = authService;
-        private readonly IUserService _userService = userService;
-        private readonly ITokenService _tokenService = tokenService;
-        private readonly ITokenHandler _tokenHandler = tokenHandler;
-        private readonly IMapper _mapper = mapper;
-
         /// <summary>
         /// Refreshes the access token using a refresh token
         /// </summary>
@@ -31,7 +28,7 @@ namespace ArslanProjectManager.API.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
         {
-            var token = await _tokenService.GetValidTokenByRefreshTokenAsync(dto.RefreshToken);
+            var token = await TokenService.GetValidTokenByRefreshTokenAsync(dto.RefreshToken);
             if (token is null || !token.IsActive)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenMissing));
@@ -42,7 +39,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenExpired));
             }
 
-            var newToken = _tokenHandler.CreateToken(token.User, []);
+            var newToken = tokenHandler.CreateToken(token.User, []);
             if (newToken is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.TokenGenerationFailed));
@@ -53,10 +50,10 @@ namespace ArslanProjectManager.API.Controllers
             newToken.RefreshToken = token.RefreshToken;
             newToken.RefreshTokenExpiration = token.RefreshTokenExpiration;
 
-            var registeredToken = await _tokenService.AddAsync(newToken);
+            var registeredToken = await TokenService.AddAsync(newToken);
 
             token.IsActive = false;
-            _tokenService.ChangeStatus(token);
+            TokenService.ChangeStatus(token);
 
             var accessCookieOptions = new CookieOptions
             {
@@ -80,7 +77,7 @@ namespace ArslanProjectManager.API.Controllers
             Response.Cookies.Delete("RefreshToken");
             Response.Cookies.Append("RefreshToken", newToken.RefreshToken, refreshCookieOptions);
 
-            var tokenDto = _mapper.Map<TokenDto>(registeredToken);
+            var tokenDto = mapper.Map<TokenDto>(registeredToken);
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
@@ -95,7 +92,7 @@ namespace ArslanProjectManager.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginDto userLoginDto)
         {
-            var token = await _authService.LoginAsync(userLoginDto);
+            var token = await authService.LoginAsync(userLoginDto);
             if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.InvalidCredentials));
@@ -133,8 +130,8 @@ namespace ArslanProjectManager.API.Controllers
             };
             Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshTokenOptions);
 
-            Token registeredToken = await _tokenService.AddAsync(token);
-            var tokenDto = _mapper.Map<TokenDto>(registeredToken);
+            Token registeredToken = await TokenService.AddAsync(token);
+            var tokenDto = mapper.Map<TokenDto>(registeredToken);
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
@@ -154,13 +151,13 @@ namespace ArslanProjectManager.API.Controllers
 
             if (!string.IsNullOrEmpty(accessToken))
             {
-                var token = await _tokenService
+                var token = await TokenService
                     .Where(t => t.AccessToken == accessToken && t.IsActive)
                     .FirstOrDefaultAsync();
                 if (token is not null)
                 {
                     token.IsActive = false;
-                    _tokenService.Update(token);
+                    TokenService.Update(token);
                 }
             }
 
@@ -184,7 +181,7 @@ namespace ArslanProjectManager.API.Controllers
             var passwordValidation = ValidatePassword(userDto.Password);
             if (passwordValidation != null) return passwordValidation;            
 
-            var responseDto = await _authService.RegisterAsync(userDto);
+            var responseDto = await authService.RegisterAsync(userDto);
             return CreateActionResult(responseDto);
         }
     }

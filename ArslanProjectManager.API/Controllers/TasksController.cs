@@ -52,13 +52,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetByToken()
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
-            var token = await GetToken();
+            var token = (await GetToken())!;
 
             var teamUserIds = await _context.TeamUsers
                 .Include(t => t.Team)
@@ -103,19 +97,13 @@ namespace ArslanProjectManager.API.Controllers
         [ServiceFilter(typeof(NotFoundFilter<ProjectTask>))]
         public async Task<IActionResult> Details(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var team = await _context.Teams.Where(t => t.Projects.Any(p => p.ProjectTasks.Any(pt => pt.Id == id))).FirstOrDefaultAsync();
             if (team is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var accessValidation = await ValidateTeamAccess(token, team.Id);
             if (accessValidation is not null)
             {
@@ -152,19 +140,13 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Create(int projectId)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var project = await _projectService.GetByIdAsync(projectId);
             if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, projectId);
             if (accessValidation is not null)
             {
@@ -222,12 +204,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Create(ProjectTaskCreateDto model)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var validationResult = ValidateModel(
                 model,
                 m => m != null
@@ -250,7 +226,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var accessValidation = await ValidateProjectAccess(token, model.ProjectId);
             if (accessValidation is not null)
             {
@@ -292,12 +268,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Comment(TaskCommentCreateDto model)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var validationResult = ValidateModel(
                 model,
                 m => m != null
@@ -327,7 +297,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var accessValidation = await ValidateTeamAccess(token, teamFromTask.Id);
             if (accessValidation is not null)
             {
@@ -353,12 +323,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var task = await _context.ProjectTasks
                  .Include(p => p.Project)
                  .Include(p => p.TaskCategory)
@@ -371,7 +335,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var accessValidation = await ValidateTeamAccess(token, task.Project.TeamId);
             if (accessValidation is not null)
             {
@@ -432,12 +396,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(ProjectTaskUpdateDto model)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var validationResult = ValidateModel(
                 model,
                 m => m != null
@@ -460,7 +418,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var accessValidation = await ValidateTeamAccess(token, project.TeamId);
             if (accessValidation is not null)
             {
@@ -504,12 +462,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteConfirm(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var idValidation = ValidateId(id, ErrorMessages.InvalidTaskId);
             if (idValidation is not null)
             {
@@ -531,7 +483,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var teamUserIds = await _context.TeamUsers
                 .Where(tu => tu.UserId == token!.UserId)
                 .Select(tu => tu.Id)
@@ -561,12 +513,6 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            var tokenValidation = await ValidateToken();
-            if (tokenValidation is not null)
-            {
-                return tokenValidation;
-            }
-
             var idValidation = ValidateId(id, ErrorMessages.InvalidTaskId);
             if (idValidation is not null)
             {
@@ -579,7 +525,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
-            var token = await GetToken();
+            var token = await (GetToken())!;
             var teamUser = await _context.TeamUsers
                 .Include(tu => tu.Team)
                     .ThenInclude(t => t.Projects)
