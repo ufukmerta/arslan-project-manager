@@ -9,8 +9,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class RegisterViewModel(AuthService authService) : ObservableValidator
     {
-        private readonly AuthService _authService = authService;
-        
         [ObservableProperty]
         [Required]
         [StringLength(50)]
@@ -108,26 +106,26 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         private async Task RegisterAsync()
         {
             if (IsLoading) return;
-            
+
             ClearAllErrors();
             ValidateAllProperties();
-                        
+
             NameError = GetErrors(nameof(Name)).FirstOrDefault()?.ErrorMessage ?? string.Empty;
             EmailError = GetErrors(nameof(Email)).FirstOrDefault()?.ErrorMessage ?? string.Empty;
             PasswordError = GetErrors(nameof(Password)).FirstOrDefault()?.ErrorMessage ?? string.Empty;
             ValidateConfirmPassword();
-            
+
             if (HasErrors || !string.IsNullOrEmpty(ConfirmPasswordError))
             {
                 return;
             }
-            
+
             IsLoading = true;
-            
+
             try
             {
                 var registerDto = new UserCreateDto { Name = Name, Email = Email, Password = Password };
-                var response = await _authService.RegisterAsync(registerDto);
+                var response = await authService.RegisterAsync(registerDto);
                 if (response != null && response.IsSuccess)
                 {
                     await Shell.Current.DisplayAlert("Success", $"Account Created!", "OK");

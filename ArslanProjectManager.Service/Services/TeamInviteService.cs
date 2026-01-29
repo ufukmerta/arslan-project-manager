@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TeamInviteService : GenericService<TeamInvite>, ITeamInviteService
+    public class TeamInviteService(IGenericRepository<TeamInvite> repository, IUnitOfWork unitOfWork)
+        : GenericService<TeamInvite>(repository, unitOfWork), ITeamInviteService
     {
-        public TeamInviteService(IGenericRepository<TeamInvite> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
     }
 }

@@ -1,17 +1,15 @@
+using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.MobileUI.Services.UIServices;
+using ArslanProjectManager.MobileUI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel.DataAnnotations;
-using ArslanProjectManager.Core.Constants;
-using ArslanProjectManager.MobileUI.Views;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class ProfileEditViewModel(UserService userService) : ObservableValidator
     {
-        private readonly UserService _userService = userService;
-
         [ObservableProperty]
         private int id;
 
@@ -65,7 +63,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             ErrorMessage = string.Empty;
             try
             {
-                var response = await _userService.GetUpdateProfileAsync();
+                var response = await userService.GetUpdateProfileAsync();
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     Id = response.Data.Id;
@@ -108,8 +106,8 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
             try
             {
-                var updateDto = new UserUpdateDto {Id = Id, Name = Name, Email = Email };
-                var response = await _userService.UpdateProfileAsync(updateDto);
+                var updateDto = new UserUpdateDto { Id = Id, Name = Name, Email = Email };
+                var response = await userService.UpdateProfileAsync(updateDto);
                 if (response != null && response.IsSuccess)
                 {
                     //if there is no error, we need to show a success message.

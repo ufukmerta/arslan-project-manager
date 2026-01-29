@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Service.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -12,8 +12,6 @@ namespace ArslanProjectManager.Service.Services
 {
     public class TokenHandler(IConfiguration configuration) : ITokenHandler
     {
-        private readonly IConfiguration Configuration = configuration;
-
         public string CreateRefreshToken()
         {
             byte[] randomNumber = new byte[64];
@@ -25,7 +23,7 @@ namespace ArslanProjectManager.Service.Services
         public Token CreateToken(User user, List<Role> roles)
         {
             Token token = new();
-            var securityKey = Configuration["Jwt:SecurityKey"];
+            var securityKey = configuration["Jwt:SecurityKey"];
             if (string.IsNullOrEmpty(securityKey))
             {
                 throw new InvalidOperationException("Security key is not configured");
@@ -43,8 +41,8 @@ namespace ArslanProjectManager.Service.Services
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Issuer = Configuration["Jwt:Issuer"],
-                Audience = Configuration["Jwt:Audience"],
+                Issuer = configuration["Jwt:Issuer"],
+                Audience = configuration["Jwt:Audience"],
                 Expires = token.Expiration,
                 NotBefore = DateTime.Now,
                 SigningCredentials = signingCredentials,

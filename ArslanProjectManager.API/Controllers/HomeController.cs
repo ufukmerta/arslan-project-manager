@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.Constants;
@@ -14,8 +14,6 @@ namespace ArslanProjectManager.API.Controllers
     [ApiController]
     public class HomeController(IHomeService homeService, ITokenService tokenService) : CustomBaseController(tokenService)
     {
-        private readonly IHomeService _homeService = homeService;
-
         /// <summary>
         /// Retrieves the home dashboard summary for the authenticated user
         /// </summary>
@@ -28,7 +26,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> IndexAsync()
         {
             var token = (await GetToken())!;
-            HomeDto homeDto = await _homeService.GetHomeSummaryAsync(token!.UserId);
+            HomeDto homeDto = await homeService.GetHomeSummaryAsync(token!.UserId);
             if (homeDto is null)
             {
                 //every user has a home summary page regardless of whether the person is any team member, any project contributor or any task contributor

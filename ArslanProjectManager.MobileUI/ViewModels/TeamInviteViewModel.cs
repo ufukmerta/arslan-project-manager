@@ -9,10 +9,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class TeamInviteViewModel : ObservableObject, IQueryAttributable
-    {
-        private readonly TeamService _teamService;
-
+    public partial class TeamInviteViewModel(TeamService teamService) : ObservableObject, IQueryAttributable
+    {   
         [ObservableProperty]
         private int teamId;
 
@@ -30,11 +28,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         [ObservableProperty]
         private string errorMessage = string.Empty;
-
-        public TeamInviteViewModel(TeamService teamService)
-        {
-            _teamService = teamService;
-        }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -86,7 +79,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     InvitedEmail = Email
                 };
 
-                var response = await _teamService.InviteUserAsync(TeamId, inviteDto);
+                var response = await teamService.InviteUserAsync(TeamId, inviteDto);
 
                 if (response?.IsSuccess == true)
                 {
@@ -98,7 +91,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                         "Invitation sent successfully!",
                         "OK");
                     }
-                    await Shell.Current!.GoToAsync("..");
+                    await Shell.Current!.GoToAsync("..?refresh=true");
                 }
                 else
                 {
@@ -137,7 +130,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             {
                 IsLoading = true;
                 ErrorMessage = string.Empty;
-                var response = await _teamService.GetTeamInviteMetaAsync(TeamId);
+                var response = await teamService.GetTeamInviteMetaAsync(TeamId);
                 if (response?.IsSuccess == true && response.Data != null)
                 {
                     TeamName = response.Data.TeamName;

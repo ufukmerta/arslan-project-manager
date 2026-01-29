@@ -16,15 +16,11 @@ namespace ArslanProjectManager.WebUI.Controllers
 {
     public class ProjectsController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage) : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-        private readonly IMapper _mapper = mapper;
-        private readonly IAuthStorage _authStorage = authStorage;
-
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Index(string? from)
         {
-            var token = await _authStorage.GetAccessTokenAsync();
+            var token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 var loginViewModel = new LoginViewModel
@@ -39,7 +35,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 TempData["informationMessage"] = "Choose project to create a task.";
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("projects");
             if (!response.IsSuccessStatusCode)
             {
@@ -70,7 +66,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(Enumerable.Empty<ProjectViewModel>());
             }
 
-            var projectViewModel = _mapper.Map<IEnumerable<ProjectViewModel>>(wrapper.Data);
+            var projectViewModel = mapper.Map<IEnumerable<ProjectViewModel>>(wrapper.Data);
             
             return View(projectViewModel);
         }
@@ -79,7 +75,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            var token = await _authStorage.GetAccessTokenAsync();
+            var token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 LoginViewModel loginViewModel = new()
@@ -94,7 +90,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Index", "Projects");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"projects/{id}");
             if (!response.IsSuccessStatusCode)
             {
@@ -127,7 +123,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(Enumerable.Empty<ProjectViewModel>());
             }
 
-            var projectDetailsViewModel = _mapper.Map<ProjectDetailsViewModel>(wrapper.Data);
+            var projectDetailsViewModel = mapper.Map<ProjectDetailsViewModel>(wrapper.Data);
             return View(projectDetailsViewModel);
         }
 
@@ -136,13 +132,13 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> Create(int? id)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("projects/create-meta");
             if (!response.IsSuccessStatusCode)
             {
@@ -196,7 +192,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateProjectViewModel model)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -210,7 +206,7 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             if (!ModelState.IsValid)
             {
-                var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+                var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
                 var response = await client.GetAsync("projects/create-meta");
                 if (!response.IsSuccessStatusCode)
                 {
@@ -250,8 +246,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(model);
             }
 
-            var projectDto = _mapper.Map<ProjectCreateDto>(model);
-            var client2 = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var projectDto = mapper.Map<ProjectCreateDto>(model);
+            var client2 = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response2 = await client2.PostAsJsonAsync("projects", projectDto);
             if (!response2.IsSuccessStatusCode)
             {
@@ -289,7 +285,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -300,7 +296,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Index", "Projects");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"projects/{id}/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
@@ -330,7 +326,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var editProjectDto = wrapper.Data;
-            var editProjectViewModel = _mapper.Map<EditProjectViewModel>(editProjectDto);
+            var editProjectViewModel = mapper.Map<EditProjectViewModel>(editProjectDto);
             return View(editProjectViewModel);
         }
 
@@ -339,7 +335,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditProjectViewModel model)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -356,8 +352,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(model);
             }
 
-            var projectUpdateDto = _mapper.Map<ProjectUpdateDto>(model);
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var projectUpdateDto = mapper.Map<ProjectUpdateDto>(model);
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.PutAsJsonAsync($"projects", projectUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
@@ -394,7 +390,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -406,7 +402,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Index", "Projects");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"projects/{id}/delete-confirm");
             if (!response.IsSuccessStatusCode)
             {
@@ -436,7 +432,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var projectDto = wrapper.Data;
-            var projectViewModel = _mapper.Map<DeleteProjectViewModel>(projectDto);
+            var projectViewModel = mapper.Map<DeleteProjectViewModel>(projectDto);
             return View(projectViewModel);
         }
 
@@ -445,7 +441,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirm(int ProjectId)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -457,7 +453,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction("Index");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.DeleteAsync($"projects/{ProjectId}");
             if (!response.IsSuccessStatusCode)
             {

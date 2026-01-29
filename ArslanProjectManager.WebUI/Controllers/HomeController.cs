@@ -11,10 +11,6 @@ namespace ArslanProjectManager.WEBUI.Controllers
 {
     public class HomeController(IHttpClientFactory httpClientFactory, IAuthStorage authStorage, IMapper mapper) : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-        private readonly IAuthStorage _authStorage = authStorage;
-        private readonly IMapper _mapper = mapper;
-
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Index()
@@ -26,19 +22,19 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [Authorize]
         public async Task<IActionResult> Index2()
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("home");
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    await _authStorage.ClearTokensAsync();
+                    await authStorage.ClearTokensAsync();
                 }
 
                 TempData["ErrorMessage"] = GetErrorMessageAsync(response);
@@ -52,7 +48,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return View("Error");
             }
 
-            var viewModel = _mapper.Map<HomeViewModel>(wrapper.Data);
+            var viewModel = mapper.Map<HomeViewModel>(wrapper.Data);
             return View(viewModel);
         }
 

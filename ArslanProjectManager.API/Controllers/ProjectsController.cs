@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.API.Filters;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
@@ -22,10 +22,6 @@ namespace ArslanProjectManager.API.Controllers
     [ApiController]
     public class ProjectsController(ProjectManagerDbContext context, IProjectService projectService, ITokenService tokenService, IMapper mapper) : CustomBaseController(tokenService)
     {
-        private readonly ProjectManagerDbContext _context = context;
-        private readonly IProjectService _projectService = projectService;
-        private readonly IMapper _mapper = mapper;
-
         /// <summary>
         /// Retrieves all projects for the authenticated user
         /// </summary>
@@ -38,15 +34,15 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> GetByToken()
         {
             var token = (await GetToken())!;
-            var doesProjectExist = await _projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token!.UserId));
+            var doesProjectExist = await projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token!.UserId));
             if (!doesProjectExist)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoProjectsFound));
             }
 
-            var projects = await _context.Projects
+            var projects = await context.Projects
                  .Where(x => x.Team.TeamUsers.Any(tu => tu.UserId == token!.UserId))
-                 .ProjectTo<UserProjectDto>(_mapper.ConfigurationProvider)
+                 .ProjectTo<UserProjectDto>(mapper.ConfigurationProvider)
                  .ToListAsync();
 
             return CreateActionResult(CustomResponseDto<IEnumerable<UserProjectDto>>.Success(projects, 200));
@@ -79,7 +75,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var projectDetailsDto = await _projectService.GetProjectDetailsAsync(id);
+            var projectDetailsDto = await projectService.GetProjectDetailsAsync(id);
             if (projectDetailsDto is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
@@ -99,7 +95,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Create()
         {
             var token = (await GetToken())!;
-            var userTeamDto = await _context.TeamUsers
+            var userTeamDto = await context.TeamUsers
                 .Include(tu => tu.Team)
                 .Where(tu => tu.UserId == token!.UserId)
                 .Select(tu => new MiniTeamDto
@@ -142,7 +138,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = (await GetToken())!;
-            var team = await _context.Teams
+            var team = await context.Teams
                 .Include(t => t.TeamUsers)
                 .AnyAsync(t => t.Id == model.TeamId);
             if (!team)
@@ -150,7 +146,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
             }
 
-            var teamByTeamUser = await _context.Teams
+            var teamByTeamUser = await context.Teams
                 .Include(t => t.TeamUsers)
                 .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token!.UserId));
             if (teamByTeamUser is null)
@@ -158,14 +154,14 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
             }
 
-            var project = _mapper.Map<Project>(model);
-            var createdProject = await _projectService.AddAsync(project);
+            var project = mapper.Map<Project>(model);
+            var createdProject = await projectService.AddAsync(project);
             if (createdProject is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.FailedToCreateProject));
             }
 
-            var createdProjectDto = _mapper.Map<MiniProjectDto>(createdProject);
+            var createdProjectDto = mapper.Map<MiniProjectDto>(createdProject);
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(createdProjectDto, 201));
         }
 
@@ -196,7 +192,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var project = await _context.Projects
+            var project = await context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -205,7 +201,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var projectUpdateDto = _mapper.Map<ProjectUpdateDto>(project);
+            var projectUpdateDto = mapper.Map<ProjectUpdateDto>(project);
             return CreateActionResult(CustomResponseDto<ProjectUpdateDto>.Success(projectUpdateDto, 200));
         }
 
@@ -240,7 +236,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var project = await _context.Projects
+            var project = await context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == model.Id);
 
@@ -252,8 +248,8 @@ namespace ArslanProjectManager.API.Controllers
             project.ProjectName = model.ProjectName;
             project.ProjectDetail = model.ProjectDetail;
             project.StartDate = model.StartDate;
-            _projectService.Update(project);
-            var updatedProjectDto = _mapper.Map<MiniProjectDto>(project);
+            projectService.Update(project);
+            var updatedProjectDto = mapper.Map<MiniProjectDto>(project);
             return CreateActionResult(CustomResponseDto<MiniProjectDto>.Success(updatedProjectDto, 200));
         }
 
@@ -283,7 +279,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var project = await _context.Projects
+            var project = await context.Projects
                 .Include(p => p.Team)
                 .Include(p => p.ProjectTasks)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -293,7 +289,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var projectDeleteDto = _mapper.Map<ProjectDeleteDto>(project);
+            var projectDeleteDto = mapper.Map<ProjectDeleteDto>(project);
             return CreateActionResult(CustomResponseDto<ProjectDeleteDto>.Success(projectDeleteDto, 200));
         }
 
@@ -323,7 +319,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var project = await _context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id);
+            var project = await context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id);
 
             if (project is null)
             {
@@ -331,13 +327,13 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             project.IsActive = false;
-            _projectService.ChangeStatus(project);
+            projectService.ChangeStatus(project);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
         protected async Task<IActionResult?> ValidateProjectAccess(Token? token, int projectId, bool requireManagerAccess = false)
         {
-            var project = await _context.Projects
+            var project = await context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
 
@@ -355,7 +351,7 @@ namespace ArslanProjectManager.API.Controllers
             }
             else
             {
-                var isMember = await _context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
+                var isMember = await context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
                 if (!isMember)
                 {
                     return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));

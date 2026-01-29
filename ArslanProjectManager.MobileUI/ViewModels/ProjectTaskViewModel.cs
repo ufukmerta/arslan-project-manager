@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class ProjectTaskViewModel : ObservableObject
+    public partial class ProjectTaskViewModel(ProjectTaskService projectTaskService) : ObservableObject
     {
-        private readonly ProjectTaskService _projectTaskService;
-
         [ObservableProperty]
         private ObservableCollection<ProjectTaskDto> tasks = [];
 
@@ -25,13 +23,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         [ObservableProperty]
         private string searchText = string.Empty;
-
-        public ProjectTaskViewModel(ProjectTaskService projectTaskService)
-        {
-            _projectTaskService = projectTaskService;
-            Tasks = [];
-            allTasks = [];
-        }
 
         partial void OnSearchTextChanged(string value)
         {
@@ -60,7 +51,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             ErrorMessage = string.Empty;
             try
             {
-                var response = await _projectTaskService.GetAllTasksAsync();
+                var response = await projectTaskService.GetAllTasksAsync();
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     allTasks = [.. response.Data];

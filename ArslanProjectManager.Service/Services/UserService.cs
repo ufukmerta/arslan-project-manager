@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
@@ -9,16 +9,15 @@ namespace ArslanProjectManager.Service.Services
 {
     public class UserService(IGenericRepository<User> repository, IUnitOfWork unitOfWork, IUserRepository userRepository) : GenericService<User>(repository, unitOfWork), IUserService
     {
-        private readonly IUserRepository _repository = userRepository;
         public async Task<User?> GetByEmailAsync(string email)
         {
-            User? user = await _repository.Where(u => u.Email == email)
+            User? user = await userRepository.Where(u => u.Email == email)
                 .FirstOrDefaultAsync();
             return user;
         }
         public async Task<UserProfileDto?> GetUserProfileAsync(int userId)
         {
-            var user = await _repository.GetUserWithTeamsProjectsTasksAsync(userId);
+            var user = await userRepository.GetUserWithTeamsProjectsTasksAsync(userId);
             if (user is null)
             {
                 return null;

@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Constants;
+using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.Models;
@@ -10,13 +10,9 @@ namespace ArslanProjectManager.Service.Services
 {
     public class AuthService(IUnitOfWork unitOfWork, IUserService userService, ITokenHandler tokenHandler, IMapper mapper) : IAuthService
     {
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IUserService _userService = userService;
-        private readonly ITokenHandler _tokenHandler = tokenHandler;
-        private readonly IMapper _mapper = mapper;
         public async Task<Token?> LoginAsync(UserLoginDto userLoginDto)
         {
-            var user = await _userService.GetByEmailAsync(userLoginDto.Email);
+            var user = await userService.GetByEmailAsync(userLoginDto.Email);
             if (user == null)
             {
                 return null;
@@ -26,7 +22,7 @@ namespace ArslanProjectManager.Service.Services
             List<Role> roles = [];
             if (result)
             {
-                Token token = _tokenHandler.CreateToken(user, roles);
+                Token token = tokenHandler.CreateToken(user, roles);
                 return token;
             }
             else
@@ -47,13 +43,13 @@ namespace ArslanProjectManager.Service.Services
 
         public async Task<CustomResponseDto<UserDto>> RegisterAsync(UserCreateDto userDto)
         {
-            var existingUser = await _userService.AnyAsync(x => x.Email == userDto.Email);
+            var existingUser = await userService.AnyAsync(x => x.Email == userDto.Email);
             if (existingUser)
             {
                 return CustomResponseDto<UserDto>.Fail(400, ErrorMessages.EmailAlreadyExists);
             }
 
-            var user = _mapper.Map<User>(userDto);
+            var user = mapper.Map<User>(userDto);
 
             if (userDto.ProfilePicture is not null && userDto.ProfilePicture.Length > 0)
             {
@@ -63,9 +59,9 @@ namespace ArslanProjectManager.Service.Services
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            await _userService.AddAsync(user);
-            await _unitOfWork.CommitAsync();
-            var newUserDto = _mapper.Map<UserDto>(user);
+            await userService.AddAsync(user);
+            await unitOfWork.CommitAsync();
+            var newUserDto = mapper.Map<UserDto>(user);
             return CustomResponseDto<UserDto>.Success(newUserDto, 201);
 
         }

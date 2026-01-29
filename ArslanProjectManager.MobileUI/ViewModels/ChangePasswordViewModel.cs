@@ -8,8 +8,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class ChangePasswordViewModel(UserService userService) : ObservableValidator
     {
-        private readonly UserService _userService = userService;
-
         [ObservableProperty]
         [Required(ErrorMessage = ErrorMessages.PasswordsRequired)]
         private string currentPassword = string.Empty;
@@ -108,7 +106,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
             try
             {
-                var response = await _userService.ChangePasswordAsync(CurrentPassword, NewPassword);
+                var response = await userService.ChangePasswordAsync(CurrentPassword, NewPassword);
                 if (response != null && response.IsSuccess)
                 {
                     CurrentPassword = string.Empty;

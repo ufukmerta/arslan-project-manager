@@ -19,11 +19,6 @@ namespace ArslanProjectManager.API.Controllers
     [ApiController]
     public class TeamsController(ProjectManagerDbContext context, ITokenService tokenService, ITeamService teamService, ITeamInviteService teamInviteService, IUserService userService) : CustomBaseController(tokenService)
     {
-        private readonly ProjectManagerDbContext _context = context;
-        private readonly ITeamService _teamService = teamService;
-        private readonly ITeamInviteService _teamInviteService = teamInviteService;
-        private readonly IUserService _userService = userService;
-
         /// <summary>
         /// Retrieves all teams for the authenticated user (as manager or member)
         /// </summary>
@@ -36,13 +31,13 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> GetByToken()
         {
             var token = (await GetToken())!;
-            var doesTeamExist = await _teamService.AnyAsync(x => x.TeamUsers.Any(x => x.UserId == token.UserId));
+            var doesTeamExist = await teamService.AnyAsync(x => x.TeamUsers.Any(x => x.UserId == token.UserId));
             if (!doesTeamExist)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
             }
 
-            var teams = await _context.Teams
+            var teams = await context.Teams
                 .Include(x => x.TeamUsers)
                 .Include(x => x.Manager)
                 .Include(x => x.Projects)
@@ -85,10 +80,12 @@ namespace ArslanProjectManager.API.Controllers
             var teamAccessResult = await ValidateTeamAccess(id, token.UserId);
             if (teamAccessResult != null) return teamAccessResult;
 
-            var teamDetailsDto = await _context.Teams
+            var teamDetailsDto = await context.Teams
             .Include(x => x.Manager)
             .Include(x => x.TeamUsers)
             .ThenInclude(x => x.User)
+            .Include(x => x.TeamUsers)
+            .ThenInclude(x => x.Role)
             .Include(x => x.Projects)
             .ThenInclude(x => x.ProjectTasks)
             .Where(x => x.Id == id && x.TeamUsers.Any(tu => tu.UserId == token.UserId))
@@ -104,7 +101,7 @@ namespace ArslanProjectManager.API.Controllers
                     UserId = u.UserId,
                     Name = u.User.Name,
                     Email = u.User.Email,
-                    Role = u.RoleId == 1 ? "Admin" : "Member"
+                    Role = u.Role.RoleName
                 }).ToList(),
                 Projects = x.Projects.Select(p => new TeamProjectDto
                 {
@@ -145,20 +142,20 @@ namespace ArslanProjectManager.API.Controllers
                 ManagerId = token.UserId
             };
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                _context.Teams.Add(team);
-                await _context.SaveChangesAsync();
+                context.Teams.Add(team);
+                await context.SaveChangesAsync();
 
-                _context.TeamUsers.Add(new TeamUser
+                context.TeamUsers.Add(new TeamUser
                 {
                     UserId = token.UserId,
                     RoleId = 1,
                     TeamId = team.Id
                 });
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return CreateActionResult(CustomResponseDto<MiniTeamDto>.Success(new MiniTeamDto { Id = team.Id }, 200));
@@ -184,9 +181,9 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Invite(int id)
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
 
-            var team = await _context.Teams
+            var team = await context.Teams
                .Include(x => x.Manager)
                .Include(x => x.TeamUsers)
                .ThenInclude(x => x.User)
@@ -228,7 +225,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InvalidTeamId));
             }
 
-            var team = await _context.Teams
+            var team = await context.Teams
                 .Include(x => x.TeamUsers)
                 .ThenInclude(x => x.User)
                 .Include(x => x.TeamInvites)
@@ -237,7 +234,7 @@ namespace ArslanProjectManager.API.Controllers
             var teamAccessResult = await ValidateTeamAccess(id, token.UserId);
             if (teamAccessResult != null) return teamAccessResult;
 
-            var invitedUser = await _userService.GetByEmailAsync(model.InvitedEmail);
+            var invitedUser = await userService.GetByEmailAsync(model.InvitedEmail);
 
             if (invitedUser != null && team!.TeamUsers.Any(x => x.UserId == invitedUser.Id))
             {
@@ -257,7 +254,7 @@ namespace ArslanProjectManager.API.Controllers
                 Status = InviteStatus.Pending,
             };
 
-            var createdInvite = await _teamInviteService.AddAsync(teamInvite);
+            var createdInvite = await teamInviteService.AddAsync(teamInvite);
             if (createdInvite.Id <= 0)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.FailedToInvite));
@@ -283,7 +280,7 @@ namespace ArslanProjectManager.API.Controllers
             var validationResult = ValidateModel(id, x => x > 0, ErrorMessages.InvalidTeamId);
             if (validationResult != null) return validationResult;
 
-            var team = await _context.Teams
+            var team = await context.Teams
                 .Include(x => x.TeamUsers)
                 .Include(x => x.TeamInvites)
                 .ThenInclude(x => x.InvitedBy)
@@ -336,7 +333,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InvalidInviteId));
             }
 
-            var teamInvite = await _context.TeamInvites
+            var teamInvite = await context.TeamInvites
                 .Include(x => x.Team)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -355,7 +352,7 @@ namespace ArslanProjectManager.API.Controllers
 
             teamInvite.Status = InviteStatus.Rejected;
             teamInvite.StatusChangeNote = "Canceled by " + (teamInvite.InvitedById == token.UserId ? "inviter" : "team manager");
-            _teamInviteService.Update(teamInvite);
+            teamInviteService.Update(teamInvite);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(200));
         }
 
@@ -365,11 +362,11 @@ namespace ArslanProjectManager.API.Controllers
             if (token.UserId != userId)
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
 
-            var team = await _context.Teams
+            var team = await context.Teams
                 .Include(t => t.TeamUsers)
                 .FirstOrDefaultAsync(t => t.Id == teamId);
 
-            if (team == null)
+            if (team is null)
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
 
             var isUserInTeam = team.ManagerId == token.UserId ||

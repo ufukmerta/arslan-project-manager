@@ -7,12 +7,9 @@ namespace ArslanProjectManager.MobileUI.Services
 {
     public class TokenRefresher(IAuthStorage authStorage, IHttpClientFactory httpClientFactory) : ITokenRefresher
     {
-        private readonly IAuthStorage _authStorage = authStorage;
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-
         public async Task<string?> EnsureValidAccessTokenAsync()
         {
-            var accessToken = await _authStorage.GetAccessTokenAsync();
+            var accessToken = await authStorage.GetAccessTokenAsync();
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
                 var jwt = new JsonWebTokenHandler().ReadJsonWebToken(accessToken);
@@ -20,11 +17,11 @@ namespace ArslanProjectManager.MobileUI.Services
                     return accessToken;
             }
 
-            var refreshToken = await _authStorage.GetRefreshTokenAsync();
+            var refreshToken = await authStorage.GetRefreshTokenAsync();
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return null;
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             client.DefaultRequestHeaders.Add("SkipTokenRefresher", "true");
 
             var response = await client.PostAsJsonAsync("auth/refresh-token", new { RefreshToken = refreshToken });
@@ -37,7 +34,7 @@ namespace ArslanProjectManager.MobileUI.Services
                 return null;
 
             var dto = wrapper.Data;
-            await _authStorage.SaveTokensAsync(dto.AccessToken, dto.RefreshToken, dto.Expiration, dto.RefreshTokenExpiration);
+            await authStorage.SaveTokensAsync(dto.AccessToken, dto.RefreshToken, dto.Expiration, dto.RefreshTokenExpiration);
             return dto.AccessToken;
         }
     }

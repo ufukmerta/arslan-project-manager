@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.API.Filters;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
@@ -23,13 +23,6 @@ namespace ArslanProjectManager.API.Controllers
     public class TasksController(ProjectManagerDbContext context, IProjectTaskService taskService, ITokenService tokenService,
         ITeamUserService teamUserService, IProjectService projectService, ITaskCommentService commentService, IMapper mapper) : CustomBaseController(tokenService)
     {
-        private readonly ProjectManagerDbContext _context = context;
-        private readonly IProjectTaskService _taskService = taskService;
-        private readonly IProjectService _projectService = projectService;
-        private readonly ITeamUserService _teamUserService = teamUserService;
-        private readonly ITaskCommentService _commentService = commentService;
-        private readonly IMapper _mapper = mapper;
-
         /// <summary>
         /// Board status constants for task management
         /// </summary>
@@ -53,21 +46,20 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> GetByToken()
         {
             var token = (await GetToken())!;
-
-            var teamUserIds = await _context.TeamUsers
+            var teamUserIds = await context.TeamUsers
                 .Include(t => t.Team)
                 .Include(t => t.User)
                 .Where(t => t.UserId == token!.UserId)
                 .Select(t => t.Id).ToListAsync();
 
-            var tasks = await _context.ProjectTasks
+            var tasks = await context.ProjectTasks
                 .Include(p => p.Project).ThenInclude(p => p.Team).ThenInclude(t => t.TeamUsers).ThenInclude(u => u.User)
                 .Include(c => c.TaskCategory)
                 .Include(b => b.Board)
                 .Include(a => a.Appointee).ThenInclude(u => u.User)
                 .Include(a => a.Appointer).ThenInclude(u => u.User)
                 .Where(t => teamUserIds.Contains(t.AppointeeId) || teamUserIds.Contains(t.AppointerId))
-                .ProjectTo<ProjectTaskDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<ProjectTaskDto>(mapper.ConfigurationProvider)
                 .ToListAsync();
 
             if (tasks is null || tasks.Count == 0)
@@ -97,12 +89,12 @@ namespace ArslanProjectManager.API.Controllers
         [ServiceFilter(typeof(NotFoundFilter<ProjectTask>))]
         public async Task<IActionResult> Details(int id)
         {
-            var team = await _context.Teams.Where(t => t.Projects.Any(p => p.ProjectTasks.Any(pt => pt.Id == id))).FirstOrDefaultAsync();
+            var team = await context.Teams.Where(t => t.Projects.Any(p => p.ProjectTasks.Any(pt => pt.Id == id))).FirstOrDefaultAsync();
             if (team is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
-
+            
             var token = await (GetToken())!;
             var accessValidation = await ValidateTeamAccess(token, team.Id);
             if (accessValidation is not null)
@@ -110,7 +102,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var taskDto = await _context.ProjectTasks
+            var taskDto = await context.ProjectTasks
             .Include(p => p.Appointee).ThenInclude(p => p.User)
             .Include(p => p.Appointer).ThenInclude(p => p.User)
             .Include(p => p.Board)
@@ -118,7 +110,7 @@ namespace ArslanProjectManager.API.Controllers
             .Include(p => p.TaskCategory)
             .Include(p => p.TaskComments).ThenInclude(c => c.TeamUser).ThenInclude(tu => tu.User)
             .Where(t => t.Id == id)
-            .ProjectTo<ProjectTaskDto>(_mapper.ConfigurationProvider)
+            .ProjectTo<ProjectTaskDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
             if (taskDto is null)
             {
@@ -140,7 +132,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Create(int projectId)
         {
-            var project = await _projectService.GetByIdAsync(projectId);
+            var project = await projectService.GetByIdAsync(projectId);
             if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
@@ -153,7 +145,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var teamMembers = await _context.TeamUsers
+            var teamMembers = await context.TeamUsers
                 .Include(x => x.User)
                 .Where(x => x.TeamId == project.TeamId)
                 .Select(x => new TaskUserDto
@@ -163,7 +155,7 @@ namespace ArslanProjectManager.API.Controllers
                 })
                 .ToListAsync();
 
-            var boards = await _context.BoardTags
+            var boards = await context.BoardTags
                 .Select(x => new BoardTagDto
                 {
                     Id = x.Id,
@@ -171,7 +163,7 @@ namespace ArslanProjectManager.API.Controllers
                 })
                 .ToListAsync();
 
-            var taskCategories = await _context.TaskCategories
+            var taskCategories = await context.TaskCategories
                 .Select(x => new TaskCategoryDto
                 {
                     Id = x.Id,
@@ -220,7 +212,7 @@ namespace ArslanProjectManager.API.Controllers
                 return validationResult;
             }
 
-            var project = await _projectService.GetByIdAsync(model.ProjectId);
+            var project = await projectService.GetByIdAsync(model.ProjectId);
             if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
@@ -239,12 +231,12 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var teamUser = _teamUserService.Where(t => t.UserId == token!.UserId && t.TeamId == project.TeamId).FirstOrDefault();
+            var teamUser = teamUserService.Where(t => t.UserId == token!.UserId && t.TeamId == project.TeamId).FirstOrDefault();
 
-            var task = _mapper.Map<ProjectTask>(model);
+            var task = mapper.Map<ProjectTask>(model);
             task.AppointerId = teamUser!.Id;
 
-            var createdTask = await _taskService.AddAsync(task);
+            var createdTask = await taskService.AddAsync(task);
             if (createdTask is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.FailedToCreateTask));
@@ -280,15 +272,15 @@ namespace ArslanProjectManager.API.Controllers
                 return validationResult;
             }
 
-            var comment = _mapper.Map<TaskComment>(model);
+            var comment = mapper.Map<TaskComment>(model);
 
-            var task = await _taskService.GetByIdAsync(comment.TaskId);
+            var task = await taskService.GetByIdAsync(comment.TaskId);
             if (task is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
-            var teamFromTask = await _context.Teams
+            var teamFromTask = await context.Teams
                 .Include(t => t.Projects)
                 .ThenInclude(p => p.ProjectTasks)
                 .Where(x => x.Projects.Any(x => x.ProjectTasks.Any(x => x.Id == task.Id))).FirstOrDefaultAsync();
@@ -304,10 +296,10 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var teamUser = await _teamUserService.Where(x => x.UserId == token!.UserId && x.TeamId == teamFromTask.Id).FirstOrDefaultAsync();
+            var teamUser = await teamUserService.Where(x => x.UserId == token!.UserId && x.TeamId == teamFromTask.Id).FirstOrDefaultAsync();
 
             comment.TeamUserId = teamUser!.Id;
-            await _commentService.AddAsync(comment);
+            await commentService.AddAsync(comment);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(201));
         }
 
@@ -323,7 +315,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
-            var task = await _context.ProjectTasks
+            var task = await context.ProjectTasks
                  .Include(p => p.Project)
                  .Include(p => p.TaskCategory)
                  .Include(p => p.Board)
@@ -342,7 +334,7 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var teamMembers = await _context.TeamUsers
+            var teamMembers = await context.TeamUsers
                 .Include(x => x.User)
                 .Where(x => x.TeamId == task.Project.TeamId)
                 .Select(x => new TaskUserDto
@@ -352,7 +344,7 @@ namespace ArslanProjectManager.API.Controllers
                 })
                 .ToListAsync();
 
-            var boards = await _context.BoardTags
+            var boards = await context.BoardTags
                 .Select(x => new BoardTagDto
                 {
                     Id = x.Id,
@@ -360,7 +352,7 @@ namespace ArslanProjectManager.API.Controllers
                 })
                 .ToListAsync();
 
-            var taskCategories = await _context.TaskCategories
+            var taskCategories = await context.TaskCategories
                 .Select(x => new TaskCategoryDto
                 {
                     Id = x.Id,
@@ -368,7 +360,7 @@ namespace ArslanProjectManager.API.Controllers
                 })
                 .ToListAsync();
 
-            var projectTaskUpdateDto = _mapper.Map<ProjectTaskUpdateDto>(task);
+            var projectTaskUpdateDto = mapper.Map<ProjectTaskUpdateDto>(task);
             projectTaskUpdateDto.TeamMembers = teamMembers;
             projectTaskUpdateDto.BoardTags = boards;
             projectTaskUpdateDto.TaskCategories = taskCategories;
@@ -412,7 +404,7 @@ namespace ArslanProjectManager.API.Controllers
                 return validationResult;
             }
 
-            var project = await _projectService.Where(x => x.ProjectTasks.Any(pt => pt.Id == model.Id)).FirstOrDefaultAsync();
+            var project = await projectService.Where(x => x.ProjectTasks.Any(pt => pt.Id == model.Id)).FirstOrDefaultAsync();
             if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
@@ -425,14 +417,14 @@ namespace ArslanProjectManager.API.Controllers
                 return accessValidation;
             }
 
-            var task = await _context.ProjectTasks.Include(pt => pt.Board).Where(x => x.Id == model.Id).FirstOrDefaultAsync();
+            var task = await context.ProjectTasks.Include(pt => pt.Board).Where(x => x.Id == model.Id).FirstOrDefaultAsync();
             if (task is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
             var oldBoardName = task.Board.BoardName;
-            var newBoard = await _context.BoardTags.FindAsync(model.BoardId);
+            var newBoard = await context.BoardTags.FindAsync(model.BoardId);
             var newBoardName = newBoard?.BoardName;
             if (oldBoardName == BoardStatus.Done && model.BoardId != task.BoardId)
             {
@@ -444,8 +436,8 @@ namespace ArslanProjectManager.API.Controllers
                 model.EndDate = DateTime.UtcNow;
             }
 
-            _mapper.Map(model, task);
-            _taskService.Update(task);
+            mapper.Map(model, task);
+            taskService.Update(task);
             return CreateActionResult(CustomResponseDto<MiniProjectTaskDto>.Success(new MiniProjectTaskDto { Id = model.Id }, 201));
         }
 
@@ -468,7 +460,7 @@ namespace ArslanProjectManager.API.Controllers
                 return idValidation;
             }
 
-            var taskDelete = await _context.ProjectTasks
+            var taskDelete = await context.ProjectTasks
                 .Include(p => p.Appointee)
                     .ThenInclude(p => p.User)
                 .Include(p => p.Appointer)
@@ -484,7 +476,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var teamUserIds = await _context.TeamUsers
+            var teamUserIds = await context.TeamUsers
                 .Where(tu => tu.UserId == token!.UserId)
                 .Select(tu => tu.Id)
                 .ToListAsync();
@@ -494,7 +486,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToViewTask));
             }
 
-            var taskDeleteDto = _mapper.Map<ProjectTaskDeleteDto>(taskDelete);
+            var taskDeleteDto = mapper.Map<ProjectTaskDeleteDto>(taskDelete);
 
             return CreateActionResult(CustomResponseDto<ProjectTaskDeleteDto>.Success(taskDeleteDto, 200));
         }
@@ -519,14 +511,14 @@ namespace ArslanProjectManager.API.Controllers
                 return idValidation;
             }
 
-            var task = await _taskService.GetByIdAsync(id);
+            var task = await taskService.GetByIdAsync(id);
             if (task is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
             var token = await (GetToken())!;
-            var teamUser = await _context.TeamUsers
+            var teamUser = await context.TeamUsers
                 .Include(tu => tu.Team)
                     .ThenInclude(t => t.Projects)
                         .ThenInclude(p => p.ProjectTasks)
@@ -538,18 +530,18 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             task.IsActive = false;
-            _taskService.ChangeStatus(task);
+            taskService.ChangeStatus(task);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
         protected async Task<IActionResult?> ValidateProjectAccess(Token? token, int projectId, bool requireManagerAccess = false)
         {
-            var project = await _projectService.GetByIdAsync(projectId);
+            var project = await projectService.GetByIdAsync(projectId);
             if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var isMember = await _context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
+            var isMember = await context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
             if (!isMember)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
@@ -564,13 +556,13 @@ namespace ArslanProjectManager.API.Controllers
         }
         protected async Task<IActionResult?> ValidateTeamAccess(Token? token, int teamId, bool requireManagerAccess = false)
         {
-            var team = await _context.Teams.FindAsync(teamId);
+            var team = await context.Teams.FindAsync(teamId);
             if (team is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
             }
 
-            var isMember = await _context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == teamId);
+            var isMember = await context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == teamId);
             if (!isMember)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));

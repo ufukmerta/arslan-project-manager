@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
@@ -10,10 +10,7 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TeamUserService : GenericService<TeamUser>, ITeamUserService
-    {
-        public TeamUserService(IGenericRepository<TeamUser> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
+    public class TeamUserService(ITeamUserRepository repository, IUnitOfWork unitOfWork) : GenericService<TeamUser>(repository, unitOfWork), ITeamUserService
+    {        
     }
 }

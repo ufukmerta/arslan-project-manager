@@ -6,10 +6,8 @@ using System.Collections.ObjectModel;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class MyInvitesViewModel : ObservableObject
+    public partial class MyInvitesViewModel(UserService userService) : ObservableObject
     {
-        private readonly UserService _userService;
-
         [ObservableProperty]
         private ObservableCollection<PendingInviteDto> invites = new();
 
@@ -19,11 +17,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty]
         private string errorMessage = string.Empty;
 
-        public MyInvitesViewModel(UserService userService)
-        {
-            _userService = userService;
-        }
-
         [RelayCommand]
         public async Task LoadAsync()
         {
@@ -32,7 +25,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                var response = await _userService.GetMyInvitesAsync();
+                var response = await userService.GetMyInvitesAsync();
                 if (response?.IsSuccess == true && response.Data != null)
                 {
                     Invites = new ObservableCollection<PendingInviteDto>(response.Data);
@@ -64,7 +57,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                var response = await _userService.AcceptInviteAsync(invite.TeamInviteId);
+                var response = await userService.AcceptInviteAsync(invite.TeamInviteId);
                 if (response?.IsSuccess == true)
                 {
                     Invites.Remove(invite);
@@ -105,7 +98,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                var response = await _userService.RejectInviteAsync(invite.TeamInviteId);
+                var response = await userService.RejectInviteAsync(invite.TeamInviteId);
                 if (response?.IsSuccess == true)
                 {
                     Invites.Remove(invite);

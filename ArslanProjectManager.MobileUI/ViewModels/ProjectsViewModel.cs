@@ -7,10 +7,8 @@ using ArslanProjectManager.MobileUI.Views;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class ProjectsViewModel : ObservableObject
+    public partial class ProjectsViewModel(ProjectService projectService) : ObservableObject
     {
-        private readonly ProjectService _projectService;
-
         [ObservableProperty]
         private ObservableCollection<UserProjectDto> projects = [];
 
@@ -44,13 +42,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
 
 
-        public ProjectsViewModel(ProjectService projectService)
-        {
-            _projectService = projectService;
-            Projects = [];
-            allProjects = [];
-        }
-
         [RelayCommand]
         public async Task LoadProjectsAsync()
         {
@@ -58,7 +49,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             ErrorMessage = string.Empty;
             try
             {
-                var response = await _projectService.GetAllProjectsAsync();
+                var response = await projectService.GetAllProjectsAsync();
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     allProjects = [.. response.Data];

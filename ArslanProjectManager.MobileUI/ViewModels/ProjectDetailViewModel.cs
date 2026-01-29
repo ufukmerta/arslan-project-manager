@@ -9,8 +9,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class ProjectDetailViewModel(ProjectService projectService) : ObservableObject
     {
-        private readonly ProjectService _projectService = projectService;
-
         [ObservableProperty]
         private ProjectDetailsDto? projectDetails;
 
@@ -50,7 +48,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             ErrorMessage = string.Empty;
             try
             {
-                var response = await _projectService.GetProjectDetailsAsync(id);
+                var response = await projectService.GetProjectDetailsAsync(id);
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     ProjectDetails = response.Data;

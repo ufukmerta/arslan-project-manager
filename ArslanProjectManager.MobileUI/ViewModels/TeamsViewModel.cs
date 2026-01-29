@@ -19,9 +19,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty]
         private string errorMessage = string.Empty;
 
-        private readonly TeamService _teamService = teamService;
-        private readonly IMapper _mapper = mapper;
-
         private IEnumerable<TeamViewModel> allTeams = [];
 
         partial void OnSearchTextChanged(string value)
@@ -44,10 +41,10 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         {
             try
             {
-                var response = await _teamService.GetMyTeamsAsync();
+                var response = await teamService.GetMyTeamsAsync();
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
-                    allTeams = _mapper.Map<IEnumerable<TeamViewModel>>(response.Data);
+                    allTeams = mapper.Map<IEnumerable<TeamViewModel>>(response.Data);
                     Teams = new ObservableCollection<TeamViewModel>(allTeams);
                 }
                 else

@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TaskCategoryService : GenericService<TaskCategory>, ITaskCategoryService
+    public class TaskCategoryService(IGenericRepository<TaskCategory> repository, IUnitOfWork unitOfWork)
+        : GenericService<TaskCategory>(repository, unitOfWork), ITaskCategoryService
     {
-        public TaskCategoryService(IGenericRepository<TaskCategory> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
     }
 }

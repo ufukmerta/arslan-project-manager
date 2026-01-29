@@ -8,10 +8,9 @@ namespace ArslanProjectManager.Service.Services
 {
     public class ProjectService(IGenericRepository<Project> repository, IProjectRepository projectRepository, IUnitOfWork unitOfWork) : GenericService<Project>(repository, unitOfWork), IProjectService
     {
-        private readonly IProjectRepository _projectRepository = projectRepository;
         public async Task<ProjectDetailsDto?> GetProjectDetailsAsync(int id)
         {
-            var project = await _projectRepository.GetProjectWithDetailsAsync(id);
+            var project = await projectRepository.GetProjectWithDetailsAsync(id);
             if (project is null) return null;
 
             var projectDetailsDto = new ProjectDetailsDto

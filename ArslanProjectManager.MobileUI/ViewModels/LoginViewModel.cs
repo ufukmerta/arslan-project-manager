@@ -11,9 +11,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class LoginViewModel(AuthService authService, IAuthStorage authStorage) : ObservableValidator, IQueryAttributable
     {
-        private readonly AuthService _authService = authService;
-        private readonly IAuthStorage _authStorage = authStorage;
-
         [ObservableProperty]
         [Required]
         [EmailAddress]
@@ -47,11 +44,11 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             try
             {
                 var loginDto = new UserLoginDto { Email = Email, Password = Password };
-                var response = await _authService.LoginAsync(loginDto);
+                var response = await authService.LoginAsync(loginDto);
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     var token = response.Data;
-                    await _authStorage.SaveTokensAsync(token.AccessToken, token.RefreshToken, token.Expiration, token.RefreshTokenExpiration);
+                    await authStorage.SaveTokensAsync(token.AccessToken, token.RefreshToken, token.Expiration, token.RefreshTokenExpiration);
                     await Shell.Current.GoToAsync("//home");
                 }
                 else

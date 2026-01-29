@@ -11,9 +11,8 @@ using System;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class TeamInvitesViewModel : ObservableObject, IQueryAttributable
+    public partial class TeamInvitesViewModel(TeamService teamService) : ObservableObject, IQueryAttributable
     {
-        private readonly TeamService _teamService;
         private bool _isInitialized;
 
         [ObservableProperty]
@@ -36,11 +35,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         [ObservableProperty]
         private string errorMessage = string.Empty;
-
-        public TeamInvitesViewModel(TeamService teamService)
-        {
-            _teamService = teamService;
-        }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -99,7 +93,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             try
             {
                 ErrorMessage = string.Empty;
-                var response = await _teamService.CancelInviteAsync(invite.Id);
+                var response = await teamService.CancelInviteAsync(invite.Id);
                 if (response?.IsSuccess == true)
                 {
                     Invites.Remove(invite);
@@ -149,7 +143,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         private async Task LoadInviteMetaAsync()
         {
-            var response = await _teamService.GetTeamInviteMetaAsync(TeamId);
+            var response = await teamService.GetTeamInviteMetaAsync(TeamId);
             if (response?.IsSuccess == true && response.Data != null)
             {
                 TeamName = response.Data.TeamName;
@@ -163,7 +157,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         private async Task LoadInvitesAsync()
         {
-            var response = await _teamService.GetTeamInvitesAsync(TeamId);
+            var response = await teamService.GetTeamInvitesAsync(TeamId);
             if (response?.IsSuccess == true && response.Data != null)
             {
                 Invites.Clear();

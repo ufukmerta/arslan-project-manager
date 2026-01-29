@@ -20,14 +20,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
 {
     public class TasksController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage) : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-        private readonly IMapper _mapper = mapper;
-        private readonly IAuthStorage _authStorage = authStorage;
-
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            string? accessToken = await _authStorage.GetAccessTokenAsync();
+            string? accessToken = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 var loginviewModel = new LoginViewModel
@@ -37,7 +33,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction("Login", "User", loginviewModel);
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("tasks");
             if (!response.IsSuccessStatusCode)
             {
@@ -64,7 +60,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return View(new List<ProjectTaskViewModel>());
             }
             var tasks = wrapper.Data;
-            var taskViewModels = _mapper.Map<IEnumerable<ProjectTaskViewModel>>(tasks);
+            var taskViewModels = mapper.Map<IEnumerable<ProjectTaskViewModel>>(tasks);
             return View(taskViewModels);
 
         }
@@ -73,7 +69,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            string? accessToken = await _authStorage.GetAccessTokenAsync();
+            string? accessToken = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 var loginViewModel = new LoginViewModel
@@ -89,7 +85,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"tasks/{id}");
             if (!response.IsSuccessStatusCode)
             {
@@ -116,7 +112,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 TempData["errorMessage"] = "An error occurred while fetching the task details. Please try again later.";
                 return RedirectToAction(nameof(Index));
             }
-            var taskViewModel = _mapper.Map<ProjectTaskViewModel>(wrapper.Data);
+            var taskViewModel = mapper.Map<ProjectTaskViewModel>(wrapper.Data);
             return View(taskViewModel);
         }
 
@@ -125,7 +121,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddComment(int id, CreateTaskCommentViewModel model)
         {
-            string? accessToken = await _authStorage.GetAccessTokenAsync();
+            string? accessToken = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 var loginViewModel = new LoginViewModel
@@ -140,8 +136,8 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction("Details", new { model.TaskId });
             }
 
-            var taskComment = _mapper.Map<TaskCommentCreateDto>(model);
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var taskComment = mapper.Map<TaskCommentCreateDto>(model);
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.PostAsJsonAsync($"tasks/comment", taskComment);
             if (!response.IsSuccessStatusCode)
             {
@@ -175,7 +171,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [Authorize]
         public async Task<IActionResult> Create(int id)
         {
-            string? accessToken = await _authStorage.GetAccessTokenAsync();
+            string? accessToken = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 var loginViewModel = new LoginViewModel
@@ -191,7 +187,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"tasks/{id}/create-meta");
             if (!response.IsSuccessStatusCode)
             {
@@ -232,7 +228,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateTaskViewModel model)
         {
-            string? accessToken = await _authStorage.GetAccessTokenAsync();
+            string? accessToken = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 var loginViewModel = new LoginViewModel
@@ -251,7 +247,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+                var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
                 var response = await client.GetAsync($"tasks/{model.ProjectId}/create-meta");
                 if (!response.IsSuccessStatusCode)
                 {
@@ -288,8 +284,8 @@ namespace ArslanProjectManager.WEBUI.Controllers
             }
 
 
-            var projectTaskDto = _mapper.Map<ProjectTaskCreateDto>(model);
-            var client2 = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var projectTaskDto = mapper.Map<ProjectTaskCreateDto>(model);
+            var client2 = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response2 = await client2.PostAsJsonAsync("tasks", projectTaskDto);
             if (!response2.IsSuccessStatusCode)
             {
@@ -325,7 +321,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
-            string? accessToken = await _authStorage.GetAccessTokenAsync();
+            string? accessToken = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 var loginViewModel = new LoginViewModel
@@ -341,7 +337,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"tasks/{id}/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
@@ -371,7 +367,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
             }
 
             var editTaskDto = wrapper.Data;
-            var editTaskViewModel = _mapper.Map<EditTaskViewModel>(editTaskDto);
+            var editTaskViewModel = mapper.Map<EditTaskViewModel>(editTaskDto);
             ViewData["AppointeeId"] = new SelectList(editTaskDto.TeamMembers, "TeamUserId", "Name", editTaskDto.AppointeeId);
             ViewData["BoardId"] = new SelectList(editTaskDto.BoardTags, "Id", "BoardName", editTaskDto.BoardId);
             ViewData["TaskCategoryId"] = new SelectList(editTaskDto.TaskCategories, "Id", "Category", editTaskDto.TaskCategoryId);
@@ -383,7 +379,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditTaskViewModel model)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -396,8 +392,8 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return View(model);
             }
 
-            var taskUpdateDto = _mapper.Map<ProjectTaskUpdateDto>(model);
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var taskUpdateDto = mapper.Map<ProjectTaskUpdateDto>(model);
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.PutAsJsonAsync($"tasks", taskUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
@@ -434,7 +430,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -446,7 +442,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction("Index", "Tasks");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync($"tasks/{id}/delete-confirm");
             if (!response.IsSuccessStatusCode)
             {
@@ -476,7 +472,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
             }
 
             var taskDto = wrapper.Data;
-            var taskViewModel = _mapper.Map<DeleteTaskViewModel>(taskDto);
+            var taskViewModel = mapper.Map<DeleteTaskViewModel>(taskDto);
             return View(taskViewModel);
         }
 
@@ -485,7 +481,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int TaskId)
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 return RedirectToAction("Login", "User");
@@ -497,7 +493,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 return RedirectToAction("Index");
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.DeleteAsync($"tasks/{TaskId}");
             if (!response.IsSuccessStatusCode)
             {
@@ -520,6 +516,6 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
             TempData["successMessage"] = "Task deleted successfully!";
             return RedirectToAction("Index", "Tasks");
-        }
-    }
+        }        
+    }    
 }

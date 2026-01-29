@@ -12,30 +12,23 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
-using ArslanProjectManager.WebUI.Services;
-using System.Text;
 
 namespace ArslanProjectManager.WebUI.Controllers
 {
-    public class UserController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage, IConfiguration configuration) : BaseController
+    public class UserController(IHttpClientFactory httpClientFactory, IMapper mapper, IAuthStorage authStorage) : BaseController
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-        private readonly IMapper _mapper = mapper;
-        private readonly IAuthStorage _authStorage = authStorage;
-        private readonly IConfiguration _configuration = configuration;
-
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 TempData["errorMessage"] = "You must be logged in to view your profile.";
                 return RedirectToAction(nameof(Login), nameof(User));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("user/profile");
             if (!response.IsSuccessStatusCode)
             {
@@ -52,7 +45,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var userProfile = wrapper.Data;
-            var userProfileViewModel = _mapper.Map<UserProfileViewModel>(userProfile);
+            var userProfileViewModel = mapper.Map<UserProfileViewModel>(userProfile);
             return View(userProfileViewModel);
         }
 
@@ -64,7 +57,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 return RedirectToAction("Unauthorized", "Home");
             }
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("User");
             if (!response.IsSuccessStatusCode)
             {
@@ -106,8 +99,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(loginViewModel);
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var loginDto = _mapper.Map<UserLoginDto>(loginViewModel);
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var loginDto = mapper.Map<UserLoginDto>(loginViewModel);
             var response = await client.PostAsJsonAsync("auth/login", loginDto);
             if (!response.IsSuccessStatusCode)
             {
@@ -180,6 +173,12 @@ namespace ArslanProjectManager.WebUI.Controllers
         [AllowAnonymous]
         public IActionResult Register()
         {
+            bool userLoggedIn = User.Identity != null && User.Identity.IsAuthenticated;
+            if (userLoggedIn)
+            {
+                TempData["informationMessage"] = "You are already logged in. If you want to create a new account, please log out first.";
+                return RedirectToAction("Index2", "Home");
+            }
             return View(new RegisterViewModel());
         }
 
@@ -193,8 +192,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(registerViewModel);
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var registerDto = _mapper.Map<UserCreateDto>(registerViewModel);
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var registerDto = mapper.Map<UserCreateDto>(registerViewModel);
             var response = await client.PostAsJsonAsync("auth/register", registerDto);
             if (!response.IsSuccessStatusCode)
             {
@@ -227,7 +226,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             await client.GetAsync("auth/logout");
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("AccessToken");
@@ -239,14 +238,14 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> Edit()
         {
-            string? token = await _authStorage.GetAccessTokenAsync();
+            string? token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 TempData["errorMessage"] = "You must be logged in to edit your profile.";
                 return RedirectToAction(nameof(Login), nameof(User));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("user/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
@@ -262,7 +261,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var userProfileViewModel = _mapper.Map<EditUserViewModel>(wrapper.Data);
+            var userProfileViewModel = mapper.Map<EditUserViewModel>(wrapper.Data);
             return View(userProfileViewModel);
         }
 
@@ -271,14 +270,14 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditUserViewModel editUserViewModel)
         {
-            var token = await _authStorage.GetAccessTokenAsync();
+            var token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrWhiteSpace(token))
             {
                 TempData["errorMessage"] = "You must be logged in to edit your profile.";
                 return RedirectToAction(nameof(Login), nameof(User));
             }
 
-            var userUpdateDto = _mapper.Map<UserUpdateDto>(editUserViewModel);
+            var userUpdateDto = mapper.Map<UserUpdateDto>(editUserViewModel);
             userUpdateDto.ProfilePicture = string.Empty;
 
             var imgFile = editUserViewModel.ProfilePictureFile;
@@ -297,7 +296,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 userUpdateDto.ProfilePicture = Convert.ToBase64String(imageBytes);
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.PutAsJsonAsync("user", userUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
@@ -313,14 +312,14 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> RemovePicture()
         {
-            var token = await _authStorage.GetAccessTokenAsync();            
+            var token = await authStorage.GetAccessTokenAsync();            
             if (string.IsNullOrEmpty(token))
             {
                 TempData["errorMessage"] = "You must be logged in to delete your avatar.";
                 return RedirectToAction(nameof(Login));
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.DeleteAsync("user/picture");
             if (!response.IsSuccessStatusCode)
             {
@@ -336,7 +335,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword()
         {
-            var token = await _authStorage.GetAccessTokenAsync();
+            var token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 TempData["errorMessage"] = "You must be logged in to change your password.";
@@ -351,7 +350,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel changePasswordViewModel)
         {
-            var token = await _authStorage.GetAccessTokenAsync();
+            var token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 TempData["errorMessage"] = "You must be logged in to change your password.";
@@ -363,8 +362,8 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return View(changePasswordViewModel);
             }
 
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            var changePasswordDto = _mapper.Map<UserPasswordUpdateDto>(changePasswordViewModel);
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var changePasswordDto = mapper.Map<UserPasswordUpdateDto>(changePasswordViewModel);
             var response = await client.PutAsJsonAsync("user/password", changePasswordDto);
             if (!response.IsSuccessStatusCode)
             {
@@ -378,7 +377,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> MyInvites()
         {
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.GetAsync("user/invites");
             if (!response.IsSuccessStatusCode)
             {
@@ -395,7 +394,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var inviteDtos = wrapper.Data;
-            var inviteViewModels = _mapper.Map<List<PendingInviteViewModel>>(inviteDtos);
+            var inviteViewModels = mapper.Map<List<PendingInviteViewModel>>(inviteDtos);
             return View(inviteViewModels);
         }
 
@@ -403,7 +402,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptInvite(int id)
         {
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.PostAsync($"user/invites/{id}/accept", null);
 
             if (!response.IsSuccessStatusCode)
@@ -420,7 +419,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectInvite(int id)
         {
-            var client = _httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             var response = await client.PostAsync($"user/invites/{id}/reject", null);
 
             if (!response.IsSuccessStatusCode)

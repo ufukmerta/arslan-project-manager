@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TaskCommentService : GenericService<TaskComment>, ITaskCommentService
+    public class TaskCommentService(IGenericRepository<TaskComment> repository, IUnitOfWork unitOfWork)
+        : GenericService<TaskComment>(repository, unitOfWork), ITaskCommentService
     {
-        public TaskCommentService(IGenericRepository<TaskComment> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
     }
 }

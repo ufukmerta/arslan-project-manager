@@ -1,25 +1,16 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TokenService : GenericService<Token>, ITokenService
+    public class TokenService(IGenericRepository<Token> repository, ITokenRepository tokenRepository, IUnitOfWork unitOfWork)
+        : GenericService<Token>(repository, unitOfWork), ITokenService
     {
-        private readonly ITokenRepository _repository;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public TokenService(IGenericRepository<Token> repository, ITokenRepository tokenRepository, IUnitOfWork unitOfWork)
-            : base(repository, unitOfWork)
-        {
-            _repository = tokenRepository;
-            _unitOfWork = unitOfWork;
-        }
-
         public async Task<Token?> GetValidTokenByAccessTokenAsync(string accessToken)
         {
-            var token = await _repository.GetByAcessTokenAsync(accessToken);
+            var token = await tokenRepository.GetByAcessTokenAsync(accessToken);
             if (token == null || !token.IsActive || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
             {
                 return null;
@@ -29,7 +20,7 @@ namespace ArslanProjectManager.Service.Services
 
         public async Task<Token?> GetValidTokenByRefreshTokenAsync(string refreshToken)
         {
-            var token = await _repository.GetByRefreshTokenAsync(refreshToken);
+            var token = await tokenRepository.GetByRefreshTokenAsync(refreshToken);
             if (token == null || !token.IsActive || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
             {
                 return null;
@@ -39,17 +30,17 @@ namespace ArslanProjectManager.Service.Services
 
         public async Task<List<Token>> GetActiveTokensForUserAsync(int userId)
         {
-            return await _repository.GetActiveTokensByUserIdAsync(userId);
+            return await tokenRepository.GetActiveTokensByUserIdAsync(userId);
         }
 
         public async Task RevokeTokensForUserAsync(int userId)
         {
-            var tokens = await _repository.GetActiveTokensByUserIdAsync(userId);
+            var tokens = await tokenRepository.GetActiveTokensByUserIdAsync(userId);
 
             foreach (var token in tokens)
             {
                 token.IsActive = false;
-                _repository.Update(token);
+                tokenRepository.Update(token);
             }
         }
     }

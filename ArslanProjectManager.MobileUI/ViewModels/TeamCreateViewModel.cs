@@ -8,8 +8,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class TeamCreateViewModel(TeamService teamService) : ObservableValidator
     {
-        private readonly TeamService _teamService = teamService;
-
         [ObservableProperty]
         [Required(ErrorMessage = "Team name is required.")]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Team name must be between 1 and 50 characters.")]
@@ -83,7 +81,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     ManagerId = 0 // Will be set by the API from the token
                 };
 
-                var response = await _teamService.CreateTeamAsync(teamCreateDto);
+                var response = await teamService.CreateTeamAsync(teamCreateDto);
                 if (response != null && response.IsSuccess)
                 {
                     await Shell.Current.GoToAsync($"..?refresh=true");

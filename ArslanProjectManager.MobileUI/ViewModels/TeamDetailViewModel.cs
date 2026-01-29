@@ -11,7 +11,7 @@ using ArslanProjectManager.MobileUI.Views;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class TeamDetailViewModel : ObservableObject
+    public partial class TeamDetailViewModel(TeamService teamService) : ObservableObject
     {
         [ObservableProperty]
         private int teamId;
@@ -48,14 +48,8 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         [ObservableProperty]
         private string errorMessage = string.Empty;
-
-        private readonly TeamService _teamService;
+        
         private CancellationTokenSource _cts = new();
-
-        public TeamDetailViewModel(TeamService teamService)
-        {
-            _teamService = teamService;
-        }
 
         public void CancelLoading()
         {
@@ -75,7 +69,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
             try
             {
-                var response = await _teamService.GetTeamDetailsAsync(TeamId);
+                var response = await teamService.GetTeamDetailsAsync(TeamId);
 
                 if (response?.IsSuccess == true && response.Data != null)
                 {

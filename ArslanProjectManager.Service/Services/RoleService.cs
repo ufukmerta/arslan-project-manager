@@ -8,12 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArslanProjectManager.Service.Services
+namespace ArslanProjectManager.Service.Services;
+
+public class RoleService(
+    IGenericRepository<Role> repository,
+    IUnitOfWork unitOfWork)
+    : GenericService<Role>(repository, unitOfWork), IRoleService
 {
-    public class RoleService : GenericService<Role>, IRoleService
-    {
-        public RoleService(IGenericRepository<Role> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
-    }
 }

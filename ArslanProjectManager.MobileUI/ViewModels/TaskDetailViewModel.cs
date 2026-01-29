@@ -8,8 +8,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class TaskDetailViewModel(ProjectTaskService projectTaskService) : ObservableObject
     {
-        private readonly ProjectTaskService _projectTaskService = projectTaskService;
-
         [ObservableProperty]
         private ProjectTaskDto? selectedTask;
 
@@ -36,7 +34,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             ErrorMessage = string.Empty;
             try
             {
-                var response = await _projectTaskService.GetTaskDetailsAsync(id);
+                var response = await projectTaskService.GetTaskDetailsAsync(id);
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     SelectedTask = response.Data;
@@ -69,7 +67,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
             try
             {
-                var response = await _projectTaskService.AddCommentAsync(SelectedTask.Id, NewComment);
+                var response = await projectTaskService.AddCommentAsync(SelectedTask.Id, NewComment);
                 if (response != null && response.IsSuccess)
                 {
                     NewComment = string.Empty;

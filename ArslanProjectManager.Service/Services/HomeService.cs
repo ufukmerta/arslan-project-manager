@@ -1,24 +1,14 @@
-﻿using ArslanProjectManager.Core;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
-using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class HomeService(IUserRepository userRepository, IMapper mapper) : IHomeService
+    public class HomeService(IUserRepository userRepository) : IHomeService
     {
-        private readonly IUserRepository _userRepository = userRepository;
-        private readonly IMapper _mapper = mapper;
-
         public async Task<HomeDto> GetHomeSummaryAsync(int userId)
         {
-            var user = await _userRepository.GetUserWithTeamsProjectsTasksAsync(userId);
+            var user = await userRepository.GetUserWithTeamsProjectsTasksAsync(userId);
             var teams = user!.TeamUsers.Where(tu => tu.UserId == userId).Select(tu => tu.Team).ToList();
             var projects = teams.SelectMany(t => t.Projects).ToList();
             var tasks = projects.SelectMany(p => p.ProjectTasks).ToList();

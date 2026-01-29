@@ -2,22 +2,16 @@
 
 namespace ArslanProjectManager.Repository.UnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
-    {
-        private readonly ProjectManagerDbContext _context;
-
-        public UnitOfWork(ProjectManagerDbContext context)
-        {
-            _context = context;
-        }
+    public class UnitOfWork(ProjectManagerDbContext context) : IUnitOfWork
+    {        
         public void Commit()
         {
-            _context.SaveChanges();
+            context.SaveChanges();
         }
 
         public async Task CommitAsync()
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 }

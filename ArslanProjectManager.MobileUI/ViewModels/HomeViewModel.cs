@@ -9,8 +9,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class HomeViewModel(HomeService homeService) : ObservableObject
     {
-        private readonly HomeService _homeService = homeService;
-
         [ObservableProperty] private int totalProjects;
         [ObservableProperty] private int completedProjects;
         [ObservableProperty] private decimal projectCompletionRate;
@@ -32,7 +30,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         {
             try
             {
-                var response = await _homeService.GetHomeSummaryAsync();
+                var response = await homeService.GetHomeSummaryAsync();
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     var homeDto = response.Data;

@@ -19,11 +19,6 @@ namespace ArslanProjectManager.API.Controllers
     [ApiController]
     public class UserController(IUserService userService, ITokenService tokenService, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper) : CustomBaseController(tokenService)
     {
-        private readonly IUserService _userService = userService;
-        private readonly ITeamInviteService _teamInviteService = teamInviteService;
-        private readonly ITeamService _teamService = teamService;
-        private readonly IMapper _mapper = mapper;
-
         /// <summary>
         /// Retrieves the profile information of the authenticated user
         /// </summary>
@@ -42,7 +37,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.TokenExpired));
             }
 
-            var userProfileDto = await _userService.GetUserProfileAsync(token.UserId);
+            var userProfileDto = await userService.GetUserProfileAsync(token.UserId);
             if (userProfileDto is null)
             {
                 return CreateActionResult(CustomResponseDto<UserProfileDto>.Fail(404, ErrorMessages.UserNotFound));
@@ -63,13 +58,13 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> GetByToken()
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
-            var tokenDto = _mapper.Map<TokenDto>(token);
+            var tokenDto = mapper.Map<TokenDto>(token);
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
         }
 
@@ -87,12 +82,12 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Edit()
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
-            var userUpdateDto = _mapper.Map<UserUpdateDto>(user);
+            var userUpdateDto = mapper.Map<UserUpdateDto>(user);
 
             userUpdateDto.ProfilePicture = user.ProfilePicture is not null ?
                 Convert.ToBase64String(user.ProfilePicture).Insert(0, "data:image/png;base64,") : "/img/profile.png";
@@ -113,8 +108,7 @@ namespace ArslanProjectManager.API.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(UserUpdateDto userDto)
         {
-            var token = (await GetToken())!;
-            var existingUser = await _userService.GetByIdAsync(userDto.Id);
+            var existingUser = await userService.GetByIdAsync(userDto.Id);
             if (existingUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
@@ -124,7 +118,7 @@ namespace ArslanProjectManager.API.Controllers
 
             if (!string.IsNullOrEmpty(userDto.Email))
             {
-                var existingEmailUser = await _userService.GetByEmailAsync(userDto.Email);
+                var existingEmailUser = await userService.GetByEmailAsync(userDto.Email);
                 if (existingEmailUser != null && existingEmailUser.Id != userDto.Id)
                 {
                     return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(409, ErrorMessages.EmailAlreadyExistsForUpdate));
@@ -142,7 +136,7 @@ namespace ArslanProjectManager.API.Controllers
                 existingUser.ProfilePicture = byteArray;
             }
 
-            _userService.Update(existingUser);
+            userService.Update(existingUser);
 
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
@@ -159,14 +153,14 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> RemovePicture()
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
             user!.ProfilePicture = null;
-            _userService.Update(user);
+            userService.Update(user);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
@@ -184,7 +178,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> ChangePassword(UserPasswordUpdateDto userPasswordUpdateDto)
         {
             var token = (await GetToken())!;
-            var existingUser = await _userService.GetByIdAsync(token.UserId);
+            var existingUser = await userService.GetByIdAsync(token.UserId);
             if (existingUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
@@ -204,7 +198,7 @@ namespace ArslanProjectManager.API.Controllers
             if (passwordValidation != null) return passwordValidation;
 
             existingUser.Password = BCrypt.Net.BCrypt.HashPassword(userPasswordUpdateDto.NewPassword);
-            _userService.Update(existingUser);
+            userService.Update(existingUser);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
@@ -220,19 +214,19 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> MyInvites()
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
-            var pendingInvites = await _teamInviteService
+            var pendingInvites = await teamInviteService
                 .Where(x => x.InvitedEmail == user.Email && x.Status == TeamInvite.InviteStatus.Pending)
                 .Include(x => x.Team)
                 .Include(x => x.InvitedBy)
                 .ToListAsync();
 
-            var inviteDtos = _mapper.Map<List<PendingInviteDto>>(pendingInvites);
+            var inviteDtos = mapper.Map<List<PendingInviteDto>>(pendingInvites);
 
             return CreateActionResult(CustomResponseDto<List<PendingInviteDto>>.Success(inviteDtos, 200));
         }
@@ -253,13 +247,13 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> AcceptInvite(int id)
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
-            var invite = await _teamInviteService
+            var invite = await teamInviteService
                 .Where(x => x.Id == id && x.InvitedEmail == user.Email)
                 .Include(x => x.Team)
                 .FirstOrDefaultAsync();
@@ -269,7 +263,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.InviteAlreadyProcessed));
             }
 
-            var existingTeamUser = await _teamService.GetTeamUserAsync(invite.TeamId, user.Id);
+            var existingTeamUser = await teamService.GetTeamUserAsync(invite.TeamId, user.Id);
             if (existingTeamUser != null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(400, ErrorMessages.UserAlreadyTeamMember));
@@ -285,14 +279,14 @@ namespace ArslanProjectManager.API.Controllers
                     RoleId = 2 // Role 1 = Admin, Role 2 = Member
                 };
 
-                await _teamService.AddTeamUserAsync(teamUser);
+                await teamService.AddTeamUserAsync(teamUser);
 
                 // Update invite status
                 invite.Status = TeamInvite.InviteStatus.Accepted;
                 invite.UpdatedDate = DateTime.UtcNow;
                 invite.StatusChangeNote = $"Accepted by {user.Name}";
 
-                _teamInviteService.Update(invite);
+                teamInviteService.Update(invite);
 
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
             }
@@ -317,13 +311,13 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> RejectInvite(int id)
         {
             var token = (await GetToken())!;
-            var user = await _userService.GetByIdAsync(token.UserId);
+            var user = await userService.GetByIdAsync(token.UserId);
             if (user is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
             }
 
-            var invite = await _teamInviteService
+            var invite = await teamInviteService
                 .Where(x => x.Id == id && x.InvitedEmail == user.Email)
                 .FirstOrDefaultAsync();
 
@@ -338,7 +332,7 @@ namespace ArslanProjectManager.API.Controllers
                 invite.UpdatedDate = DateTime.UtcNow;
                 invite.StatusChangeNote = $"Rejected by {user.Name}";
 
-                _teamInviteService.Update(invite);
+                teamInviteService.Update(invite);
 
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
             }

@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TaskLogService: GenericService<TaskLog>, ITaskLogService
+    public class TaskLogService(IGenericRepository<TaskLog> repository, IUnitOfWork unitOfWork)
+        : GenericService<TaskLog>(repository, unitOfWork), ITaskLogService
     {
-        public TaskLogService(IGenericRepository<TaskLog> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
     }    
 }

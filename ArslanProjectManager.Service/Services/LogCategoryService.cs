@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
@@ -10,10 +10,8 @@ using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class LogCategoryService : GenericService<LogCategory>, ILogCategoryService
+    public class LogCategoryService(IGenericRepository<LogCategory> repository, IUnitOfWork unitOfWork)
+        : GenericService<LogCategory>(repository, unitOfWork), ILogCategoryService
     {
-        public LogCategoryService(IGenericRepository<LogCategory> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
-        {
-        }
     }
 }

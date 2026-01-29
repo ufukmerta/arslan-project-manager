@@ -6,12 +6,8 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ArslanProjectManager.MobileUI.ViewModels
 {
-    public partial class ProfileViewModel : ObservableObject
+    public partial class ProfileViewModel(UserService userService, AuthService authService, IAuthStorage authStorage) : ObservableObject
     {
-        private readonly UserService _userService;
-        private readonly AuthService _authService;
-        private readonly IAuthStorage _authStorage;
-
         [ObservableProperty] private string? fullName;
         [ObservableProperty] private string? email;
         [ObservableProperty] private string? role;
@@ -24,29 +20,23 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty] private string? errorMessage;
         [ObservableProperty] private string? currentTeam;
 
-        public IRelayCommand LogoutCommand { get; }
-        public IRelayCommand EditProfileCommand { get; }
-        public IRelayCommand OpenProjectsCommand { get; }
-        public IRelayCommand OpenTasksCommand { get; }
-        public IRelayCommand OpenInvitationsCommand { get; }
+        private IRelayCommand? _logoutCommand;
+        private IRelayCommand? _editProfileCommand;
+        private IRelayCommand? _openProjectsCommand;
+        private IRelayCommand? _openTasksCommand;
+        private IRelayCommand? _openInvitationsCommand;
 
-        public ProfileViewModel(UserService userService, AuthService authService, IAuthStorage authStorage)
-        {
-            _userService = userService;
-            _authService = authService;
-            _authStorage = authStorage;
-            LogoutCommand = new RelayCommand(OnLogout);
-            EditProfileCommand = new RelayCommand(OnEditProfile);
-            OpenProjectsCommand = new RelayCommand(OnOpenProjects);
-            OpenTasksCommand = new RelayCommand(OnOpenTasks);
-            OpenInvitationsCommand = new RelayCommand(OnOpenInvitations);
-        }
+        public IRelayCommand LogoutCommand => _logoutCommand ??= new RelayCommand(OnLogout);
+        public IRelayCommand EditProfileCommand => _editProfileCommand ??= new RelayCommand(OnEditProfile);
+        public IRelayCommand OpenProjectsCommand => _openProjectsCommand ??= new RelayCommand(OnOpenProjects);
+        public IRelayCommand OpenTasksCommand => _openTasksCommand ??= new RelayCommand(OnOpenTasks);
+        public IRelayCommand OpenInvitationsCommand => _openInvitationsCommand ??= new RelayCommand(OnOpenInvitations);
 
         public async Task LoadProfileAsync()
         {
             try
             {
-                var response = await _userService.GetProfileAsync();
+                var response = await userService.GetProfileAsync();
                 if (response != null && response.IsSuccess && response.Data != null)
                 {
                     var profile = response.Data;
@@ -91,8 +81,8 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         private async void OnLogout()
         {
-            await _authStorage.ClearTokensAsync();
-            await _authService.LogoutAsync();
+            await authStorage.ClearTokensAsync();
+            await authService.LogoutAsync();
             await Shell.Current.GoToAsync("//login");
         }
 
