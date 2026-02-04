@@ -2,7 +2,9 @@ using ArslanProjectManager.API.Filters;
 using ArslanProjectManager.API.Middlewares;
 using ArslanProjectManager.API.Modules;
 using ArslanProjectManager.Repository;
+using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Service.Mappings;
+using ArslanProjectManager.Service.Services;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -98,6 +100,7 @@ builder.Services.AddDbContext<ProjectManagerDbContext>(options =>
 
 builder.Services.AddScoped(typeof(NotFoundFilter<>));
 builder.Services.AddAutoMapper(cfg => cfg.AllowNullCollections = true, typeof(MapProfile));
+
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
@@ -106,9 +109,12 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Seed initial static data (idempotent: only inserts when tables are empty)
+using (var scope = app.Services.CreateScope())
 {
+    var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeederService>();
+    await seeder.SeedAsync();
+}
     app.MapOpenApi();
     app.UseSwaggerUI(options =>
     {
@@ -134,6 +140,8 @@ app.UseMiddleware<TokenExpirationMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+app.MapGet("/", () => Results.Redirect("/api-docs", permanent: true)).ExcludeFromDescription();
 app.MapControllers();
 
 app.Run();

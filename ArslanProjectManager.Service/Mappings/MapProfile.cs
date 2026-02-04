@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.DeleteDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
@@ -16,7 +16,23 @@ namespace ArslanProjectManager.Service.Mappings
             CreateMap<BoardTagDto, BoardTag>().ReverseMap();
             CreateMap<LogCategoryDto, LogCategory>().ReverseMap();
             CreateMap<ProjectDto, Project>().ReverseMap();
-            CreateMap<RoleDto, Role>().ReverseMap();
+            CreateMap<Role, RoleDto>()
+                .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.TeamId == null ? null : src.Team!.TeamName))
+                .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => new RolePermissionsDto
+                {
+                    CanViewTasks = src.CanViewTasks,
+                    CanEditTasks = src.CanEditTasks,
+                    CanDeleteTasks = src.CanDeleteTasks,
+                    CanAssignTasks = src.CanAssignTasks,
+                    CanViewProjects = src.CanViewProjects,
+                    CanEditProjects = src.CanEditProjects,
+                    CanDeleteProjects = src.CanDeleteProjects,
+                    CanInviteMembers = src.CanInviteMembers,
+                    CanRemoveMembers = src.CanRemoveMembers,
+                    CanManageRoles = src.CanManageRoles,
+                    CanManagePermissions = src.CanManagePermissions
+                }))
+                .ForMember(dest => dest.UserCount, opt => opt.Ignore()); // Will be set manually in service
             CreateMap<TaskCategoryDto, TaskCategory>().ReverseMap();
 
             CreateMap<TaskCommentDto, TaskComment>()
@@ -58,7 +74,28 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.AppointerId, opt => opt.Ignore());
 
             CreateMap<Project, ProjectCreateDto>().ReverseMap();
-            CreateMap<Role, RoleCreateDto>().ReverseMap();
+            CreateMap<Role, RoleCreateDto>();
+            CreateMap<RoleCreateDto, Role>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.TeamId, opt => opt.Ignore()) // Will be set in service
+                .ForMember(dest => dest.IsSystemRole, opt => opt.MapFrom(src => false)) // Team-specific role, not system role
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleName))
+                .ForMember(dest => dest.CanViewTasks, opt => opt.MapFrom(src => src.Permissions.CanViewTasks))
+                .ForMember(dest => dest.CanEditTasks, opt => opt.MapFrom(src => src.Permissions.CanEditTasks))
+                .ForMember(dest => dest.CanDeleteTasks, opt => opt.MapFrom(src => src.Permissions.CanDeleteTasks))
+                .ForMember(dest => dest.CanAssignTasks, opt => opt.MapFrom(src => src.Permissions.CanAssignTasks))
+                .ForMember(dest => dest.CanViewProjects, opt => opt.MapFrom(src => src.Permissions.CanViewProjects))
+                .ForMember(dest => dest.CanEditProjects, opt => opt.MapFrom(src => src.Permissions.CanEditProjects))
+                .ForMember(dest => dest.CanDeleteProjects, opt => opt.MapFrom(src => src.Permissions.CanDeleteProjects))
+                .ForMember(dest => dest.CanInviteMembers, opt => opt.MapFrom(src => src.Permissions.CanInviteMembers))
+                .ForMember(dest => dest.CanRemoveMembers, opt => opt.MapFrom(src => src.Permissions.CanRemoveMembers))
+                .ForMember(dest => dest.CanManageRoles, opt => opt.MapFrom(src => src.Permissions.CanManageRoles))
+                .ForMember(dest => dest.CanManagePermissions, opt => opt.MapFrom(src => src.Permissions.CanManagePermissions))
+                .ForMember(dest => dest.Team, opt => opt.Ignore())
+                .ForMember(dest => dest.TeamUsers, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.IsActive, opt => opt.Ignore());
             CreateMap<TaskCategory, TaskCategoryCreateDto>().ReverseMap();
             CreateMap<TaskComment, TaskCommentCreateDto>().ReverseMap();
             CreateMap<TaskLog, TaskLogCreateDto>().ReverseMap();
@@ -93,15 +130,60 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.TaskComments, opt => opt.Ignore())
                 .ForMember(dest => dest.TaskLogs, opt => opt.Ignore())
                 .ForMember(dest => dest.TaskTags, opt => opt.Ignore());
-
-            CreateMap<RoleUpdateDto, Role>().ReverseMap();
+            
+            CreateMap<RoleUpdateDto, Role>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.TeamId, opt => opt.Ignore())
+                .ForMember(dest => dest.IsSystemRole, opt => opt.Ignore())
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleName))
+                .ForMember(dest => dest.CanViewTasks, opt => opt.MapFrom(src => src.Permissions.CanViewTasks))
+                .ForMember(dest => dest.CanEditTasks, opt => opt.MapFrom(src => src.Permissions.CanEditTasks))
+                .ForMember(dest => dest.CanDeleteTasks, opt => opt.MapFrom(src => src.Permissions.CanDeleteTasks))
+                .ForMember(dest => dest.CanAssignTasks, opt => opt.MapFrom(src => src.Permissions.CanAssignTasks))
+                .ForMember(dest => dest.CanViewProjects, opt => opt.MapFrom(src => src.Permissions.CanViewProjects))
+                .ForMember(dest => dest.CanEditProjects, opt => opt.MapFrom(src => src.Permissions.CanEditProjects))
+                .ForMember(dest => dest.CanDeleteProjects, opt => opt.MapFrom(src => src.Permissions.CanDeleteProjects))
+                .ForMember(dest => dest.CanInviteMembers, opt => opt.MapFrom(src => src.Permissions.CanInviteMembers))
+                .ForMember(dest => dest.CanRemoveMembers, opt => opt.MapFrom(src => src.Permissions.CanRemoveMembers))
+                .ForMember(dest => dest.CanManageRoles, opt => opt.MapFrom(src => src.Permissions.CanManageRoles))
+                .ForMember(dest => dest.CanManagePermissions, opt => opt.MapFrom(src => src.Permissions.CanManagePermissions))
+                .ForMember(dest => dest.Team, opt => opt.Ignore())
+                .ForMember(dest => dest.TeamUsers, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.IsActive, opt => opt.Ignore());
             CreateMap<TaskCategoryUpdateDto, TaskCategory>().ReverseMap();
             CreateMap<TaskCommentUpdateDto, TaskComment>().ReverseMap();
             CreateMap<TaskLogUpdateDto, TaskLog>().ReverseMap();
             CreateMap<TaskTagUpdateDto, TaskTag>().ReverseMap();
             CreateMap<TeamUpdateDto, Team>().ReverseMap();
             CreateMap<TeamInviteUpdateDto, TeamInvite>().ReverseMap();
-            CreateMap<TeamUserUpdateDto, TeamUser>().ReverseMap();
+            CreateMap<TeamUserUpdateDto, TeamUser>().ReverseMap();            
+            CreateMap<UserPermissionUpdateDto, TeamUser>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.TeamId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.RoleId, opt => opt.Ignore()) // Will be set if RoleId is provided in DTO
+                .ForMember(dest => dest.CanViewTasksOverride, opt => opt.MapFrom(src => src.CanViewTasks))
+                .ForMember(dest => dest.CanEditTasksOverride, opt => opt.MapFrom(src => src.CanEditTasks))
+                .ForMember(dest => dest.CanDeleteTasksOverride, opt => opt.MapFrom(src => src.CanDeleteTasks))
+                .ForMember(dest => dest.CanAssignTasksOverride, opt => opt.MapFrom(src => src.CanAssignTasks))
+                .ForMember(dest => dest.CanViewProjectsOverride, opt => opt.MapFrom(src => src.CanViewProjects))
+                .ForMember(dest => dest.CanEditProjectsOverride, opt => opt.MapFrom(src => src.CanEditProjects))
+                .ForMember(dest => dest.CanDeleteProjectsOverride, opt => opt.MapFrom(src => src.CanDeleteProjects))
+                .ForMember(dest => dest.CanInviteMembersOverride, opt => opt.MapFrom(src => src.CanInviteMembers))
+                .ForMember(dest => dest.CanRemoveMembersOverride, opt => opt.MapFrom(src => src.CanRemoveMembers))
+                .ForMember(dest => dest.Role, opt => opt.Ignore())
+                .ForMember(dest => dest.Team, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.ProjectTaskAppointees, opt => opt.Ignore())
+                .ForMember(dest => dest.ProjectTaskAppointers, opt => opt.Ignore())
+                .ForMember(dest => dest.TaskComments, opt => opt.Ignore())
+                .ForMember(dest => dest.TaskLogs, opt => opt.Ignore())
+                .ForMember(dest => dest.AffectedTaskLogs, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore())
+                .ForMember(dest => dest.IsActive, opt => opt.Ignore());
 
             CreateMap<UserUpdateDto, User>()
                 .ForMember(dest => dest.ProfilePicture, src => src.Ignore());
@@ -425,6 +507,7 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.ManagerName))
                 .ForMember(dest => dest.ManagerId, opt => opt.MapFrom(src => src.ManagerId))
+                .ForMember(dest => dest.CanRemoveMembers, opt => opt.MapFrom(src => src.CanRemoveMembers))
                 .ForMember(dest => dest.Projects, opt => opt.MapFrom(src => src.Projects))
                 .ForMember(dest => dest.Members, opt => opt.MapFrom(src => src.Members)).ReverseMap();
 
@@ -468,6 +551,62 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.StatusChangeNote, opt => opt.MapFrom(src => src.StatusChangeNote))
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
                 .ForMember(dest => dest.UpdatedDate, opt => opt.MapFrom(src => src.UpdatedDate)).ReverseMap();
+
+
+            //Teams/Permissions
+            CreateMap<TeamPermissionsDto, TeamPermissionsViewModel>()
+                .ForMember(dest => dest.TeamId, opt => opt.MapFrom(src => src.TeamId))
+                .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.TeamName))
+                .ForMember(dest => dest.ManagerId, opt => opt.MapFrom(src => src.ManagerId))
+                .ForMember(dest => dest.CanManagePermissions, opt => opt.MapFrom(src => src.CanManagePermissions))
+                .ForMember(dest => dest.Users, opt => opt.MapFrom(src => src.Users)).ReverseMap();
+
+            CreateMap<TeamUserRoleDto, TeamUserPermissionViewModel>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.TeamUserId, opt => opt.MapFrom(src => src.TeamUserId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
+                .ForMember(dest => dest.IsSystemRole, opt => opt.MapFrom(src => src.IsSystemRole))
+                .ForMember(dest => dest.CanViewTasks, opt => opt.MapFrom(src => src.CanViewTasks))
+                .ForMember(dest => dest.CanEditTasks, opt => opt.MapFrom(src => src.CanEditTasks))
+                .ForMember(dest => dest.CanDeleteTasks, opt => opt.MapFrom(src => src.CanDeleteTasks))
+                .ForMember(dest => dest.CanAssignTasks, opt => opt.MapFrom(src => src.CanAssignTasks))
+                .ForMember(dest => dest.CanViewProjects, opt => opt.MapFrom(src => src.CanViewProjects))
+                .ForMember(dest => dest.CanEditProjects, opt => opt.MapFrom(src => src.CanEditProjects))
+                .ForMember(dest => dest.CanDeleteProjects, opt => opt.MapFrom(src => src.CanDeleteProjects))
+                .ForMember(dest => dest.CanInviteMembers, opt => opt.MapFrom(src => src.CanInviteMembers))
+                .ForMember(dest => dest.CanRemoveMembers, opt => opt.MapFrom(src => src.CanRemoveMembers))
+                .ForMember(dest => dest.CanManageRoles, opt => opt.MapFrom(src => src.CanManageRoles))
+                .ForMember(dest => dest.CanManagePermissions, opt => opt.MapFrom(src => src.CanManagePermissions))
+                .ReverseMap();
+
+            //Teams/Roles
+            CreateMap<RoleDto, TeamRoleViewModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleName))
+                .ForMember(dest => dest.TeamId, opt => opt.MapFrom(src => src.TeamId))
+                .ForMember(dest => dest.TeamName, opt => opt.MapFrom(src => src.TeamName))
+                .ForMember(dest => dest.IsSystemRole, opt => opt.MapFrom(src => src.IsSystemRole))
+                .ForMember(dest => dest.UserCount, opt => opt.MapFrom(src => src.UserCount))
+                .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions))
+                .ReverseMap();
+
+            CreateMap<RolePermissionsDto, RolePermissionsViewModel>().ReverseMap();
+
+            CreateMap<TeamRoleCreateViewModel, RoleCreateDto>()
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleName))
+                .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions))
+                .ReverseMap();
+
+            CreateMap<TeamRoleUpdateViewModel, RoleUpdateDto>()
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.RoleName))
+                .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions))
+                .ReverseMap();
+
+            //Teams/User Permissions
+            CreateMap<UserEffectivePermissionsDto, UserEffectivePermissionsViewModel>().ReverseMap();
+            CreateMap<UserPermissionUpdateViewModel, UserPermissionUpdateDto>().ReverseMap();
         }
     }
 }

@@ -4,6 +4,7 @@ using ArslanProjectManager.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArslanProjectManager.Repository.Migrations
 {
     [DbContext(typeof(ProjectManagerDbContext))]
-    partial class ProjectManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260204152044_AddManageRolesPermissionsOverride")]
+    partial class AddManageRolesPermissionsOverride
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -348,13 +351,13 @@ namespace ArslanProjectManager.Repository.Migrations
 
                     b.HasIndex("RoleName")
                         .IsUnique()
-                        .HasFilter("[team_id] IS NULL AND [is_active] = 1");
+                        .HasFilter("[team_id] IS NULL");
 
                     b.HasIndex("TeamId");
 
                     b.HasIndex("RoleName", "TeamId")
                         .IsUnique()
-                        .HasFilter("[is_active] = 1");
+                        .HasFilter("[team_id] IS NOT NULL");
 
                     b.ToTable("role", (string)null);
                 });

@@ -1,4 +1,5 @@
-﻿using ArslanProjectManager.Core.Models;
+﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +10,6 @@ namespace ArslanProjectManager.Core.Services
 {
     public interface ITeamUserService: IGenericService<TeamUser>
     {
+        Task<UserEffectivePermissionsDto> GetTeamUserWithPermissionsAsync(int teamId, int userId);
     }
 }

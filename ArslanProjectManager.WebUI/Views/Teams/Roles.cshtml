@@ -1,0 +1,928 @@
+@model TeamRolesViewModel
+@using System.Security.Claims
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Team Roles: " + @Model.TeamName;
+    int currentUserId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+    bool canManageRoles = Model.CanManageRoles;
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h2>
+                    <i class="bi bi-shield text-primary me-2"></i>
+                    Team Roles: @Model.TeamName
+                </h2>
+                <p class="text-muted">
+                    <i class="bi bi-info-circle me-2"></i>
+                    View @(!canManageRoles ? "and manage" : "") roles and permissions for this team
+                </p>
+            </div>
+            <div>
+                <a asp-action="Details" asp-route-id="@Model.TeamId" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Team
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-shield"></i> Available Roles
+                </h5>
+                @if (canManageRoles)
+                {
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createRoleModal">
+                            <i class="bi bi-plus-circle"></i> Create New Role
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#cloneRoleModal">
+                            <i class="bi bi-files"></i> Clone System Role
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Read-only</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (!Model.Roles.Any())
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-shield fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No roles found</h5>
+                        <p class="text-muted">Create your first team-specific role to get started.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="rolesTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-hash"></i> </th>
+                                    <th><i class="bi bi-shield"></i> Role Name</th>
+                                    <th><i class="bi bi-tag"></i> Type</th>
+                                    <th><i class="bi bi-people"></i> Users</th>
+                                    <th class="text-center"><i class="bi bi-list-check"></i> Task Permissions</th>
+                                    <th class="text-center"><i class="bi bi-folder"></i> Project Permissions</th>
+                                    <th class="text-center"><i class="bi bi-people"></i> Team Management</th>
+                                    @if (canManageRoles)
+                                    {
+                                        <th class="text-center"><i class="bi bi-gear"></i> Actions</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int count = 1;
+                                }
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <tr>
+                                        <td>@count</td>
+                                        <td>
+                                            <strong>@role.RoleName</strong>
+                                        </td>
+                                        <td>
+                                            @if (role.IsSystemRole)
+                                            {
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-shield-check me-1"></i> System Role
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-shield me-1"></i> Team Role
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-people me-1"></i> @role.UserCount
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-1">
+                                                <small>
+                                                    @if (role.Permissions.CanViewTasks)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>View</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>View</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanEditTasks)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Edit</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Edit</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanDeleteTasks)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Delete</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Delete</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanAssignTasks)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Assign</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Assign</span>
+                                                    }
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-1">
+                                                <small>
+                                                    @if (role.Permissions.CanViewProjects)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>View</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>View</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanEditProjects)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Edit</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Edit</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanDeleteProjects)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Delete</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Delete</span>
+                                                    }
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-column gap-1">
+                                                <small>
+                                                    @if (role.Permissions.CanInviteMembers)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Invite</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Invite</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanRemoveMembers)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Remove</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Remove</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanManageRoles)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Manage Roles</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Manage Roles</span>
+                                                    }
+                                                </small>
+                                                <small>
+                                                    @if (role.Permissions.CanManagePermissions)
+                                                    {
+                                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Manage Permissions</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Manage Permissions</span>
+                                                    }
+                                                </small>
+                                            </div>
+                                        </td>
+                                        @if (canManageRoles)
+                                        {
+                                            <td class="text-center">
+                                                @if (!role.IsSystemRole)
+                                                {
+                                                    
+                                                    var editPermsJson = System.Net.WebUtility.HtmlEncode(System.Text.Json.JsonSerializer.Serialize(role.Permissions));
+                                                    
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-warning btn-edit-role"
+                                                                data-role-id="@role.Id"
+                                                                data-role-name="@role.RoleName"
+                                                                data-role-user-count="@role.UserCount"
+                                                                data-role-permissions="@editPermsJson">
+                                                            <i class="bi bi-pencil"></i> Edit
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-danger btn-delete-role"
+                                                                data-role-id="@role.Id"
+                                                                data-role-name="@role.RoleName"
+                                                                data-role-user-count="@role.UserCount">
+                                                            <i class="bi bi-trash"></i> Delete
+                                                        </button>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    var clonePermsJson = System.Net.WebUtility.HtmlEncode(System.Text.Json.JsonSerializer.Serialize(role.Permissions));
+                                                    <button type="button" class="btn btn-sm btn-info btn-clone-role"
+                                                            data-role-id="@role.Id"
+                                                            data-role-name="@role.RoleName"
+                                                            data-permissions="@clonePermsJson">
+                                                        <i class="bi bi-files"></i> Clone
+                                                    </button>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                    count++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Role Modal -->
+<div class="modal fade" id="createRoleModal" tabindex="-1" aria-labelledby="createRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="CreateRole" method="post" id="createRoleForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createRoleModalLabel">
+                        <i class="bi bi-plus-circle"></i> Create New Role
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TeamId" value="@Model.TeamId" />
+                    <div class="mb-3">
+                        <label for="createRoleName" class="form-label">Role Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="createRoleName" name="RoleName" required maxlength="100" />
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-list-check"></i> Permissions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-primary">Task Permissions</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanViewTasks" name="Permissions.CanViewTasks" value="true" />
+                                        <label class="form-check-label" for="createCanViewTasks">View Tasks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanEditTasks" name="Permissions.CanEditTasks" value="true" />
+                                        <label class="form-check-label" for="createCanEditTasks">Edit Tasks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanDeleteTasks" name="Permissions.CanDeleteTasks" value="true" />
+                                        <label class="form-check-label" for="createCanDeleteTasks">Delete Tasks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanAssignTasks" name="Permissions.CanAssignTasks" value="true" />
+                                        <label class="form-check-label" for="createCanAssignTasks">Assign Tasks</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-primary">Project Permissions</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanViewProjects" name="Permissions.CanViewProjects" value="true" />
+                                        <label class="form-check-label" for="createCanViewProjects">View Projects</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanEditProjects" name="Permissions.CanEditProjects" value="true" />
+                                        <label class="form-check-label" for="createCanEditProjects">Edit Projects</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanDeleteProjects" name="Permissions.CanDeleteProjects" value="true" />
+                                        <label class="form-check-label" for="createCanDeleteProjects">Delete Projects</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-primary">Team Management</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanInviteMembers" name="Permissions.CanInviteMembers" value="true" />
+                                        <label class="form-check-label" for="createCanInviteMembers">Invite Members</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanRemoveMembers" name="Permissions.CanRemoveMembers" value="true" />
+                                        <label class="form-check-label" for="createCanRemoveMembers">Remove Members</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanManageRoles" name="Permissions.CanManageRoles" value="true" />
+                                        <label class="form-check-label" for="createCanManageRoles">Manage Roles</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createCanManagePermissions" name="Permissions.CanManagePermissions" value="true" />
+                                        <label class="form-check-label" for="createCanManagePermissions">Manage Permissions</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Create Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Role Modal -->
+<div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-action="UpdateRole" method="post" id="editRoleForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editRoleModalLabel">
+                        <i class="bi bi-pencil"></i> Edit Role
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TeamId" value="@Model.TeamId" />
+                    <input type="hidden" name="RoleId" id="editRoleId" />
+                    <div class="mb-3">
+                        <label for="editRoleName" class="form-label">Role Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editRoleName" name="RoleName" required maxlength="100" />
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-list-check"></i> Permissions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-primary">Task Permissions</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanViewTasks" name="Permissions.CanViewTasks" value="true" />
+                                        <label class="form-check-label" for="editCanViewTasks">View Tasks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanEditTasks" name="Permissions.CanEditTasks" value="true" />
+                                        <label class="form-check-label" for="editCanEditTasks">Edit Tasks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanDeleteTasks" name="Permissions.CanDeleteTasks" value="true" />
+                                        <label class="form-check-label" for="editCanDeleteTasks">Delete Tasks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanAssignTasks" name="Permissions.CanAssignTasks" value="true" />
+                                        <label class="form-check-label" for="editCanAssignTasks">Assign Tasks</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-primary">Project Permissions</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanViewProjects" name="Permissions.CanViewProjects" value="true" />
+                                        <label class="form-check-label" for="editCanViewProjects">View Projects</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanEditProjects" name="Permissions.CanEditProjects" value="true" />
+                                        <label class="form-check-label" for="editCanEditProjects">Edit Projects</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanDeleteProjects" name="Permissions.CanDeleteProjects" value="true" />
+                                        <label class="form-check-label" for="editCanDeleteProjects">Delete Projects</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-primary">Team Management</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanInviteMembers" name="Permissions.CanInviteMembers" value="true" />
+                                        <label class="form-check-label" for="editCanInviteMembers">Invite Members</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanRemoveMembers" name="Permissions.CanRemoveMembers" value="true" />
+                                        <label class="form-check-label" for="editCanRemoveMembers">Remove Members</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanManageRoles" name="Permissions.CanManageRoles" value="true" />
+                                        <label class="form-check-label" for="editCanManageRoles">Manage Roles</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCanManagePermissions" name="Permissions.CanManagePermissions" value="true" />
+                                        <label class="form-check-label" for="editCanManagePermissions">Manage Permissions</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Update Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Clone Role Modal -->
+<div class="modal fade" id="cloneRoleModal" tabindex="-1" aria-labelledby="cloneRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="cloneRoleForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cloneRoleModalLabel">
+                        <i class="bi bi-files"></i> Clone System Role
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TeamId" value="@Model.TeamId" />
+                    <div class="mb-3">
+                        <label for="cloneSourceRoleId" class="form-label">Source System Role <span class="text-danger">*</span></label>
+                        <select class="form-select" id="cloneSourceRoleId" name="SourceRoleId" required>
+                            <option value="">-- Select a system role to clone --</option>
+                            @foreach (var role in Model.Roles.Where(r => r.IsSystemRole).OrderBy(r => r.RoleName))
+                            {
+                                var permissionsJsonString = Json.Serialize(role.Permissions).ToString();
+                                var permissionsJson = System.Net.WebUtility.HtmlEncode(permissionsJsonString);
+                                <option value="@role.Id" 
+                                        data-permissions="@permissionsJson" 
+                                        data-rolename="@role.RoleName">
+                                    @role.RoleName
+                                </option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Select a system role to clone as a team-specific role</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cloneNewRoleName" class="form-label">New Role Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="cloneNewRoleName" name="NewRoleName" required maxlength="100" placeholder="Enter name for the new role" />
+                        <small class="form-text text-muted">This will be the name of your new team-specific role</small>
+                    </div>
+                    <div id="clonePermissionsPreview" class="card mb-3" style="display: none;">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-eye"></i> Permissions Preview</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-primary small">Task Permissions</h6>
+                                    <div id="cloneTaskPerms" class="small"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-primary small">Project Permissions</h6>
+                                    <div id="cloneProjectPerms" class="small"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-primary small">Team Management</h6>
+                                    <div id="cloneTeamPerms" class="small"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> The new role will have the same permissions as the selected system role. You can edit it after creation.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-files"></i> Clone Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <input type="hidden" id="js-roles-data"
+           data-team-id="@Model.TeamId"
+           data-url-create="@Url.Action("CreateRole", "Teams")"
+           data-url-update="@Url.Action("UpdateRole", "Teams")"
+           data-url-delete="@Url.Action("DeleteRole", "Teams")"
+           data-url-clone="@Url.Action("CloneRole", "Teams")"
+           data-column-targets="@(canManageRoles ? "0, 4, 5, 6, 7" : "0, 4, 5, 6")" />
+    <script>
+        var _rolesDataEl = document.getElementById('js-roles-data');
+        var _teamId = parseInt(_rolesDataEl.getAttribute('data-team-id'), 10);
+        var _urlCreateRole = _rolesDataEl.getAttribute('data-url-create');
+        var _urlUpdateRole = _rolesDataEl.getAttribute('data-url-update');
+        var _urlDeleteRole = _rolesDataEl.getAttribute('data-url-delete');
+        var _urlCloneRole = _rolesDataEl.getAttribute('data-url-clone');
+        var _columnTargets = _rolesDataEl.getAttribute('data-column-targets').split(',').map(function (s) { return parseInt(s.trim(), 10); });
+
+        $(document).ready(function () {
+            $('#rolesTable').DataTable({
+                "order": [], // Keep server order (system first, then Manager, Member, Viewer, others)
+                "pageLength": 25,
+                "language": {
+                    "search": "Search roles:",
+                    "lengthMenu": "Show _MENU_ roles per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ roles",
+                    "infoEmpty": "Showing 0 to 0 of 0 roles",
+                    "infoFiltered": "(filtered from _MAX_ total roles)"
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": _columnTargets }
+                ],
+                "scrollX": true
+            });
+
+            // Reset clone modal when it's closed
+            $('#cloneRoleModal').on('hidden.bs.modal', function () {
+                $('#cloneRoleForm')[0].reset();
+                $('#clonePermissionsPreview').hide();
+                $('#cloneSourceRoleId').val('');
+                $('#cloneNewRoleName').val('');
+            });
+
+            // When modal is shown, check if a role is already selected and show preview
+            $('#cloneRoleModal').on('shown.bs.modal', function () {
+                var selectedValue = $('#cloneSourceRoleId').val();
+                if (selectedValue && selectedValue !== '') {
+                    // Trigger change event to update preview
+                    $('#cloneSourceRoleId').trigger('change');
+                }
+            });
+
+            // Handle edit button clicks (use data attributes to avoid XSS from role names in onclick)
+            $(document).on('click', '.btn-edit-role', function() {
+                var $btn = $(this);
+                var roleId = $btn.data('role-id');
+                var roleName = $btn.data('role-name');
+                var permissionsAttr = $btn.attr('data-role-permissions');
+                if (!permissionsAttr) {
+                    alert('Error loading role data. Please try again.');
+                    return;
+                }
+                try {
+                    var decodedJson = $('<div>').html(permissionsAttr).text();
+                    var permissions = JSON.parse(decodedJson);
+                    editRole(roleId, roleName, permissions);
+                } catch (e) {
+                    console.error('Error parsing permissions:', e);
+                    alert('Error loading role permissions. Please try again.');
+                }
+            });
+
+            // Handle delete button clicks (use data attributes to avoid XSS from role names in onclick)
+            $(document).on('click', '.btn-delete-role', function() {
+                var $btn = $(this);
+                var roleId = $btn.data('role-id');
+                var roleName = $btn.data('role-name');
+                var userCount = parseInt($btn.data('role-user-count'), 10) || 0;
+                deleteRole(roleId, roleName, userCount);
+            });
+
+            // Handle clone button clicks using data attributes
+            $(document).on('click', '.btn-clone-role', function() {
+                var roleId = $(this).data('role-id');
+                var roleName = $(this).data('role-name');
+                var permissionsAttr = $(this).attr('data-permissions');
+                if (!permissionsAttr) {
+                    alert('Error loading role permissions. Please try again.');
+                    return;
+                }
+                try {
+                    var decodedJson = $('<div>').html(permissionsAttr).text();
+                    var permissions = JSON.parse(decodedJson);
+                    quickCloneRole(roleId, roleName, permissions);
+                } catch (e) {
+                    console.error('Error parsing permissions:', e);
+                    alert('Error loading role permissions. Please try again.');
+                }
+            });
+
+            // Handle create form submission
+            $('#createRoleForm').on('submit', function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: _urlCreateRole + '?teamId=' + _teamId,
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response && response.isSuccess) {
+                            $('#createRoleModal').modal('hide');
+                            location.reload();
+                        } else {
+                            var errorMsg = response?.errorMessage || response?.errors || 'Failed to create role';
+                            alert('Error: ' + errorMsg);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        var errorMsg = 'An error occurred while creating the role.';
+                        if (xhr.responseJSON) {
+                            errorMsg = xhr.responseJSON.errorMessage || xhr.responseJSON.errors || errorMsg;
+                        } else if (xhr.responseText) {
+                            try {
+                                var errorResponse = JSON.parse(xhr.responseText);
+                                errorMsg = errorResponse.errorMessage || errorResponse.errors || errorMsg;
+                            } catch (e) {
+                                errorMsg = xhr.responseText || errorMsg;
+                            }
+                        }
+                        alert('Error: ' + errorMsg);
+                    }
+                });
+            });
+        });
+
+        function editRole(roleId, roleName, permissions) {
+            $('#editRoleId').val(roleId);
+            $('#editRoleName').val(roleName);
+            
+            // Handle both camelCase and PascalCase property names (C# JSON uses PascalCase by default)
+            var canViewTasks = permissions.canViewTasks || permissions.CanViewTasks || false;
+            var canEditTasks = permissions.canEditTasks || permissions.CanEditTasks || false;
+            var canDeleteTasks = permissions.canDeleteTasks || permissions.CanDeleteTasks || false;
+            var canAssignTasks = permissions.canAssignTasks || permissions.CanAssignTasks || false;
+            var canViewProjects = permissions.canViewProjects || permissions.CanViewProjects || false;
+            var canEditProjects = permissions.canEditProjects || permissions.CanEditProjects || false;
+            var canDeleteProjects = permissions.canDeleteProjects || permissions.CanDeleteProjects || false;
+            var canInviteMembers = permissions.canInviteMembers || permissions.CanInviteMembers || false;
+            var canRemoveMembers = permissions.canRemoveMembers || permissions.CanRemoveMembers || false;
+            var canManageRoles = permissions.canManageRoles || permissions.CanManageRoles || false;
+            var canManagePermissions = permissions.canManagePermissions || permissions.CanManagePermissions || false;
+            
+            $('#editCanViewTasks').prop('checked', canViewTasks);
+            $('#editCanEditTasks').prop('checked', canEditTasks);
+            $('#editCanDeleteTasks').prop('checked', canDeleteTasks);
+            $('#editCanAssignTasks').prop('checked', canAssignTasks);
+            $('#editCanViewProjects').prop('checked', canViewProjects);
+            $('#editCanEditProjects').prop('checked', canEditProjects);
+            $('#editCanDeleteProjects').prop('checked', canDeleteProjects);
+            $('#editCanInviteMembers').prop('checked', canInviteMembers);
+            $('#editCanRemoveMembers').prop('checked', canRemoveMembers);
+            $('#editCanManageRoles').prop('checked', canManageRoles);
+            $('#editCanManagePermissions').prop('checked', canManagePermissions);
+            
+            var editModal = new bootstrap.Modal(document.getElementById('editRoleModal'));
+            editModal.show();
+        }
+
+        $('#editRoleForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            var roleId = $('#editRoleId').val();
+            $.ajax({
+                url: _urlUpdateRole + '?teamId=' + _teamId + '&roleId=' + roleId,
+                type: 'PUT',
+                data: formData,
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response && response.isSuccess) {
+                        $('#editRoleModal').modal('hide');
+                        location.reload();
+                    } else {
+                        var errorMsg = response?.errorMessage || response?.errors || 'Failed to update role';
+                        alert('Error: ' + errorMsg);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    var errorMsg = 'An error occurred while updating the role.';
+                    if (xhr.responseJSON) {
+                        errorMsg = xhr.responseJSON.errorMessage || xhr.responseJSON.errors || errorMsg;
+                    } else if (xhr.responseText) {
+                        try {
+                            var errorResponse = JSON.parse(xhr.responseText);
+                            errorMsg = errorResponse.errorMessage || errorResponse.errors || errorMsg;
+                        } catch (e) {
+                            errorMsg = xhr.responseText || errorMsg;
+                        }
+                    }
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        });
+
+        function deleteRole(roleId, roleName, userCount) {
+            if (userCount > 0) {
+                alert('Cannot delete role "' + roleName + '" because it is assigned to ' + userCount + ' user(s). Please reassign users to other roles first.');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to delete the role "' + roleName + '"? This action cannot be undone.')) {
+                $.ajax({
+                    url: _urlDeleteRole + '?teamId=' + _teamId + '&roleId=' + roleId,
+                    type: 'DELETE',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response && response.isSuccess) {
+                            location.reload();
+                        } else {
+                            var errorMsg = response?.errorMessage || response?.errors || 'Failed to delete role';
+                            alert('Error: ' + errorMsg);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        var errorMsg = 'An error occurred while deleting the role.';
+                        if (xhr.responseJSON) {
+                            errorMsg = xhr.responseJSON.errorMessage || xhr.responseJSON.errors || errorMsg;
+                        } else if (xhr.responseText) {
+                            try {
+                                var errorResponse = JSON.parse(xhr.responseText);
+                                errorMsg = errorResponse.errorMessage || errorResponse.errors || errorMsg;
+                            } catch (e) {
+                                errorMsg = xhr.responseText || errorMsg;
+                            }
+                        }
+                        alert('Error: ' + errorMsg);
+                    }
+                });
+            }
+        }
+
+        // Quick clone function for system roles
+        function quickCloneRole(roleId, roleName, permissions) {
+            // Set the select value
+            $('#cloneSourceRoleId').val(roleId);
+            
+            // Update preview using the helper function
+            updateClonePreview(permissions, roleName);
+            
+            // Open the modal
+            var cloneModal = new bootstrap.Modal(document.getElementById('cloneRoleModal'));
+            cloneModal.show();
+        }
+
+        // Helper function to update permissions preview
+        function updateClonePreview(permissions, roleName) {
+            if (permissions) {
+                // Show preview
+                $('#clonePermissionsPreview').show();
+                
+                // Handle both camelCase and PascalCase property names
+                var canViewTasks = permissions.canViewTasks || permissions.CanViewTasks || false;
+                var canEditTasks = permissions.canEditTasks || permissions.CanEditTasks || false;
+                var canDeleteTasks = permissions.canDeleteTasks || permissions.CanDeleteTasks || false;
+                var canAssignTasks = permissions.canAssignTasks || permissions.CanAssignTasks || false;
+                var canViewProjects = permissions.canViewProjects || permissions.CanViewProjects || false;
+                var canEditProjects = permissions.canEditProjects || permissions.CanEditProjects || false;
+                var canDeleteProjects = permissions.canDeleteProjects || permissions.CanDeleteProjects || false;
+                var canInviteMembers = permissions.canInviteMembers || permissions.CanInviteMembers || false;
+                var canRemoveMembers = permissions.canRemoveMembers || permissions.CanRemoveMembers || false;
+                var canManageRoles = permissions.canManageRoles || permissions.CanManageRoles || false;
+                var canManagePermissions = permissions.canManagePermissions || permissions.CanManagePermissions || false;
+                
+                // Update task permissions
+                var taskPerms = [];
+                if (canViewTasks) taskPerms.push('<span class="badge bg-success">View</span>');
+                if (canEditTasks) taskPerms.push('<span class="badge bg-success">Edit</span>');
+                if (canDeleteTasks) taskPerms.push('<span class="badge bg-success">Delete</span>');
+                if (canAssignTasks) taskPerms.push('<span class="badge bg-success">Assign</span>');
+                $('#cloneTaskPerms').html(taskPerms.length > 0 ? taskPerms.join(' ') : '<span class="text-muted">None</span>');
+                
+                // Update project permissions
+                var projectPerms = [];
+                if (canViewProjects) projectPerms.push('<span class="badge bg-success">View</span>');
+                if (canEditProjects) projectPerms.push('<span class="badge bg-success">Edit</span>');
+                if (canDeleteProjects) projectPerms.push('<span class="badge bg-success">Delete</span>');
+                $('#cloneProjectPerms').html(projectPerms.length > 0 ? projectPerms.join(' ') : '<span class="text-muted">None</span>');
+                
+                // Update team management permissions
+                var teamPerms = [];
+                if (canInviteMembers) teamPerms.push('<span class="badge bg-success">Invite</span>');
+                if (canRemoveMembers) teamPerms.push('<span class="badge bg-success">Remove</span>');
+                if (canManageRoles) teamPerms.push('<span class="badge bg-success">Manage Roles</span>');
+                if (canManagePermissions) teamPerms.push('<span class="badge bg-success">Manage Permissions</span>');
+                $('#cloneTeamPerms').html(teamPerms.length > 0 ? teamPerms.join(' ') : '<span class="text-muted">None</span>');
+                
+                // Suggest a name based on the source role
+                if (roleName && !$('#cloneNewRoleName').val()) {
+                    $('#cloneNewRoleName').val(roleName + ' (Copy)');
+                }
+            } else {
+                $('#clonePermissionsPreview').hide();
+            }
+        }
+
+        // Show permissions preview when selecting a system role to clone
+        $('#cloneSourceRoleId').on('change', function() {
+            var selectedOption = $(this).find('option:selected');
+            var selectedValue = $(this).val();
+            
+            if (!selectedValue || selectedValue === '') {
+                $('#clonePermissionsPreview').hide();
+                return;
+            }
+            
+            var permissionsAttr = selectedOption.attr('data-permissions');
+            var roleName = selectedOption.attr('data-rolename');
+            
+            if (permissionsAttr && permissionsAttr !== '' && permissionsAttr !== 'undefined') {
+                try {
+                    // Decode HTML entities first, then parse JSON
+                    var decodedJson = $('<div>').html(permissionsAttr).text();
+                    var permissions = JSON.parse(decodedJson);
+                    updateClonePreview(permissions, roleName);
+                } catch (e) {
+                    console.error('Error parsing permissions from dropdown:', e, 'Raw value:', permissionsAttr);
+                    $('#clonePermissionsPreview').hide();
+                }
+            } else {
+                $('#clonePermissionsPreview').hide();
+            }
+        });
+
+        // Handle clone form submission
+        $('#cloneRoleForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                url: _urlCloneRole + '?teamId=' + _teamId,
+                type: 'POST',
+                data: formData,
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response && response.isSuccess) {
+                        $('#cloneRoleModal').modal('hide');
+                        location.reload();
+                    } else {
+                        var errorMsg = response?.errorMessage || response?.errors || 'Failed to clone role';
+                        alert('Error: ' + errorMsg);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    var errorMsg = 'An error occurred while cloning the role.';
+                    if (xhr.responseJSON) {
+                        errorMsg = xhr.responseJSON.errorMessage || xhr.responseJSON.errors || errorMsg;
+                    } else if (xhr.responseText) {
+                        try {
+                            var errorResponse = JSON.parse(xhr.responseText);
+                            errorMsg = errorResponse.errorMessage || errorResponse.errors || errorMsg;
+                        } catch (e) {
+                            errorMsg = xhr.responseText || errorMsg;
+                        }
+                    }
+                    alert('Error: ' + errorMsg);
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .table > :not(caption) > * > * {
+        padding: 1rem 0.5rem;
+    }
+
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 1em;
+    }
+</style>

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace ArslanProjectManager.Core.DTOs.UpdateDTOs
 {
+    /// <summary>DTO for updating a team-specific role.</summary>
     public class RoleUpdateDto : BaseUpdateDto
     {
-        public string RoleName { get; set; } = default!;
-        public bool? ViewPermission { get; set; } = null;
-        public bool? EditPermission { get; set; } = null;
+        [Required]
+        [StringLength(100)]
+        public string RoleName { get; set; } = null!;
+
+        public RolePermissionsDto Permissions { get; set; } = null!;
     }
 }

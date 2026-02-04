@@ -9,6 +9,7 @@
         public const string InvalidInput = "Invalid input";
         public const string NoPermission = "You do not have permission to perform this action";
         public const string ProcessingError = "An error occurred while processing your request. Please try again later";
+        public const string DefaultRolesNotFound = "No default role found. Please contact administrator.";
 
         public const string InvalidProjectId = "Invalid project ID";
         public const string InvalidProjectData = "Invalid project data";
@@ -63,5 +64,19 @@
         public const string FailedToAcceptInvite = "Failed to accept team invitation";
         public const string FailedToRejectInvite = "Failed to reject team invitation";
         public const string NoPendingInvites = "No pending team invitations found";
+
+        // Role and Permission Management error messages
+        public const string RoleNotFound = "Role not found";
+        public const string InvalidRoleId = "Invalid role ID";
+        public const string RoleNameAlreadyExists = "A role with this name already exists for this team";
+        public const string SystemRoleCannotBeModified = "System roles cannot be modified or deleted";
+        public const string RoleInUse = "This role is currently assigned to team members and cannot be deleted";
+        public const string NotAuthorizedToManageRoles = "You are not authorized to manage roles for this team";
+        public const string NotAuthorizedToManagePermissions = "You are not authorized to manage permissions for this team";
+        public const string CannotChangeManagerPermissions = "Cannot change manager's own permissions";
+        public const string FailedToCreateRole = "Failed to create role";
+        public const string FailedToUpdateRole = "Failed to update role";
+        public const string FailedToDeleteRole = "Failed to delete role";
+        public const string FailedToUpdatePermissions = "Failed to update user permissions";
     }
 }

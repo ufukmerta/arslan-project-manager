@@ -1,4 +1,4 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 @model TeamDetailsViewModel
 
 @{
@@ -52,6 +52,12 @@
                     <i class="bi bi-people"></i> Team Members
                 </h5>
                 <div class="btn-group">
+                    <a class="btn btn-warning btn-sm" asp-action="Permissions" asp-route-id="@Model.TeamId">
+                        <i class="bi bi-shield-check"></i> View Permissions
+                    </a>
+                    <a class="btn btn-success btn-sm" asp-action="Roles" asp-route-id="@Model.TeamId">
+                        <i class="bi bi-shield"></i> View Roles
+                    </a>
                     <a class="btn btn-info btn-sm" asp-action="Invites" asp-route-id="@Model.TeamId">
                         <i class="bi bi-envelope"></i> View Invites
                     </a>
@@ -74,9 +80,12 @@
                                 <th>
                                     <i class="bi bi-shield"></i> Role
                                 </th>
-                                <th class="text-end pe-3">
-                                    <i class="bi bi-gear"></i> Actions
-                                </th>
+                                @if (Model.CanRemoveMembers)
+                                {
+                                    <th class="text-end pe-3">
+                                        <i class="bi bi-gear"></i> Actions
+                                    </th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -88,29 +97,38 @@
                                     {
                                         if (Model.ManagerId == member.UserId)
                                         {
-                                            <tr class="">
+                                            <tr class="@(member.UserId == userId ? "table-active" : "")">
                                                 <td class="ps-3">@count</td>
                                                 <td>
-                                                    <i class="bi bi-person text-primary me-2"></i>
-                                                    @member.Name 
-                                                    <span class="badge text-bg-secondary">
+                                                    <i class="bi bi-shield @(member.UserId == userId ? "text-success" : "text-primary") me-2"></i>
+                                                    <strong>@member.Name</strong>
+                                                    <span class="badge text-bg-secondary ms-2">
                                                         <i class="bi bi-person-gear me-1"></i> Team Manager
                                                     </span>
+                                                    @if (member.UserId == userId)
+                                                    {
+                                                        <span class="badge bg-success ms-2">
+                                                            <i class="bi bi-person-check me-1"></i> You
+                                                        </span>
+                                                    }
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-@(member.Role == "Admin" ? "danger" : "primary")">
-                                                        <i class="bi bi-@(member.Role == "Admin" ? "shield" : "person-workspace") me-1"></i>
+                                                    <span class="badge bg-@(member.Role == "Manager" ? "danger" : "primary")">
+                                                        <i class="bi bi-@(member.Role == "Manager" ? "shield" : "person-workspace") me-1"></i>
                                                         @member.Role
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-3">
-                                                    @if (member.Role != "Admin")
-                                                    {
-                                                        <a class="btn btn-danger btn-sm disabled">
-                                                            <i class="bi bi-person-x"></i> Remove
-                                                        </a>
-                                                    }
-                                                </td>
+                                                @if (Model.CanRemoveMembers)
+                                                {
+                                                    <td class="text-end pe-3">
+                                                        @if (member.Role != "Manager")
+                                                        {
+                                                            <a class="btn btn-danger btn-sm disabled">
+                                                                <i class="bi bi-person-x"></i> Remove
+                                                            </a>
+                                                        }
+                                                    </td>
+                                                }
                                             </tr>
 
                                         }
@@ -120,22 +138,28 @@
                                                 <td class="ps-3">@count</td>
                                                 <td>
                                                     <i class="bi bi-person text-success me-2"></i>
-                                                    @member.Name
+                                                    <strong>@member.Name</strong>
+                                                    <span class="badge bg-success ms-2">
+                                                        <i class="bi bi-person-check me-1"></i> You
+                                                    </span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-@(member.Role == "Admin" ? "danger" : "primary")">
-                                                        <i class="bi bi-shield me-1"></i>
+                                                    <span class="badge bg-@(member.Role == "Manager" ? "danger" : "primary")">
+                                                        <i class="bi bi-@(member.Role == "Manager" ? "shield" : "person-workspace") me-1"></i>
                                                         @member.Role
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-3">
-                                                    @if (member.Role != "Admin")
-                                                    {
-                                                        <a class="btn btn-danger btn-sm disabled">
-                                                            <i class="bi bi-person-x"></i> Remove
-                                                        </a>
-                                                    }
-                                                </td>
+                                                @if (Model.CanRemoveMembers)
+                                                {
+                                                    <td class="text-end pe-3">
+                                                        @if (member.Role != "Manager")
+                                                        {
+                                                            <a class="btn btn-danger btn-sm disabled">
+                                                                <i class="bi bi-person-x"></i> Remove
+                                                            </a>
+                                                        }
+                                                    </td>
+                                                }
                                             </tr>
                                         }
                                         else
@@ -147,16 +171,19 @@
                                                     @member.Name
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-@(member.Role == "Admin" ? "danger" : "primary")">
-                                                        <i class="bi bi-@(member.Role == "Admin" ? "shield" : "person-workspace") me-1"></i>
+                                                    <span class="badge bg-@(member.Role == "Manager" ? "danger" : "primary")">
+                                                        <i class="bi bi-@(member.Role == "Manager" ? "shield" : "person-workspace") me-1"></i>
                                                         @member.Role
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-3">
-                                                    <a class="btn btn-danger btn-sm" asp-action="RemoveMember" asp-route-id="@member.UserId">
-                                                        <i class="bi bi-person-x"></i> Remove
-                                                    </a>
-                                                </td>
+                                                @if (Model.CanRemoveMembers)
+                                                {
+                                                    <td class="text-end pe-3">
+                                                        <a class="btn btn-danger btn-sm" asp-action="RemoveMember" asp-route-id="@member.UserId">
+                                                            <i class="bi bi-person-x"></i> Remove
+                                                        </a>
+                                                    </td>
+                                                }
                                             </tr>
                                         }
                                         count++;
@@ -168,23 +195,32 @@
                                     {
                                         if (Model.ManagerId == member.UserId)
                                         {
-                                            <tr class="">
+                                            <tr class="@(member.UserId == userId ? "table-active" : "")">
                                                 <td class="ps-3">@count</td>
                                                 <td>
-                                                    <i class="bi bi-person text-primary me-2"></i>
-                                                    @member.Name 
-                                                    <span class="badge text-bg-secondary mx-2">
-                                                        <i class="bi bi-crown me-1"></i> Team Manager
+                                                    <i class="bi bi-shield @(member.UserId == userId ? "text-success" : "text-primary") me-2"></i>
+                                                    <strong>@member.Name</strong>
+                                                    <span class="badge text-bg-secondary ms-2">
+                                                        <i class="bi bi-person-gear me-1"></i> Team Manager
                                                     </span>
+                                                    @if (member.UserId == userId)
+                                                    {
+                                                        <span class="badge bg-success ms-2">
+                                                            <i class="bi bi-person-check me-1"></i> You
+                                                        </span>
+                                                    }
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-@(member.Role == "Admin" ? "danger" : "primary")">
-                                                        <i class="bi bi-shield me-1"></i>
+                                                    <span class="badge bg-@(member.Role == "Manager" ? "danger" : "primary")">
+                                                        <i class="bi bi-@(member.Role == "Manager" ? "shield" : "person-workspace") me-1"></i>
                                                         @member.Role
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-3">
-                                                </td>
+                                                @if (Model.CanRemoveMembers)
+                                                {
+                                                    <td class="text-end pe-3">
+                                                    </td>
+                                                }
                                             </tr>
 
                                         }
@@ -194,22 +230,28 @@
                                                 <td class="ps-3">@count</td>
                                                 <td>
                                                     <i class="bi bi-person text-success me-2"></i>
-                                                    @member.Name
+                                                    <strong>@member.Name</strong>
+                                                    <span class="badge bg-success ms-2">
+                                                        <i class="bi bi-person-check me-1"></i> You
+                                                    </span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-@(member.Role == "Admin" ? "danger" : "primary")">
-                                                        <i class="bi bi-shield me-1"></i>
+                                                    <span class="badge bg-@(member.Role == "Manager" ? "danger" : "primary")">
+                                                        <i class="bi bi-@(member.Role == "Manager" ? "shield" : "person-workspace") me-1"></i>
                                                         @member.Role
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-3">
-                                                    @if (member.Role != "Admin")
-                                                    {
-                                                        <a class="btn btn-danger btn-sm disabled">
-                                                            <i class="bi bi-person-x"></i> Remove
-                                                        </a>
-                                                    }
-                                                </td>
+                                                @if (Model.CanRemoveMembers)
+                                                {
+                                                    <td class="text-end pe-3">
+                                                        @if (member.Role != "Manager")
+                                                        {
+                                                            <a class="btn btn-danger btn-sm disabled">
+                                                                <i class="bi bi-person-x"></i> Remove
+                                                            </a>
+                                                        }
+                                                    </td>
+                                                }
                                             </tr>
                                         }
                                         else
@@ -221,19 +263,22 @@
                                                     @member.Name
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-@(member.Role == "Admin" ? "danger" : "primary")">
-                                                        <i class="bi bi-shield me-1"></i>
+                                                    <span class="badge bg-@(member.Role == "Manager" ? "danger" : "primary")">
+                                                        <i class="bi bi-@(member.Role == "Manager" ? "shield" : "person-workspace") me-1"></i>
                                                         @member.Role
                                                     </span>
                                                 </td>
-                                                <td class="text-end pe-3">
-                                                    @if (member.Role != "Admin")
-                                                    {
-                                                        <a class="btn btn-danger btn-sm disabled">
-                                                            <i class="bi bi-person-x"></i> Remove
-                                                        </a>
-                                                    }
-                                                </td>
+                                                @if (Model.CanRemoveMembers)
+                                                {
+                                                    <td class="text-end pe-3">
+                                                        @if (member.Role != "Manager")
+                                                        {
+                                                            <a class="btn btn-danger btn-sm disabled">
+                                                                <i class="bi bi-person-x"></i> Remove
+                                                            </a>
+                                                        }
+                                                    </td>
+                                                }
                                             </tr>
                                         }
                                         count++;

@@ -1,13 +1,10 @@
-﻿using ArslanProjectManager.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ArslanProjectManager.Core.Models;
 
-namespace ArslanProjectManager.Core.Repositories
+namespace ArslanProjectManager.Core.Repositories;
+
+public interface IRoleRepository : IGenericRepository<Role>
 {
-    public interface IRoleRepository: IGenericRepository<Role>
-    {
-    }
+    Task<Role?> GetDefaultRoleAsync();
+
+    Task<List<Role>> GetRolesForTeamAsync(int teamId);
 }

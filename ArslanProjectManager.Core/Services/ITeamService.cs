@@ -1,4 +1,5 @@
-﻿using ArslanProjectManager.Core.Models;
+﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace ArslanProjectManager.Core.Services
     {
         Task<TeamUser?> GetTeamUserAsync(int teamId, int userId);
         Task<TeamUser> AddTeamUserAsync(TeamUser teamUser);
+        Task<TeamPermissionsDto> GetUserTeamPermissionsAsync(int teamId, Token token);
     }
 }

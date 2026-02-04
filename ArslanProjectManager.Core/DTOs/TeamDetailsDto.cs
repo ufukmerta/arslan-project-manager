@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,8 @@ public class TeamDetailsDto : BaseDto
     public string TeamName { get; set; } = null!;
     public string? Description { get; set; }
     public int ManagerId { get; set; }
-    public string ManagerName { get; set; } = null!;
+    public string ManagerName { get; set; } = null!;    
+    public bool CanRemoveMembers { get; set; }
 
     public List<TeamProjectDto> Projects { get; set; } = [];
     public List<TeamUserDto> Members { get; set; } = [];

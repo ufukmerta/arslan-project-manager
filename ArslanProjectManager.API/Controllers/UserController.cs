@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.API.Filters;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
@@ -17,7 +17,7 @@ namespace ArslanProjectManager.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService, ITokenService tokenService, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper) : CustomBaseController(tokenService)
+    public class UserController(IUserService userService, ITokenService tokenService, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper, IRoleService roleService) : CustomBaseController(tokenService)
     {
         /// <summary>
         /// Retrieves the profile information of the authenticated user
@@ -107,7 +107,7 @@ namespace ArslanProjectManager.API.Controllers
         [HttpPut()]
         [Authorize]
         public async Task<IActionResult> Edit(UserUpdateDto userDto)
-        {
+        {            
             var existingUser = await userService.GetByIdAsync(userDto.Id);
             if (existingUser is null)
             {
@@ -271,12 +271,19 @@ namespace ArslanProjectManager.API.Controllers
 
             try
             {
+                // Find default role (Member or first non-admin system role)
+                var defaultRole = await roleService.GetDefaultRoleAsync();
+                if (defaultRole == null)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.DefaultRolesNotFound));
+                }
+
                 // Create team user
                 var teamUser = new TeamUser
                 {
                     TeamId = invite.TeamId,
                     UserId = user.Id,
-                    RoleId = 2 // Role 1 = Admin, Role 2 = Member
+                    RoleId = defaultRole.Id
                 };
 
                 await teamService.AddTeamUserAsync(teamUser);

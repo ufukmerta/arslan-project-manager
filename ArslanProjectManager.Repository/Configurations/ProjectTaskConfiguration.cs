@@ -67,7 +67,8 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
 
         builder.Property(e => e.Priority)
             .HasColumnName("priority")
-            .HasDefaultValue(ProjectTask.TaskPriority.Medium);
+            .HasDefaultValue(ProjectTask.TaskPriority.Medium)
+            .HasSentinel((ProjectTask.TaskPriority)0);
 
         builder.Property(e => e.IsActive)
             .HasColumnName("is_active")

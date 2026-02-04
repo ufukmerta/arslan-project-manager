@@ -56,6 +56,7 @@ Global
 		{716ACE27-EC0E-418B-8D65-47A00B402855}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{716ACE27-EC0E-418B-8D65-47A00B402855}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{716ACE27-EC0E-418B-8D65-47A00B402855}.Release|Any CPU.Build.0 = Release|Any CPU
+		{716ACE27-EC0E-418B-8D65-47A00B402855}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
