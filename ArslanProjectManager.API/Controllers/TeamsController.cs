@@ -128,6 +128,11 @@ namespace ArslanProjectManager.API.Controllers
             {
                 var effective = PermissionResolver.GetEffectivePermissions(currentTeamUser, currentTeamUser.Role);
                 teamDetailsDto.CanRemoveMembers = effective.CanRemoveMembers;
+                teamDetailsDto.CanEditProjects = effective.CanEditProjects;
+                if (!effective.CanViewProjects)
+                {
+                    teamDetailsDto.Projects = [];
+                }
             }
 
             return CreateActionResult(CustomResponseDto<TeamDetailsDto>.Success(teamDetailsDto, 200));

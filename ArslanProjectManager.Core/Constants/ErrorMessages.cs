@@ -78,5 +78,10 @@
         public const string FailedToUpdateRole = "Failed to update role";
         public const string FailedToDeleteRole = "Failed to delete role";
         public const string FailedToUpdatePermissions = "Failed to update user permissions";
+
+        //Authroization error messages
+        public const string NotAuthorizedToViewProject = "You are not authorized to view this project";
+        public const string NotAuthorizedToDeleteProject = "You are not authorized to delete this project";
+
     }
 }

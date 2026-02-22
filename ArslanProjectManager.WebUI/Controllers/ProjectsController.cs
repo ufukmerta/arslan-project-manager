@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.DeleteDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
@@ -119,7 +119,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<ProjectDetailsDto>>(json, _jsonSerializerOptions);
             if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
             {
-                TempData["errorMessage"] = "Failed to retrieve projects.";
+                TempData["errorMessage"] = "Failed to retrieve project details.";
                 return View(Enumerable.Empty<ProjectViewModel>());
             }
 
@@ -421,6 +421,12 @@ namespace ArslanProjectManager.WebUI.Controllers
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
                     return RedirectToAction(nameof(Index));
                 }
+            }
+            
+            if (response.StatusCode == HttpStatusCode.NoContent)
+            {
+                TempData["successMessage"] = "Project deleted successfully.";
+                return RedirectToAction(nameof(Index));
             }
 
             var json = await response.Content.ReadAsStreamAsync();

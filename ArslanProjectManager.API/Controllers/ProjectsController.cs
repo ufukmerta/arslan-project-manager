@@ -7,6 +7,7 @@ using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Repository;
+using ArslanProjectManager.Service.Utilities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
@@ -34,16 +35,39 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> GetByToken()
         {
             var token = (await GetToken())!;
-            var doesProjectExist = await projectService.AnyAsync(x => x.Team.TeamUsers.Any(x => x.UserId == token!.UserId));
-            if (!doesProjectExist)
+            var teamUsersWithRole = await context.TeamUsers
+                .Include(tu => tu.Role)
+                .Where(tu => tu.UserId == token.UserId)
+                .ToListAsync();
+            var teamIdsWithViewAccess = teamUsersWithRole
+                .Where(tu => PermissionResolver.HasPermission(tu, tu.Role, p => p.CanViewProjects))
+                .Select(tu => tu.TeamId)
+                .ToHashSet();
+            if (teamIdsWithViewAccess.Count == 0)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoProjectsFound));
             }
 
+            var teamPermissions = teamUsersWithRole
+                .Where(tu => teamIdsWithViewAccess.Contains(tu.TeamId))
+                .ToDictionary(tu => tu.TeamId, tu => (
+                    CanEdit: PermissionResolver.HasPermission(tu, tu.Role, p => p.CanEditProjects),
+                    CanDelete: PermissionResolver.HasPermission(tu, tu.Role, p => p.CanDeleteProjects)
+                ));
+
             var projects = await context.Projects
-                 .Where(x => x.Team.TeamUsers.Any(tu => tu.UserId == token!.UserId))
-                 .ProjectTo<UserProjectDto>(mapper.ConfigurationProvider)
-                 .ToListAsync();
+                .Where(p => teamIdsWithViewAccess.Contains(p.TeamId))
+                .ProjectTo<UserProjectDto>(mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            foreach (var project in projects)
+            {
+                if (teamPermissions.TryGetValue(project.TeamId, out var perms))
+                {
+                    project.CanEdit = perms.CanEdit;
+                    project.CanDelete = perms.CanDelete;
+                }
+            }
 
             return CreateActionResult(CustomResponseDto<IEnumerable<UserProjectDto>>.Success(projects, 200));
         }
@@ -69,19 +93,16 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = (await GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, id);
+
+            var accessValidation = await ValidateProjectAccess(token, id, requireViewAccess: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
             }
 
             var projectDetailsDto = await projectService.GetProjectDetailsAsync(id);
-            if (projectDetailsDto is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
-            }
-
-            return CreateActionResult(CustomResponseDto<ProjectDetailsDto>.Success(projectDetailsDto, 200));
+            // no need to check for null, NotFoundFilter will handle it
+            return CreateActionResult(CustomResponseDto<ProjectDetailsDto>.Success(projectDetailsDto!, 200));
         }
 
         /// <summary>
@@ -95,21 +116,26 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Create()
         {
             var token = (await GetToken())!;
-            var userTeamDto = await context.TeamUsers
+
+            var teamUsersWithRole = await context.TeamUsers
+                .Include(tu => tu.Role)
                 .Include(tu => tu.Team)
-                .Where(tu => tu.UserId == token!.UserId)
+                .Where(tu => tu.UserId == token.UserId)
+                .ToListAsync();
+            var teamsWithEditPermission = teamUsersWithRole
+                .Where(tu => PermissionResolver.HasPermission(tu, tu.Role, p => p.CanEditProjects))
                 .Select(tu => new MiniTeamDto
                 {
                     Id = tu.TeamId,
                     TeamName = tu.Team.TeamName
                 })
-                .ToListAsync();
-            if (userTeamDto.Count is 0)
+                .ToList();
+            if (teamsWithEditPermission.Count == 0)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoTeamsFound));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToCreateProject));
             }
 
-            return CreateActionResult(CustomResponseDto<List<MiniTeamDto>>.Success(userTeamDto, 200));
+            return CreateActionResult(CustomResponseDto<List<MiniTeamDto>>.Success(teamsWithEditPermission, 200));
         }
 
         /// <summary>
@@ -148,10 +174,18 @@ namespace ArslanProjectManager.API.Controllers
 
             var teamByTeamUser = await context.Teams
                 .Include(t => t.TeamUsers)
+                .ThenInclude(tu => tu.Role)
                 .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token!.UserId));
             if (teamByTeamUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.AccessDenied));
+            }
+
+            var canUserCreateProjects = teamByTeamUser.TeamUsers
+                .Any(tu => PermissionResolver.HasPermission(tu, tu.Role, p => p.CanEditProjects));
+            if (!canUserCreateProjects)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToCreateProject));
             }
 
             var project = mapper.Map<Project>(model);
@@ -186,7 +220,8 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = (await GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
+
+            var accessValidation = await ValidateProjectAccess(token, id, requireEditAccess: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -195,11 +230,6 @@ namespace ArslanProjectManager.API.Controllers
             var project = await context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (project is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
-            }
 
             var projectUpdateDto = mapper.Map<ProjectUpdateDto>(project);
             return CreateActionResult(CustomResponseDto<ProjectUpdateDto>.Success(projectUpdateDto, 200));
@@ -230,20 +260,15 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = (await GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, model.Id, requireManagerAccess: true);
+            var accessValidation = await ValidateProjectAccess(token, model.Id, requireEditAccess: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
             }
-
+            // null check is not required due to NotFoundFilter.
             var project = await context.Projects
                 .Include(p => p.Team)
-                .FirstOrDefaultAsync(p => p.Id == model.Id);
-
-            if (project is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
-            }
+                .FirstAsync(p => p.Id == model.Id);
 
             project.ProjectName = model.ProjectName;
             project.ProjectDetail = model.ProjectDetail;
@@ -273,7 +298,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = (await GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
+            var accessValidation = await ValidateProjectAccess(token, id, requireDeleteAccess: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -283,11 +308,6 @@ namespace ArslanProjectManager.API.Controllers
                 .Include(p => p.Team)
                 .Include(p => p.ProjectTasks)
                 .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (project is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
-            }
 
             var projectDeleteDto = mapper.Map<ProjectDeleteDto>(project);
             return CreateActionResult(CustomResponseDto<ProjectDeleteDto>.Success(projectDeleteDto, 200));
@@ -313,51 +333,76 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = (await GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, id, requireManagerAccess: true);
+            var accessValidation = await ValidateProjectAccess(token, id, requireDeleteAccess: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
             }
 
-            var project = await context.Projects.Include(p => p.Team).FirstOrDefaultAsync(p => p.Id == id);
-
-            if (project is null)
-            {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
-            }
-
+            var project = await context.Projects.Include(p => p.Team).FirstAsync(p => p.Id == id);
             project.IsActive = false;
             projectService.ChangeStatus(project);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 
-        protected async Task<IActionResult?> ValidateProjectAccess(Token? token, int projectId, bool requireManagerAccess = false)
+        /// <summary>
+        /// Validates if the user has the required access to the project based on the specified permissions
+        /// </summary>
+        /// <param name="token">The user's authentication token</param>
+        /// <param name="projectId">The unique identifier of the project</param>
+        /// <param name="requireViewAccess">Whether view access is required</param>
+        /// <param name="requireEditAccess">Whether edit access is required</param>
+        /// <param name="requireDeleteAccess">Whether delete access is required</param>
+        /// <returns>An IActionResult if access is denied or the project is not found, otherwise null. Special case: If requireDeleteAccess is true and the project is already deleted, returns 204.</returns>        
+        protected async Task<IActionResult?> ValidateProjectAccess(Token? token, int projectId, bool requireViewAccess = false, bool requireEditAccess = false, bool requireDeleteAccess = false)
         {
-            var project = await context.Projects
+            if (requireDeleteAccess)
+            {
+                var project = await context.Projects.IgnoreQueryFilters()
+                    .Include(p => p.Team)
+                    .FirstOrDefaultAsync(p => p.Id == projectId);
+                if (project is null)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
+                }
+
+                var teamMember = await context.TeamUsers.Include(x => x.Role).FirstOrDefaultAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
+                if (teamMember is null)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
+                }
+                if (!PermissionResolver.HasPermission(teamMember, teamMember.Role, p => p.CanDeleteProjects))
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToDeleteProject));
+                }
+                if (!project.IsActive)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+                }
+                return null;
+            }
+
+            var projectForViewEdit = await context.Projects
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
-
-            if (project is null)
+            if (projectForViewEdit is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            if (requireManagerAccess)
+            var teamMemberForViewEdit = await context.TeamUsers.Include(x => x.Role).FirstOrDefaultAsync(t => t.UserId == token!.UserId && t.TeamId == projectForViewEdit.TeamId);
+            if (teamMemberForViewEdit is null)
             {
-                if (project.Team.ManagerId != token!.UserId)
-                {
-                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotAuthorizedToEditProject));
-                }
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
             }
-            else
+            if (requireViewAccess && !PermissionResolver.HasPermission(teamMemberForViewEdit, teamMemberForViewEdit.Role, p => p.CanViewProjects))
             {
-                var isMember = await context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
-                if (!isMember)
-                {
-                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
-                }
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToViewProject));
             }
-
+            if (requireEditAccess && !PermissionResolver.HasPermission(teamMemberForViewEdit, teamMemberForViewEdit.Role, p => p.CanEditProjects))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToEditProject));
+            }
             return null;
         }
     }

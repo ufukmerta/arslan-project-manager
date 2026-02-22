@@ -21,6 +21,10 @@ namespace ArslanProjectManager.Core.ViewModels
         public int TaskCount { get; set; }
 
         public int CompletedTaskCount { get; set; }
+
+        public bool CanEdit { get; set; }
+
+        public bool CanDelete { get; set; }
     }
 
     public class ProjectDetailsViewModel

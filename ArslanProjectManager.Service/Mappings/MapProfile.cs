@@ -288,7 +288,9 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.TeamId, opt => opt.MapFrom(src => src.TeamId))
                 .ForMember(dest => dest.ManagerId, opt => opt.MapFrom(src => src.ManagerId))
                 .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.TaskCount))
-                .ForMember(dest => dest.CompletedTaskCount, opt => opt.MapFrom(src => src.CompletedTaskCount)).ReverseMap();
+                .ForMember(dest => dest.CompletedTaskCount, opt => opt.MapFrom(src => src.CompletedTaskCount))
+                .ForMember(dest => dest.CanEdit, opt => opt.MapFrom(src => src.CanEdit))
+                .ForMember(dest => dest.CanDelete, opt => opt.MapFrom(src => src.CanDelete)).ReverseMap();
 
             CreateMap<Project, UserProjectDto>()
                 .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.Id))
@@ -508,6 +510,7 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.ManagerName))
                 .ForMember(dest => dest.ManagerId, opt => opt.MapFrom(src => src.ManagerId))
                 .ForMember(dest => dest.CanRemoveMembers, opt => opt.MapFrom(src => src.CanRemoveMembers))
+                .ForMember(dest => dest.CanEditProjects, opt => opt.MapFrom(src => src.CanEditProjects))
                 .ForMember(dest => dest.Projects, opt => opt.MapFrom(src => src.Projects))
                 .ForMember(dest => dest.Members, opt => opt.MapFrom(src => src.Members)).ReverseMap();
 

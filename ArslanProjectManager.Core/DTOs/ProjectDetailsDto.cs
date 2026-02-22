@@ -12,6 +12,8 @@ namespace ArslanProjectManager.Core.DTOs
         public string ProjectName { get; set; } = string.Empty;
         public string? ProjectDetail { get; set; }
         public DateOnly StartDate { get; set; }
+        public bool CanEdit { get; set; } = false;
+        public bool CanDelete { get; set; } = false;
 
         public List<MiniProjectTaskDto> Tasks { get; set; } = [];
     }

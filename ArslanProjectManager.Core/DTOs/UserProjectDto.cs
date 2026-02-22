@@ -17,5 +17,7 @@ namespace ArslanProjectManager.Core.DTOs
         public int ManagerId { get; set; }
         public int TaskCount { get; set; }
         public int CompletedTaskCount { get; set; }
+        public bool CanEdit { get; set; } = false;
+        public bool CanDelete { get; set; } = false;
     }
 }

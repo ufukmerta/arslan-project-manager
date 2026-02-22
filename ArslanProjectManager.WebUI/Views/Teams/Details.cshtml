@@ -298,9 +298,12 @@
                 <h5 class="mb-0">
                     <i class="bi bi-folder"></i> Team Projects
                 </h5>
-                <a class="btn btn-custom btn-sm" asp-controller="Projects" asp-action="Create" asp-route-id="@Model.TeamId">
-                    <i class="bi bi-plus-circle"></i> Create Project
-                </a>
+                @if (Model.CanEditProjects)
+                {
+                    <a class="btn btn-custom btn-sm" asp-controller="Projects" asp-action="Create" asp-route-id="@Model.TeamId">
+                        <i class="bi bi-plus-circle"></i> Create Project
+                    </a>
+                }
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">

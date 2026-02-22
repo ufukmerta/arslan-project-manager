@@ -17,6 +17,13 @@ namespace ArslanProjectManager.Repository.Repositories
                 .Include(p => p.ProjectTasks)
                     .ThenInclude(t => t.Appointee)
                         .ThenInclude(a => a.User)
+                .Include(p => p.Team)                                         
+                    .ThenInclude(t => t.TeamUsers)
+                        .ThenInclude(tu => tu.User)
+                .Include(p => p.Team)
+                    .ThenInclude(t => t.TeamUsers)
+                        .ThenInclude(tu => tu.Role)
+
                 .FirstOrDefaultAsync(p => p.Id == id);
             return project;
         }
