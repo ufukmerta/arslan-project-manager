@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -10,6 +10,11 @@ namespace ArslanProjectManager.WebUI.Controllers
         {
             PropertyNameCaseInsensitive = true
         };
+
+        /// <summary>
+        /// Redirects to the 429 Too Many Requests page when the API returns rate limit exceeded.
+        /// </summary>
+        protected IActionResult RedirectToTooManyRequests() => RedirectToAction("TooManyRequests", "Home");
 
         private protected async Task<string?> GetErrorMessageAsync(HttpResponseMessage response)
         {

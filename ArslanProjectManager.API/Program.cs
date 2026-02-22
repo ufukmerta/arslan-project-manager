@@ -15,6 +15,7 @@ using Scalar.AspNetCore;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,6 +88,42 @@ builder.Services.AddControllers()
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
+});
+
+// Rate limiter: one limit per IP (fixed window). Docs endpoints are not limited.
+var permitLimit = builder.Configuration.GetValue("RateLimiting:PermitLimit", 100);
+var windowMinutes = builder.Configuration.GetValue("RateLimiting:WindowMinutes", 1);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsJsonAsync(new { error = "Too many requests. Please try again later.", statusCode = 429 }, cancellationToken);
+    };
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var path = httpContext.Request.Path.Value ?? "";
+        var isDocs = path == "/" || path.StartsWith("/api-docs", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/openapi/", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("/scalar", StringComparison.OrdinalIgnoreCase);
+
+        if (isDocs)
+            return RateLimitPartition.GetNoLimiter("_");
+
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString()
+            ?? httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+            ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = permitLimit,
+            Window = TimeSpan.FromMinutes(windowMinutes),
+            QueueLimit = 20
+        });
+    });
 });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

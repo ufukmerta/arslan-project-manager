@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Services;
@@ -32,6 +32,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync("user/profile");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Login), nameof(User));
             }
@@ -61,6 +65,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync("User");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 return View(new LoginViewModel());
             }
 
@@ -104,6 +112,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PostAsJsonAsync("auth/login", loginDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     TempData["errorMessage"] = "Invalid email or password.";
@@ -197,6 +209,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PostAsJsonAsync("auth/register", registerDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
                 {
                     TempData["errorMessage"] = "Email already exists.";
@@ -249,6 +265,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync("user/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Index));
             }
@@ -300,6 +320,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PutAsJsonAsync("user", userUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Edit));
             }
@@ -323,6 +347,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.DeleteAsync("user/picture");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Edit));
             }
@@ -367,6 +395,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PutAsJsonAsync("user/password", changePasswordDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return View(changePasswordViewModel);
             }
@@ -381,6 +413,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync("user/invites");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return View(new List<PendingInviteViewModel>());
             }
@@ -407,6 +443,10 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(MyInvites));
             }
@@ -424,6 +464,10 @@ namespace ArslanProjectManager.WebUI.Controllers
 
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(MyInvites));
             }

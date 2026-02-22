@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.DeleteDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
@@ -37,6 +37,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync("tasks");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -89,6 +93,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync($"tasks/{id}");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -141,6 +149,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.PostAsJsonAsync($"tasks/comment", taskComment);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -191,6 +203,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync($"tasks/{id}/create-meta");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -251,6 +267,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 var response = await client.GetAsync($"tasks/{model.ProjectId}/create-meta");
                 if (!response.IsSuccessStatusCode)
                 {
+                    if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        return RedirectToTooManyRequests();
+                    }
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         TempData["UnauthorizedFrom"] = "task";
@@ -289,6 +309,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response2 = await client2.PostAsJsonAsync("tasks", projectTaskDto);
             if (!response2.IsSuccessStatusCode)
             {
+                if (response2.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response2.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -341,6 +365,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync($"tasks/{id}/edit-meta");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -397,6 +425,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.PutAsJsonAsync($"tasks", taskUpdateDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -446,6 +478,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync($"tasks/{id}/delete-confirm");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -497,6 +533,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.DeleteAsync($"tasks/{TaskId}");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -516,6 +556,6 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
             TempData["successMessage"] = "Task deleted successfully!";
             return RedirectToAction("Index", "Tasks");
-        }        
-    }    
+        }
+    }
 }

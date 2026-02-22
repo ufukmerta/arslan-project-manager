@@ -32,6 +32,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var response = await client.GetAsync("home");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToAction(nameof(TooManyRequests), "Home");
+                }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     await authStorage.ClearTokensAsync();
@@ -79,6 +83,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             {
                 return RedirectToAction(nameof(NotFound), "Home");
             }
+            else if (code == 429)
+            {
+                return RedirectToAction(nameof(TooManyRequests), "Home");
+            }
             else
             {
                 return RedirectToAction(nameof(NotFound), "Home");
@@ -104,6 +112,12 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
         [HttpGet]
         public new IActionResult NotFound()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult TooManyRequests()
         {
             return View();
         }

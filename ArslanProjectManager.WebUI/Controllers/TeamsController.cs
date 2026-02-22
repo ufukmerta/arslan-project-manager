@@ -6,6 +6,7 @@ using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.ViewModels;
 using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -37,7 +38,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync("teams");
             if (!response.IsSuccessStatusCode)
             {
-
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -90,6 +94,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync($"teams/{id}");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -148,6 +156,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PostAsJsonAsync("teams", teamDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -193,6 +205,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync($"teams/{id}/invite-meta");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -248,6 +264,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PostAsJsonAsync($"teams/{model.TeamId}/invites", teamInviteCreateDto);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -298,6 +318,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync($"teams/{id}/invites");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -362,6 +386,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.DeleteAsync($"invites/{inviteId}");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 TempData["errorMessage"] = errorMessage;
             }
@@ -397,6 +425,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.GetAsync($"teams/{id}/permissions");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -454,6 +486,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errors = errorMessage });
             }
@@ -483,6 +519,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -524,6 +564,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -556,6 +600,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             var rolesResponse = await client.GetAsync($"teams/{id}/roles");
             if (!rolesResponse.IsSuccessStatusCode)
             {
+                if (rolesResponse.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 if (rolesResponse.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -637,6 +685,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -670,6 +722,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -693,6 +749,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -722,6 +782,10 @@ namespace ArslanProjectManager.WebUI.Controllers
             
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
