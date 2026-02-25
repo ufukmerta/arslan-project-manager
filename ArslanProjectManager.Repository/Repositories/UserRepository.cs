@@ -14,6 +14,7 @@ namespace ArslanProjectManager.Repository.Repositories
                 .Include(u => u.TeamUsers)
                     .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.TeamUsers)
+                            .ThenInclude(tu => tu.Role)
                 .Include(t => t.TeamUsers)
                     .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.Projects)

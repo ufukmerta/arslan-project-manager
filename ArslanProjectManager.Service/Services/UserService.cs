@@ -3,6 +3,7 @@ using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
+using ArslanProjectManager.Service.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.Service.Services
@@ -53,18 +54,22 @@ namespace ArslanProjectManager.Service.Services
                     OwnProfile = true,
                     CurrentTeam = userTeam!.Team.TeamName,
                     Role = user.Teams.Count != 0 ? "Team Manager" : "Team Member",
-                    TotalProjects = user.TeamUsers
+                    TotalProjects = user.TeamUsers                        
+                        .Where(tu=> PermissionResolver.HasPermission(tu, tu.Role, x=>x.CanViewProjects)).ToList()
                         .SelectMany(tu => tu.Team.Projects)
                         .Count(),
                     CompletedProjects = user.TeamUsers
+                        .Where(tu => PermissionResolver.HasPermission(tu, tu.Role, x => x.CanViewProjects)).ToList()
                         .SelectMany(tu => tu.Team.Projects)
                         .Count(p => p.ProjectTasks
                         .All(t => t.Board.BoardName == "Done")),
                     TotalTasks = user.TeamUsers
+                        .Where(tu => PermissionResolver.HasPermission(tu, tu.Role, x => x.CanViewTasks)).ToList()
                         .SelectMany(tu => tu.Team.Projects)
                         .SelectMany(p => p.ProjectTasks)
                         .Count(t => t.AppointeeId == userTeam!.Id),
                     CompletedTasks = user.TeamUsers
+                        .Where(tu => PermissionResolver.HasPermission(tu, tu.Role, x => x.CanViewTasks)).ToList()
                         .SelectMany(tu => tu.Team.Projects)
                         .SelectMany(p => p.ProjectTasks)
                         .Count(t => t.AppointeeId == userTeam!.Id && t.Board.BoardName == "Done")
