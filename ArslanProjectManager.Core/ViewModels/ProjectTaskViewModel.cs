@@ -26,6 +26,7 @@ namespace ArslanProjectManager.Core.ViewModels
         public int AppointerId { get; set; }
         public string AppointerName { get; set; } = string.Empty;
 
+        public bool CanEdit { get; set; }
         public bool CanDelete { get; set; }
 
         [Required]

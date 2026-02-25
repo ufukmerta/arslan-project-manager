@@ -117,12 +117,22 @@
             </div>
         </div>
         <div class="d-grid gap-2">
-            <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">
-                <i class="bi bi-pencil"></i> Edit Task
-            </a>
-            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">
-                <i class="bi bi-trash"></i> Delete Task
-            </a>
+
+
+            @{
+                if (Model.CanEdit)
+                {
+                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">
+                        <i class="bi bi-pencil"></i> Edit Task
+                    </a>
+                }
+                if (Model.CanDelete)
+                {
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">
+                        <i class="bi bi-trash"></i> Delete Task
+                    </a>
+                }
+            }
         </div>
     </div>
 </div>
@@ -208,7 +218,7 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    
+
     <script>
         $(document).ready(function () {
             // Convert UTC dates to user's local timezone
@@ -219,10 +229,10 @@
                         try {
                             // Parse the UTC date string
                             var utcDate = new Date(utcDateString);
-                            
+
                             // Convert to local timezone
                             var localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
-                            
+
                             // Format the date and time in DD.MM.YYYY HH:mm format (European format)
                             var day = localDate.getDate().toString().padStart(2, '0');
                             var month = (localDate.getMonth() + 1).toString().padStart(2, '0');
@@ -230,7 +240,7 @@
                             var hours = localDate.getHours().toString().padStart(2, '0');
                             var minutes = localDate.getMinutes().toString().padStart(2, '0');
                             var formattedDateTime = day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
-                            
+
                             // Update the display
                             $(this).text(formattedDateTime);
                         } catch (e) {
@@ -239,7 +249,7 @@
                     }
                 });
             }
-            
+
             // Convert dates when page loads
             convertUtcToLocal();
         });

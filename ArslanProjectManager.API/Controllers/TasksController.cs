@@ -7,6 +7,7 @@ using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Repository;
+using ArslanProjectManager.Service.Utilities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
@@ -46,30 +47,75 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> GetByToken()
         {
             var token = (await GetToken())!;
-            var teamUserIds = await context.TeamUsers
-                .Include(t => t.Team)
-                .Include(t => t.User)
-                .Where(t => t.UserId == token!.UserId)
-                .Select(t => t.Id).ToListAsync();
 
-            var tasks = await context.ProjectTasks
+            var teamUsers = await context.TeamUsers
+                .Include(tu => tu.Role)
+                .Where(tu => tu.UserId == token!.UserId)
+                .ToListAsync();
+
+            if (teamUsers.Count == 0)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoTasksFound));
+            }
+
+            var teamUserIds = teamUsers.Select(tu => tu.Id).ToList();
+
+            var teamPermissions = teamUsers.ToDictionary(
+                tu => tu.TeamId,
+                tu =>
+                (
+                    CanViewTasks: PermissionResolver.HasPermission(tu, tu.Role, p => p.CanViewTasks),
+                    CanDeleteTasks: PermissionResolver.HasPermission(tu, tu.Role, p => p.CanDeleteTasks)
+                )
+            );
+
+            var viewableTeamIds = teamPermissions
+                .Where(kv => kv.Value.CanViewTasks)
+                .Select(kv => kv.Key)
+                .ToHashSet();
+
+            if (viewableTeamIds.Count == 0)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoTasksFound));
+            }
+
+            var taskEntities = await context.ProjectTasks
                 .Include(p => p.Project).ThenInclude(p => p.Team).ThenInclude(t => t.TeamUsers).ThenInclude(u => u.User)
                 .Include(c => c.TaskCategory)
                 .Include(b => b.Board)
                 .Include(a => a.Appointee).ThenInclude(u => u.User)
                 .Include(a => a.Appointer).ThenInclude(u => u.User)
-                .Where(t => teamUserIds.Contains(t.AppointeeId) || teamUserIds.Contains(t.AppointerId))
-                .ProjectTo<ProjectTaskDto>(mapper.ConfigurationProvider)
+                .Where(t =>
+                    (teamUserIds.Contains(t.AppointeeId) || teamUserIds.Contains(t.AppointerId)) &&
+                    viewableTeamIds.Contains(t.Project.TeamId))
                 .ToListAsync();
 
-            if (tasks is null || tasks.Count == 0)
+            if (taskEntities.Count == 0)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.NoTasksFound));
             }
 
+            var tasks = mapper.Map<List<ProjectTaskDto>>(taskEntities);
+
+            var taskById = taskEntities.ToDictionary(t => t.Id);
+
             foreach (var task in tasks)
             {
-                task.CanDelete = teamUserIds.Contains(task.AppointerId);
+                if (!taskById.TryGetValue(task.Id, out var entity))
+                {
+                    continue;
+                }
+
+                if (!teamPermissions.TryGetValue(entity.Project.TeamId, out var perms))
+                {
+                    task.CanEdit = false;
+                    task.CanDelete = false;
+                    continue;
+                }
+                
+                // Allow delete only if the current user is the appointer AND has CanDeleteTasks for that team                
+                var isUserAppointer = teamUserIds.Contains(entity.AppointerId);                
+                task.CanDelete = isUserAppointer && perms.CanDeleteTasks;
             }
 
             return CreateActionResult(CustomResponseDto<List<ProjectTaskDto>>.Success(tasks, 200));
@@ -89,18 +135,20 @@ namespace ArslanProjectManager.API.Controllers
         [ServiceFilter(typeof(NotFoundFilter<ProjectTask>))]
         public async Task<IActionResult> Details(int id)
         {
-            var team = await context.Teams.Where(t => t.Projects.Any(p => p.ProjectTasks.Any(pt => pt.Id == id))).FirstOrDefaultAsync();
+            var team = await context.Teams
+                .Where(t => t.Projects.Any(p => p.ProjectTasks.Any(pt => pt.Id == id)))
+                .FirstOrDefaultAsync();
             if (team is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
-            
+
             var token = await (GetToken())!;
-            var accessValidation = await ValidateTeamAccess(token, team.Id);
+            var accessValidation = await ValidateTeamAccess(token, team.Id, requireViewTasks: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
-            }
+            }            
 
             var taskDto = await context.ProjectTasks
             .Include(p => p.Appointee).ThenInclude(p => p.User)
@@ -117,6 +165,13 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
+            var teamUser = await context.TeamUsers
+                .Include(tu => tu.Role)
+                .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == team.Id);
+            var isAppointee = teamUser!.Id == taskDto.AppointeeId;
+            var isAppointer = teamUser.Id == taskDto.AppointerId;
+            taskDto.CanEdit = (isAppointee || isAppointer) && PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanEditTasks);
+            taskDto.CanDelete = isAppointer && PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanDeleteTasks);
             return CreateActionResult(CustomResponseDto<ProjectTaskDto>.Success(taskDto, 200));
         }
 
@@ -139,7 +194,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, projectId);
+            var accessValidation = await ValidateProjectAccess(token, projectId, requireEditTasks: true, requireAssignTasks: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -219,13 +274,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var accessValidation = await ValidateProjectAccess(token, model.ProjectId);
-            if (accessValidation is not null)
-            {
-                return accessValidation;
-            }
-
-            accessValidation = await ValidateTeamAccess(token, project.TeamId);
+            var accessValidation = await ValidateProjectAccess(token, model.ProjectId, requireEditTasks: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -290,7 +339,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var accessValidation = await ValidateTeamAccess(token, teamFromTask.Id);
+            var accessValidation = await ValidateTeamAccess(token, teamFromTask.Id, requireViewTasks: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -328,7 +377,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var accessValidation = await ValidateTeamAccess(token, task.Project.TeamId);
+            var accessValidation = await ValidateTeamAccess(token, task.Project.TeamId, requireEditTasks: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -411,7 +460,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var accessValidation = await ValidateTeamAccess(token, project.TeamId);
+            var accessValidation = await ValidateTeamAccess(token, project.TeamId, requireEditTasks: true, requireAssignTasks: true);
             if (accessValidation is not null)
             {
                 return accessValidation;
@@ -422,6 +471,17 @@ namespace ArslanProjectManager.API.Controllers
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
+
+            var isAppointeeChanged = task.AppointeeId != model.AppointeeId;
+            if (isAppointeeChanged)
+            {
+                var accessValidationToAssign = await ValidateTeamAccess(token, project.TeamId, requireAssignTasks: true);
+                var isModifiedByAppointer = task.AppointerId == teamUserService.Where(t => t.UserId == token!.UserId && t.TeamId == project.TeamId).FirstOrDefault()?.Id;
+                if (accessValidationToAssign is not null || !isModifiedByAppointer)
+                {
+                    return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToChangeAppointee));
+                }
+            }            
 
             var oldBoardName = task.Board.BoardName;
             var newBoard = await context.BoardTags.FindAsync(model.BoardId);
@@ -476,18 +536,23 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
-            var teamUserIds = await context.TeamUsers
-                .Where(tu => tu.UserId == token!.UserId)
-                .Select(tu => tu.Id)
-                .ToListAsync();
 
-            if (!teamUserIds.Contains(taskDelete.AppointerId))
+            var teamUser = await context.TeamUsers
+                .Include(tu => tu.Role)
+                .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == taskDelete.Project.TeamId);
+
+            if (teamUser is null)
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToViewTask));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
+            }
+
+            if (!PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanDeleteTasks) ||
+                taskDelete.AppointerId != teamUser.Id)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToDeleteTask));
             }
 
             var taskDeleteDto = mapper.Map<ProjectTaskDeleteDto>(taskDelete);
-
             return CreateActionResult(CustomResponseDto<ProjectTaskDeleteDto>.Success(taskDeleteDto, 200));
         }
 
@@ -518,13 +583,27 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var token = await (GetToken())!;
+
+            var project = await context.Projects
+                .Include(p => p.Team)
+                .FirstOrDefaultAsync(p => p.ProjectTasks.Any(pt => pt.Id == id));
+
+            if (project is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
+            }
+
             var teamUser = await context.TeamUsers
-                .Include(tu => tu.Team)
-                    .ThenInclude(t => t.Projects)
-                        .ThenInclude(p => p.ProjectTasks)
-                .Where(x => x.UserId == token!.UserId && x.Team.Projects.Any(x => x.ProjectTasks.Any(x => x.Id == id)))
-                .FirstOrDefaultAsync();
-            if (teamUser is null || task.AppointerId != teamUser.Id)
+                .Include(tu => tu.Role)
+                .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == project.TeamId);
+
+            if (teamUser is null)
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
+            }
+
+            if (!PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanDeleteTasks) ||
+                task.AppointerId != teamUser.Id)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToDeleteTask));
             }
@@ -533,28 +612,63 @@ namespace ArslanProjectManager.API.Controllers
             taskService.ChangeStatus(task);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
-        protected async Task<IActionResult?> ValidateProjectAccess(Token? token, int projectId, bool requireManagerAccess = false)
+
+        protected async Task<IActionResult?> ValidateProjectAccess(
+            Token? token,
+            int projectId,
+            bool requireViewTasks = false,
+            bool requireEditTasks = false,
+            bool requireDeleteTasks = false,
+            bool requireAssignTasks = false)
         {
-            var project = await projectService.GetByIdAsync(projectId);
+            var project = await context.Projects
+                .Include(p => p.Team)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
+
             if (project is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.ProjectNotFound));
             }
 
-            var isMember = await context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == project.TeamId);
-            if (!isMember)
+            var teamUser = await context.TeamUsers
+                .Include(tu => tu.Role)
+                .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == project.TeamId);
+
+            if (teamUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
             }
 
-            if (requireManagerAccess && project.Team.ManagerId != token!.UserId)
+            if (requireViewTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanViewTasks))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotAuthorizedToEditProject));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToViewTask));
+            }
+
+            if (requireEditTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanEditTasks))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToEditTask));
+            }
+
+            if (requireDeleteTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanDeleteTasks))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToDeleteTask));
+            }
+
+            if (requireAssignTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanAssignTasks))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToEditTask));
             }
 
             return null;
         }
-        protected async Task<IActionResult?> ValidateTeamAccess(Token? token, int teamId, bool requireManagerAccess = false)
+
+        protected async Task<IActionResult?> ValidateTeamAccess(
+            Token? token,
+            int teamId,
+            bool requireViewTasks = false,
+            bool requireEditTasks = false,
+            bool requireDeleteTasks = false,
+            bool requireAssignTasks = false)
         {
             var team = await context.Teams.FindAsync(teamId);
             if (team is null)
@@ -562,15 +676,33 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TeamNotFound));
             }
 
-            var isMember = await context.TeamUsers.AnyAsync(t => t.UserId == token!.UserId && t.TeamId == teamId);
-            if (!isMember)
+            var teamUser = await context.TeamUsers
+                .Include(tu => tu.Role)
+                .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == teamId);
+
+            if (teamUser is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotTeamMember));
             }
 
-            if (requireManagerAccess && team.ManagerId != token!.UserId)
+            if (requireViewTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanViewTasks))
             {
-                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NotAuthorizedToEditProject));
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToViewTask));
+            }
+
+            if (requireEditTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanEditTasks))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToEditTask));
+            }
+
+            if (requireDeleteTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanDeleteTasks))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToDeleteTask));
+            }
+
+            if (requireAssignTasks && !PermissionResolver.HasPermission(teamUser, teamUser.Role, p => p.CanAssignTasks))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(403, ErrorMessages.NoPermissionToEditTask));
             }
 
             return null;

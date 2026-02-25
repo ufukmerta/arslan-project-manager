@@ -32,7 +32,8 @@
         public const string NoPermissionToEditTask = "You do not have permission to edit this task";
         public const string NoPermissionToDeleteTask = "You do not have permission to delete this task";
         public const string NoPermissionToViewTask = "You do not have permission to view this task";
-        
+        public const string NoPermissionToChangeAppointee = "You do not have permission to change the appointee of this task";
+
         public const string InvalidTeamId = "Invalid team ID";
         public const string InvalidTeamData = "Invalid team data";
         public const string FailedToCreateTeam = "Failed to create team";

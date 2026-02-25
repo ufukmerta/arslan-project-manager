@@ -23,6 +23,7 @@ public class ProjectTaskDto : BaseDto
     public int AppointeeId { get; set; }
     public string AppointeeName { get; set; } = string.Empty;
 
+    public bool CanEdit { get; set; }
     public bool CanDelete { get; set; }
 
     public ProjectTask.TaskPriority Priority { get; set; }

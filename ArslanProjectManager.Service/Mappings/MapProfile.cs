@@ -55,6 +55,7 @@ namespace ArslanProjectManager.Service.Mappings
             .ForMember(dest => dest.AppointerName, opt => opt.MapFrom(src => src.Appointer.User.Name))
             .ForMember(dest => dest.AppointeeName, opt => opt.MapFrom(src => src.Appointee.User.Name))
             .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.TaskComments))
+            .ForMember(dest => dest.CanEdit, opt => opt.Ignore())
             .ForMember(dest => dest.CanDelete, opt => opt.Ignore())
             .ReverseMap()
             .ForMember(dest => dest.Project, opt => opt.Ignore())
@@ -322,6 +323,7 @@ namespace ArslanProjectManager.Service.Mappings
                 .ForMember(dest => dest.TaskCategoryId, opt => opt.MapFrom(src => src.TaskCategoryId))
                 .ForMember(dest => dest.AppointeeId, opt => opt.MapFrom(src => src.AppointeeId))
                 .ForMember(dest => dest.AppointerId, opt => opt.MapFrom(src => src.AppointerId))
+                .ForMember(dest => dest.CanEdit, opt => opt.MapFrom(src => src.CanEdit))
                 .ForMember(dest => dest.CanDelete, opt => opt.MapFrom(src => src.CanDelete))
                 .ForMember(dest => dest.ProjectId, opt => opt.MapFrom(src => src.ProjectId)).ReverseMap();
 
