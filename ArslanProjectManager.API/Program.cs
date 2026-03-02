@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 }
                 else if (context.Request.Cookies.ContainsKey("AccessToken"))
                 {
-                context.Token = context.Request.Cookies["AccessToken"];
+                    context.Token = context.Request.Cookies["AccessToken"];
                 }
                 return Task.CompletedTask;
             },
@@ -152,32 +152,37 @@ using (var scope = app.Services.CreateScope())
     var seeder = scope.ServiceProvider.GetRequiredService<IDatabaseSeederService>();
     await seeder.SeedAsync();
 }
-    app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1");
-        options.RoutePrefix = "api-docs";
 
-    });
-    app.UseReDoc(options =>
-    {
-        options.SpecUrl = "/openapi/v1.json";
-        options.RoutePrefix = "api-docs/redoc";
-    });
-
-    app.MapScalarApiReference();
-}
-
-app.UseHttpsRedirection();
-
+// Exception handler MUST be first in the pipeline so it can
+// wrap all subsequent middleware and endpoints.
 app.UseCustomException();
 
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1");
+    options.RoutePrefix = "api-docs";
+
+});
+app.UseReDoc(options =>
+{
+    options.SpecUrl = "/openapi/v1.json";
+    options.RoutePrefix = "api-docs/redoc";
+});
+
+app.MapScalarApiReference();
+
+// Security and request pipeline
+app.UseHttpsRedirection();
+
+// Custom token validation / refresh must run before authentication so that
+// the Authentication middleware sees the final token for the request.
 app.UseMiddleware<TokenExpirationMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-
+// Endpoints (routing)
 app.MapGet("/", () => Results.Redirect("/api-docs", permanent: true)).ExcludeFromDescription();
 app.MapControllers();
 
