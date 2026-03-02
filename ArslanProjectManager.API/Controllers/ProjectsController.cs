@@ -36,6 +36,7 @@ namespace ArslanProjectManager.API.Controllers
         {
             var token = (await GetToken())!;
             var teamUsersWithRole = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .Where(tu => tu.UserId == token.UserId)
                 .ToListAsync();
@@ -56,6 +57,7 @@ namespace ArslanProjectManager.API.Controllers
                 ));
 
             var projects = await context.Projects
+                .AsNoTracking()
                 .Where(p => teamIdsWithViewAccess.Contains(p.TeamId))
                 .ProjectTo<UserProjectDto>(mapper.ConfigurationProvider)
                 .ToListAsync();
@@ -118,6 +120,7 @@ namespace ArslanProjectManager.API.Controllers
             var token = (await GetToken())!;
 
             var teamUsersWithRole = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .Include(tu => tu.Team)
                 .Where(tu => tu.UserId == token.UserId)
@@ -165,6 +168,7 @@ namespace ArslanProjectManager.API.Controllers
 
             var token = (await GetToken())!;
             var team = await context.Teams
+                .AsNoTracking()
                 .Include(t => t.TeamUsers)
                 .AnyAsync(t => t.Id == model.TeamId);
             if (!team)
@@ -173,6 +177,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamByTeamUser = await context.Teams
+                .AsNoTracking()
                 .Include(t => t.TeamUsers)
                 .ThenInclude(tu => tu.Role)
                 .FirstOrDefaultAsync(t => t.Id == model.TeamId && t.TeamUsers.Any(tu => tu.UserId == token!.UserId));
@@ -228,6 +233,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var project = await context.Projects
+                .AsNoTracking()
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -305,6 +311,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var project = await context.Projects
+                .AsNoTracking()
                 .Include(p => p.Team)
                 .Include(p => p.ProjectTasks)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -359,6 +366,7 @@ namespace ArslanProjectManager.API.Controllers
             if (requireDeleteAccess)
             {
                 var project = await context.Projects.IgnoreQueryFilters()
+                    .AsNoTracking()
                     .Include(p => p.Team)
                     .FirstOrDefaultAsync(p => p.Id == projectId);
                 if (project is null)
@@ -383,6 +391,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var projectForViewEdit = await context.Projects
+                .AsNoTracking()
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
             if (projectForViewEdit is null)

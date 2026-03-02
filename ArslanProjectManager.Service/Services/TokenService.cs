@@ -11,7 +11,7 @@ namespace ArslanProjectManager.Service.Services
         public async Task<Token?> GetValidTokenByAccessTokenAsync(string accessToken)
         {
             var token = await tokenRepository.GetByAcessTokenAsync(accessToken);
-            if (token == null || !token.IsActive || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
+            if (token is null || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
             {
                 return null;
             }
@@ -21,7 +21,7 @@ namespace ArslanProjectManager.Service.Services
         public async Task<Token?> GetValidTokenByRefreshTokenAsync(string refreshToken)
         {
             var token = await tokenRepository.GetByRefreshTokenAsync(refreshToken);
-            if (token == null || !token.IsActive || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
+            if (token is null || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
             {
                 return null;
             }

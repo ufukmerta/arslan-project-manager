@@ -14,6 +14,7 @@ public class RoleRepository(ProjectManagerDbContext context) : GenericRepository
     public async Task<Role?> GetDefaultRoleAsync()
     {
         return await Where(r => r.TeamId == null && r.IsSystemRole && r.RoleName != SystemRoles.Manager)
+            .AsNoTracking()
             .OrderBy(r => r.RoleName == SystemRoles.Member ? 0 : r.RoleName == SystemRoles.Viewer ? 1 : 2)
             .ThenBy(r => r.Id)
             .FirstOrDefaultAsync();
@@ -26,6 +27,7 @@ public class RoleRepository(ProjectManagerDbContext context) : GenericRepository
     public async Task<List<Role>> GetRolesForTeamAsync(int teamId)
     {
         return await Where(r => r.TeamId == null || r.TeamId == teamId)
+            .AsNoTracking()
             .OrderByDescending(r => r.IsSystemRole)
             .ThenBy(r => r.RoleName == "Manager" ? 0 : r.RoleName == "Member" ? 1 : 2)
             .ToListAsync();

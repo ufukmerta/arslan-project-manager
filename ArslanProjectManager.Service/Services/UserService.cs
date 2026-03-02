@@ -13,6 +13,7 @@ namespace ArslanProjectManager.Service.Services
         public async Task<User?> GetByEmailAsync(string email)
         {
             User? user = await userRepository.Where(u => u.Email == email)
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
             return user;
         }

@@ -29,7 +29,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> RefreshToken([FromBody] RefreshRequestDto dto)
         {
             var token = await TokenService.GetValidTokenByRefreshTokenAsync(dto.RefreshToken);
-            if (token is null || !token.IsActive)
+            if (token is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, ErrorMessages.RefreshTokenMissing));
             }
@@ -152,7 +152,7 @@ namespace ArslanProjectManager.API.Controllers
             if (!string.IsNullOrEmpty(accessToken))
             {
                 var token = await TokenService
-                    .Where(t => t.AccessToken == accessToken && t.IsActive)
+                    .Where(t => t.AccessToken == accessToken)
                     .FirstOrDefaultAsync();
                 if (token is not null)
                 {

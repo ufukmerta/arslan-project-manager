@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +10,7 @@ namespace ArslanProjectManager.Repository.Repositories
         public async Task<Project?> GetProjectWithDetailsAsync(int id)
         {
             var project = await _context.Projects
+                .AsNoTracking()
                 .Include(p => p.ProjectTasks)
                     .ThenInclude(t => t.TaskCategory)
                 .Include(p => p.ProjectTasks)

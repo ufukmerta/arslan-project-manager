@@ -14,6 +14,7 @@ namespace ArslanProjectManager.Service.Services
         {
             return await teamUserRepository
                 .Where(x => x.TeamId == teamId && x.UserId == userId)
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
 

@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +11,7 @@ namespace ArslanProjectManager.Repository.Repositories
         public async Task<User?> GetUserWithTeamsProjectsTasksAsync(int userId)
         {
             return await _context.Users
+                .AsNoTracking()
                 .Include(u => u.TeamUsers)
                     .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.TeamUsers)

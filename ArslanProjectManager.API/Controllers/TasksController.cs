@@ -49,6 +49,7 @@ namespace ArslanProjectManager.API.Controllers
             var token = (await GetToken())!;
 
             var teamUsers = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .Where(tu => tu.UserId == token!.UserId)
                 .ToListAsync();
@@ -80,6 +81,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var taskEntities = await context.ProjectTasks
+                .AsNoTracking()
                 .Include(p => p.Project).ThenInclude(p => p.Team).ThenInclude(t => t.TeamUsers).ThenInclude(u => u.User)
                 .Include(c => c.TaskCategory)
                 .Include(b => b.Board)
@@ -136,6 +138,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var team = await context.Teams
+                .AsNoTracking()
                 .Where(t => t.Projects.Any(p => p.ProjectTasks.Any(pt => pt.Id == id)))
                 .FirstOrDefaultAsync();
             if (team is null)
@@ -151,21 +154,23 @@ namespace ArslanProjectManager.API.Controllers
             }            
 
             var taskDto = await context.ProjectTasks
-            .Include(p => p.Appointee).ThenInclude(p => p.User)
-            .Include(p => p.Appointer).ThenInclude(p => p.User)
-            .Include(p => p.Board)
-            .Include(p => p.Project)
-            .Include(p => p.TaskCategory)
-            .Include(p => p.TaskComments).ThenInclude(c => c.TeamUser).ThenInclude(tu => tu.User)
-            .Where(t => t.Id == id)
-            .ProjectTo<ProjectTaskDto>(mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync();
+            .AsNoTracking()
+                .Include(p => p.Appointee).ThenInclude(p => p.User)
+                .Include(p => p.Appointer).ThenInclude(p => p.User)
+                .Include(p => p.Board)
+                .Include(p => p.Project)
+                .Include(p => p.TaskCategory)
+                .Include(p => p.TaskComments).ThenInclude(c => c.TeamUser).ThenInclude(tu => tu.User)
+                .Where(t => t.Id == id)
+                .ProjectTo<ProjectTaskDto>(mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
             if (taskDto is null)
             {
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.TaskNotFound));
             }
 
             var teamUser = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == team.Id);
             var isAppointee = teamUser!.Id == taskDto.AppointeeId;
@@ -201,6 +206,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamMembers = await context.TeamUsers
+                .AsNoTracking()
                 .Include(x => x.User)
                 .Where(x => x.TeamId == project.TeamId)
                 .Select(x => new TaskUserDto
@@ -211,6 +217,7 @@ namespace ArslanProjectManager.API.Controllers
                 .ToListAsync();
 
             var boards = await context.BoardTags
+                .AsNoTracking()
                 .Select(x => new BoardTagDto
                 {
                     Id = x.Id,
@@ -219,6 +226,7 @@ namespace ArslanProjectManager.API.Controllers
                 .ToListAsync();
 
             var taskCategories = await context.TaskCategories
+                .AsNoTracking()
                 .Select(x => new TaskCategoryDto
                 {
                     Id = x.Id,
@@ -330,6 +338,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamFromTask = await context.Teams
+                .AsNoTracking()
                 .Include(t => t.Projects)
                 .ThenInclude(p => p.ProjectTasks)
                 .Where(x => x.Projects.Any(x => x.ProjectTasks.Any(x => x.Id == task.Id))).FirstOrDefaultAsync();
@@ -365,6 +374,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var task = await context.ProjectTasks
+                 .AsNoTracking()
                  .Include(p => p.Project)
                  .Include(p => p.TaskCategory)
                  .Include(p => p.Board)
@@ -384,6 +394,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamMembers = await context.TeamUsers
+                .AsNoTracking()
                 .Include(x => x.User)
                 .Where(x => x.TeamId == task.Project.TeamId)
                 .Select(x => new TaskUserDto
@@ -394,6 +405,7 @@ namespace ArslanProjectManager.API.Controllers
                 .ToListAsync();
 
             var boards = await context.BoardTags
+                .AsNoTracking()
                 .Select(x => new BoardTagDto
                 {
                     Id = x.Id,
@@ -402,6 +414,7 @@ namespace ArslanProjectManager.API.Controllers
                 .ToListAsync();
 
             var taskCategories = await context.TaskCategories
+                .AsNoTracking()
                 .Select(x => new TaskCategoryDto
                 {
                     Id = x.Id,
@@ -521,6 +534,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var taskDelete = await context.ProjectTasks
+                .AsNoTracking()
                 .Include(p => p.Appointee)
                     .ThenInclude(p => p.User)
                 .Include(p => p.Appointer)
@@ -538,6 +552,7 @@ namespace ArslanProjectManager.API.Controllers
             var token = await (GetToken())!;
 
             var teamUser = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == taskDelete.Project.TeamId);
 
@@ -585,6 +600,7 @@ namespace ArslanProjectManager.API.Controllers
             var token = await (GetToken())!;
 
             var project = await context.Projects
+                .AsNoTracking()
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.ProjectTasks.Any(pt => pt.Id == id));
 
@@ -594,6 +610,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamUser = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == project.TeamId);
 
@@ -622,6 +639,7 @@ namespace ArslanProjectManager.API.Controllers
             bool requireAssignTasks = false)
         {
             var project = await context.Projects
+                .AsNoTracking()
                 .Include(p => p.Team)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
 
@@ -631,6 +649,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamUser = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == project.TeamId);
 
@@ -677,6 +696,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             var teamUser = await context.TeamUsers
+                .AsNoTracking()
                 .Include(tu => tu.Role)
                 .FirstOrDefaultAsync(tu => tu.UserId == token!.UserId && tu.TeamId == teamId);
 

@@ -10,16 +10,8 @@ namespace ArslanProjectManager.Service.Services
         public async Task<HomeDto> GetHomeSummaryAsync(int userId)
         {
             var user = await userRepository.GetUserWithTeamsProjectsTasksAsync(userId);
-            if (user is null)
-            {
-                return new HomeDto();
-            }
-
-            var userTeamUsers = user.TeamUsers
-                .Where(tu => tu.UserId == userId)
-                .ToList();
-
-            if (userTeamUsers.Count == 0)
+            var userTeamUsers = user?.TeamUsers.ToList();
+            if (userTeamUsers is null || userTeamUsers.Count == 0)
             {
                 return new HomeDto();
             }

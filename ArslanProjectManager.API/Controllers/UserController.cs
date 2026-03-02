@@ -222,6 +222,7 @@ namespace ArslanProjectManager.API.Controllers
 
             var pendingInvites = await teamInviteService
                 .Where(x => x.InvitedEmail == user.Email && x.Status == TeamInvite.InviteStatus.Pending)
+                .AsNoTracking()
                 .Include(x => x.Team)
                 .Include(x => x.InvitedBy)
                 .ToListAsync();
@@ -255,6 +256,7 @@ namespace ArslanProjectManager.API.Controllers
 
             var invite = await teamInviteService
                 .Where(x => x.Id == id && x.InvitedEmail == user.Email)
+                .AsNoTracking()
                 .Include(x => x.Team)
                 .FirstOrDefaultAsync();
 
@@ -326,6 +328,7 @@ namespace ArslanProjectManager.API.Controllers
 
             var invite = await teamInviteService
                 .Where(x => x.Id == id && x.InvitedEmail == user.Email)
+                .AsNoTracking()
                 .FirstOrDefaultAsync();
 
             if (invite!.Status != TeamInvite.InviteStatus.Pending)
