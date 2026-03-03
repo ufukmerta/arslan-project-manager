@@ -37,7 +37,6 @@ namespace ArslanProjectManager.Service.Services
             token.Expiration = DateTime.Now.AddHours(1);
             token.RefreshTokenExpiration = DateTime.Now.AddDays(7);
             token.UserId = user.Id;
-            token.User = user;
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

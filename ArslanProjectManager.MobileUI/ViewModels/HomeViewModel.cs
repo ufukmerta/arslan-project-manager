@@ -9,6 +9,8 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class HomeViewModel(HomeService homeService) : ObservableObject
     {
+        private bool _isLoading;
+
         [ObservableProperty] private int totalProjects;
         [ObservableProperty] private int completedProjects;
         [ObservableProperty] private decimal projectCompletionRate;
@@ -28,6 +30,12 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [RelayCommand]
         public async Task LoadHomeAsync()
         {
+            if (_isLoading)
+            {
+                return;
+            }
+
+            _isLoading = true;
             try
             {
                 var response = await homeService.GetHomeSummaryAsync();
@@ -53,6 +61,10 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.MobileUI.Services.UIServices;
 using ArslanProjectManager.MobileUI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -47,6 +47,11 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [RelayCommand]
         public async Task LoadTasksAsync()
         {
+            if (IsLoading)
+            {
+                return;
+            }
+
             IsLoading = true;
             ErrorMessage = string.Empty;
             try

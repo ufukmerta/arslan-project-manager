@@ -14,6 +14,9 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         private ObservableCollection<TeamViewModel> teams = [];
 
         [ObservableProperty]
+        private bool isLoading;
+
+        [ObservableProperty]
         private string searchText = string.Empty;
 
         [ObservableProperty]
@@ -39,6 +42,12 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         public async Task LoadTeamsAsync()
         {
+            if (IsLoading)
+            {
+                return;
+            }
+
+            IsLoading = true;
             try
             {
                 var response = await teamService.GetMyTeamsAsync();
@@ -59,6 +68,10 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 ErrorMessage = ex.Message;
                 allTeams = [];
                 Teams = [];
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 

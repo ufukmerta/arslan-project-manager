@@ -11,7 +11,6 @@ public partial class HomePage : ContentPage
         InitializeComponent();
         _viewModel = viewModel;
         BindingContext = _viewModel;
-        Loaded += async (s, e) => await _viewModel.LoadHomeAsync();
     }
 
     protected override async void OnAppearing()

@@ -45,6 +45,11 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [RelayCommand]
         public async Task LoadProjectsAsync()
         {
+            if (IsLoading)
+            {
+                return;
+            }
+
             IsLoading = true;
             ErrorMessage = string.Empty;
             try
@@ -72,24 +77,6 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             {
                 IsLoading = false;
             }
-        }
-
-        [RelayCommand]
-        public async Task ViewProjectAsync(int id)
-        {
-            await Shell.Current.GoToAsync($"{nameof(ProjectDetailPage)}?id={id}");
-        }
-
-        [RelayCommand]
-        public async Task EditProjectAsync(int id)
-        {
-            // To be implemented => await Shell.Current.GoToAsync($"{nameof(ProjectEditPage)}?id={id}");
-        }
-
-        [RelayCommand]
-        public async Task DeleteProjectAsync(int id)
-        {
-            // To be implemented => await Shell.Current.GoToAsync($"{nameof(ProjectDeleteConfirmPage)}?id={id}");
         }
 
         [RelayCommand]

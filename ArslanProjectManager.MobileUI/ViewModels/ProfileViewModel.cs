@@ -20,6 +20,8 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty] private string? errorMessage;
         [ObservableProperty] private string? currentTeam;
 
+        [ObservableProperty] private bool isLoading;
+
         private IRelayCommand? _logoutCommand;
         private IRelayCommand? _editProfileCommand;
         private IRelayCommand? _openProjectsCommand;
@@ -34,6 +36,12 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 
         public async Task LoadProfileAsync()
         {
+            if (IsLoading)
+            {
+                return;
+            }
+
+            IsLoading = true;
             try
             {
                 var response = await userService.GetProfileAsync();
@@ -76,6 +84,10 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             catch (System.Exception ex)
             {
                 ErrorMessage = ex.Message;
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 

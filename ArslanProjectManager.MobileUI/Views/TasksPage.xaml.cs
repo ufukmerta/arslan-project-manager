@@ -11,7 +11,6 @@ public partial class TasksPage : ContentPage
         InitializeComponent();
         _viewModel = viewModel;
         BindingContext = viewModel;
-        Loaded += async (s, e) => await viewModel.LoadTasksAsync();
         Appearing += async (s, e) => await viewModel.LoadTasksAsync();
     }
 

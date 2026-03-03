@@ -9,7 +9,6 @@ public partial class ProjectsPage : ContentPage
     {
         InitializeComponent();
         BindingContext = viewModel;
-        Loaded += async (s, e) => await viewModel.LoadProjectsAsync();
         Appearing += async (s, e) => await viewModel.LoadProjectsAsync();
     }
 
