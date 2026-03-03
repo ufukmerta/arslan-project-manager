@@ -4,16 +4,26 @@ A full-stack **team-based project and task management** application built with .
 
 ---
 
+## Live demo (non-production)
+
+- **Web UI**: [`https://ufukmert.com`](https://ufukmert.com)
+- **API**: [`https://api.ufukmertarslan.com.tr`](https://api.ufukmertarslan.com.tr)
+
+**Warning:** These endpoints run in a development / test environment. Data may be reset or lost at any time; do not store sensitive or production-critical information here.
+
+---
+
 ## Features
 
 - **Teams** – Create teams, invite members, manage team roles and permissions
 - **Projects** – Projects belong to teams; track name, detail, and start date
 - **Tasks** – Tasks with categories (User Story, Task, Issue, Bug, Ticket), priorities (Low/Medium/High), board status (To Do, In Progress, Done), assignees, and due dates
-- **Roles & permissions** – System roles (Manager, Member, Viewer, Guest) and custom team roles with granular permissions (view/edit/delete tasks and projects, invite/remove members, manage roles and permissions)
+- **Roles & permissions (RBAC)** – System roles (Manager, Member, Viewer, Guest) and custom team roles with granular per-team permissions (view/edit/delete tasks and projects, invite/remove members, manage roles and permissions). API and UIs enforce effective permissions and expose `CanEdit` / `CanDelete` flags so clients can show or hide actions safely.
 - **Team invites** – Invite users by email; accept/decline from Web or Mobile
 - **Task comments & activity logs** – Comments and log categories (Created, Updated, Assigned, Status Changed, etc.)
 - **User profiles** – Name, email, profile picture, change password
 - **Authentication** – Register, login, JWT access + refresh tokens, cookie support for Web UI
+- **Rate limiting** – Simple IP-based fixed-window rate limiter in the API that returns HTTP 429; the Web UI has a dedicated **Too Many Requests** page and redirects when the limit is exceeded.
 
 ---
 
@@ -25,8 +35,8 @@ The solution uses a **layered architecture**:
 |---------|-------------|
 | **ArslanProjectManager.Core** | Domain models, DTOs, repository/service interfaces, constants. No external dependencies beyond EF and configuration. |
 | **ArslanProjectManager.Repository** | EF Core `DbContext`, entity configurations, migrations, concrete repositories, `UnitOfWork`, database seeder (board tags, log categories, task categories, system roles). |
-| **ArslanProjectManager.Service** | Business logic: auth, users, teams, team users, roles, projects, tasks, comments, logs, tags, tokens. Uses AutoMapper, FluentValidation, BCrypt. |
-| **ArslanProjectManager.API** | ASP.NET Core Web API (.NET 9): JWT auth, controllers (Auth, User, Teams, Projects, Tasks, Home), OpenAPI/Swagger, Scalar, ReDoc, CORS, custom exception and token-expiration middleware. |
+| **ArslanProjectManager.Service** | Business logic: auth, users, teams, team users, roles, projects, tasks, comments, logs, tags, tokens, permission resolution (`PermissionResolver`) and home/user summaries that respect RBAC. Uses AutoMapper, FluentValidation, BCrypt. |
+| **ArslanProjectManager.API** | ASP.NET Core Web API (.NET 9): JWT auth, per-team RBAC enforcement on projects and tasks, IP-based rate limiting, controllers (Auth, User, Teams, Projects, Tasks, Home), OpenAPI/Swagger, Scalar, ReDoc, CORS, custom exception and token-expiration middleware. |
 | **ArslanProjectManager.WebUI** | ASP.NET Core MVC app: cookie + JWT, calls API via `HttpClient` with `AuthenticatedHttpClientHandler` and token refresh. Views for Login, Register, Teams, Projects, Tasks, User profile, permissions, roles. |
 | **ArslanProjectManager.MobileUI** | .NET MAUI app (Android, iOS, Windows): CommunityToolkit.Mvvm, same API via HTTP + JWT; pages for auth, home, teams, projects, tasks, profile, invites. |
 
@@ -60,8 +70,8 @@ The solution uses a **layered architecture**:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/ArslanProjectManager.git
-cd ArslanProjectManager
+git clone https://github.com/ufukmerta/arslan-project-manager.git
+cd arslan-project-manager
 ```
 
 ### 2. Configure the API
@@ -81,6 +91,10 @@ Example structure (replace with your values):
     "Audience": "ArslanProjectManagerUser",
     "SecurityKey": "YOUR_SECRET_KEY_AT_LEAST_32_BYTES_FOR_HMAC_SHA256",
     "ExpirationInMinutes": 60
+  },
+  "RateLimiting": {
+    "PermitLimit": 100,
+    "WindowMinutes": 1
   }
 }
 ```
@@ -94,6 +108,13 @@ The API signs JWTs with **HMAC-SHA256** (see `TokenHandler`); the key is used as
   "SqlConnection": "Server=(LocalDB)\\MSSQLLocalDB;Database=ProjectManagerDB;Integrated Security=True;"
 }
 ```
+
+The `RateLimiting` section controls the simple IP-based fixed-window rate limiter used by the API:
+
+- **PermitLimit** – maximum number of requests per IP within the window (default: `100`).
+- **WindowMinutes** – length of the fixed window in minutes (default: `1`).
+
+If you omit this section, the defaults from `Program.cs` (`GetValue("RateLimiting:PermitLimit", 100)` and `GetValue("RateLimiting:WindowMinutes", 1)`) will be used.
 
 ### 3. Apply database migrations
 
