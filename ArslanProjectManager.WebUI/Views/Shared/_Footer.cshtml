@@ -1,5 +1,19 @@
-﻿<footer class="border-top footer text-muted">
-	<div class="container pt-3 pb-3">
-		&copy; 2025 - ArslanProjectManager WEB Project by Ufuk Mert Arslan - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-	</div>
+<footer class="border-top footer text-muted">
+    <div class="container py-3">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                &copy; @DateTime.Now.Year - Arslan Project Manager - Built by <a href="https://ufukmertarslan.com.tr" target="_blank" rel="noopener noreferrer">Ufuk Mert Arslan</a>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <a asp-area="" asp-controller="Home" asp-action="Privacy" class="me-3 link">Privacy</a>
+                <a href="mailto:ufukmertarslan@gmail.com" target="_blank" class="me-1 link">Contact</a>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-12 small text-center text-danger-emphasis">
+                <strong class="text-danger">Non-production environment:</strong> this instance is used for testing and development.
+                Data may be reset or lost at any time. Please do not store sensitive or production-critical information here.
+            </div>
+        </div>
+    </div>
 </footer>
