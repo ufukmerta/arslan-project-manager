@@ -181,6 +181,7 @@ app.UseMiddleware<TokenExpirationMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 // Endpoints (routing)
 app.MapGet("/", () => Results.Redirect("/api-docs", permanent: true)).ExcludeFromDescription();
