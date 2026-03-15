@@ -10,34 +10,36 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class ProjectDetailViewModel(ProjectService projectService) : ObservableObject
     {
         [ObservableProperty]
-        private ProjectDetailsDto? projectDetails;
+        public partial ProjectDetailsDto? ProjectDetails { get; set; }
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<MiniProjectTaskDto> toDoTasks = [];
+        public partial ObservableCollection<MiniProjectTaskDto> ToDoTasks { get; set; }
+
         [ObservableProperty]
-        private ObservableCollection<MiniProjectTaskDto> inProgressTasks = [];
+        public partial ObservableCollection<MiniProjectTaskDto> InProgressTasks { get; set; }
+
         [ObservableProperty]
-        private ObservableCollection<MiniProjectTaskDto> doneTasks = [];
+        public partial ObservableCollection<MiniProjectTaskDto> DoneTasks { get; set; }
 
         partial void OnProjectDetailsChanged(ProjectDetailsDto? value)
         {
             if (value?.Tasks != null)
             {
-                ToDoTasks = new(value.Tasks.Where(t => t.BoardId == 1 || t.BoardId == 0));
-                InProgressTasks = new(value.Tasks.Where(t => t.BoardId == 2));
-                DoneTasks = new(value.Tasks.Where(t => t.BoardId == 3));
+                ToDoTasks = [.. value.Tasks.Where(t => t.BoardId == 1 || t.BoardId == 0)];
+                InProgressTasks = [.. value.Tasks.Where(t => t.BoardId == 2)];
+                DoneTasks = [.. value.Tasks.Where(t => t.BoardId == 3)];
             }
             else
             {
-                ToDoTasks = new();
-                InProgressTasks = new();
-                DoneTasks = new();
+                ToDoTasks = [];
+                InProgressTasks = [];
+                DoneTasks = [];
             }
         }
 
@@ -58,7 +60,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     ErrorMessage = response?.Errors?.FirstOrDefault() ?? "Failed to load project details.";
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
             }

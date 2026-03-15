@@ -11,21 +11,38 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     {
         private bool _isLoading;
 
-        [ObservableProperty] private int totalProjects;
-        [ObservableProperty] private int completedProjects;
-        [ObservableProperty] private decimal projectCompletionRate;
+        [ObservableProperty]
+        public partial int TotalProjects { get; set; }
 
-        [ObservableProperty] private int totalTasks;
-        [ObservableProperty] private int completedTasks;
-        [ObservableProperty] private decimal taskCompletionRate;
+        [ObservableProperty]
+        public partial int CompletedProjects { get; set; }
 
-        [ObservableProperty] private int totalTeams;
-        [ObservableProperty] private int totalMembers;
+        [ObservableProperty]
+        public partial decimal ProjectCompletionRate { get; set; }
 
-        [ObservableProperty] private ObservableCollection<RecentTaskDto> recentTasks = [];
-        [ObservableProperty] private ObservableCollection<RecentProjectDto> recentProjects = [];
+        [ObservableProperty]
+        public partial int TotalTasks { get; set; }
 
-        [ObservableProperty] private string? errorMessage;
+        [ObservableProperty]
+        public partial int CompletedTasks { get; set; }
+
+        [ObservableProperty]
+        public partial decimal TaskCompletionRate { get; set; }
+
+        [ObservableProperty]
+        public partial int TotalTeams { get; set; }
+
+        [ObservableProperty]
+        public partial int TotalMembers { get; set; }
+
+        [ObservableProperty]
+        public partial ObservableCollection<RecentTaskDto> RecentTasks { get; set; }
+
+        [ObservableProperty]
+        public partial ObservableCollection<RecentProjectDto> RecentProjects { get; set; }
+
+        [ObservableProperty]
+        public partial string? ErrorMessage { get; set; }
 
         [RelayCommand]
         public async Task LoadHomeAsync()
@@ -44,14 +61,14 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     var homeDto = response.Data;
                     TotalProjects = homeDto.TotalProjects;
                     CompletedProjects = homeDto.CompletedProjects;
-                    ProjectCompletionRate = TotalProjects == 0 ? 0 : Decimal.Divide(CompletedProjects, TotalProjects);
+                    ProjectCompletionRate = TotalProjects == 0 ? 0 : decimal.Divide(CompletedProjects, TotalProjects);
                     TotalTasks = homeDto.TotalTasks;
                     CompletedTasks = homeDto.CompletedTasks;
-                    TaskCompletionRate = TotalTasks == 0 ? 0 : Decimal.Divide(CompletedTasks, TotalTasks);
+                    TaskCompletionRate = TotalTasks == 0 ? 0 : decimal.Divide(CompletedTasks, TotalTasks);
                     TotalTeams = homeDto.TotalTeams;
                     TotalMembers = homeDto.TotalMembers;
-                    RecentTasks = new ObservableCollection<RecentTaskDto>(homeDto.RecentTasks);
-                    RecentProjects = new ObservableCollection<RecentProjectDto>(homeDto.RecentProjects);
+                    RecentTasks = [.. homeDto.RecentTasks];
+                    RecentProjects = [.. homeDto.RecentProjects];
                 }
                 else
                 {

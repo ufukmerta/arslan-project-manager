@@ -1,0 +1,16 @@
+<Solution>
+  <Project Path="ArslanProjectManager.API/ArslanProjectManager.API.csproj">
+    <BuildDependency Project="ArslanProjectManager.Repository/ArslanProjectManager.Repository.csproj" />
+  </Project>
+  <Project Path="ArslanProjectManager.Core/ArslanProjectManager.Core.csproj" />
+  <Project Path="ArslanProjectManager.MobileUI/ArslanProjectManager.MobileUI.csproj">
+    <BuildDependency Project="ArslanProjectManager.API/ArslanProjectManager.API.csproj" />
+    <BuildDependency Project="ArslanProjectManager.Core/ArslanProjectManager.Core.csproj" />
+    <Deploy />
+  </Project>
+  <Project Path="ArslanProjectManager.Repository/ArslanProjectManager.Repository.csproj" />
+  <Project Path="ArslanProjectManager.Service/ArslanProjectManager.Service.csproj">
+    <BuildDependency Project="ArslanProjectManager.Core/ArslanProjectManager.Core.csproj" />
+  </Project>
+  <Project Path="ArslanProjectManager.WebUI/ArslanProjectManager.WebUI.csproj" />
+</Solution>

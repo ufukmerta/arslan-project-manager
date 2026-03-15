@@ -14,40 +14,43 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class TeamDetailViewModel(TeamService teamService) : ObservableObject
     {
         [ObservableProperty]
-        private int teamId;
+        public partial int TeamId { get; set; }
 
         [ObservableProperty]
-        private string teamName = string.Empty;
+        public partial string TeamName { get; set; }
 
         [ObservableProperty]
-        private string description = string.Empty;
+        public partial string Description { get; set; }
 
         [ObservableProperty]
-        private string managerName = string.Empty;
+        public partial string ManagerName { get; set; }
 
         [ObservableProperty]
-        private int managerId;
+        public partial int ManagerId { get; set; }
 
         [ObservableProperty]
-        private int currentUserId;
+        public partial int CurrentUserId { get; set; }
 
         [ObservableProperty]
-        private bool isCurrentUserManager;
+        public partial bool IsCurrentUserManager { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<TeamUserDto> members = [];
+        public partial bool CanEditProjects { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<TeamProjectDto> projects = [];
+        public partial ObservableCollection<TeamUserDto> Members { get; set; } = [];
 
         [ObservableProperty]
-        private ObservableCollection<TeamInviteListDto> pendingInvites = [];
+        public partial ObservableCollection<TeamProjectDto> Projects { get; set; } = [];
 
         [ObservableProperty]
-        private bool isLoading = false;
+        public partial ObservableCollection<TeamInviteListDto> PendingInvites { get; set; } = [];
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial bool IsLoading { get; set; }
+
+        [ObservableProperty]
+        public partial string ErrorMessage { get; set; }
         
         private CancellationTokenSource _cts = new();
 
@@ -78,6 +81,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     Description = details.Description ?? string.Empty;
                     ManagerName = details.ManagerName ?? string.Empty;
                     ManagerId = details.ManagerId;
+                    CanEditProjects = details.CanEditProjects;
 
                     Members.Clear();
                     if (details.Members != null && details.Members.Count > 0)
@@ -116,11 +120,13 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 }
                 else
                 {
+                    TeamId = 0;
                     ErrorMessage = response?.Errors?.FirstOrDefault() ?? "Failed to load team details";
                 }
             }
             catch (Exception ex)
             {
+                TeamId = 0;
                 ErrorMessage = $"Error loading team details: {ex.Message}";
             }
             finally
@@ -164,7 +170,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 var page = Shell.Current?.CurrentPage;
                 if (page != null)
                 {
-                    await page.DisplayAlert(
+                    await page.DisplayAlertAsync(
                         "Navigation Error",
                         $"Could not open project: {ex.Message}",
                         "OK");

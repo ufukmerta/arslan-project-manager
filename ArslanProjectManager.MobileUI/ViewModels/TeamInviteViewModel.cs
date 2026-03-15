@@ -12,22 +12,22 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class TeamInviteViewModel(TeamService teamService) : ObservableObject, IQueryAttributable
     {   
         [ObservableProperty]
-        private int teamId;
+        public partial int TeamId { get; set; }
 
         [ObservableProperty]
-        private string email = string.Empty;
+        public partial string Email { get; set; }
 
         [ObservableProperty]
-        private string teamName = string.Empty;
+        public partial string TeamName { get; set; }
 
         [ObservableProperty]
-        private string inviterName = string.Empty;
+        public partial string InviterName { get; set; }
 
         [ObservableProperty]
-        private bool isLoading = false;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -52,11 +52,14 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             else
             {
                 var page = Shell.Current?.CurrentPage;
-                page?.DisplayAlert(
-                    "Success",
-                    "Invitation sent successfully!",
-                    "OK");
-                Shell.Current?.GoToAsync("..");
+                if (page != null)
+                {
+                    _ = page.DisplayAlertAsync("Success", "Invitation sent successfully!", "OK");
+                }
+                if (Shell.Current != null)
+                {
+                    _ = Shell.Current.GoToAsync("..");
+                }
             }
         }
 
@@ -86,7 +89,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     var page = Shell.Current?.CurrentPage;
                     if (page != null)
                     {
-                        await page.DisplayAlert(
+                        await page.DisplayAlertAsync(
                         "Success",
                         "Invitation sent successfully!",
                         "OK");

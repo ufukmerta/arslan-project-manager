@@ -8,19 +8,41 @@ namespace ArslanProjectManager.MobileUI.ViewModels
 {
     public partial class ProfileViewModel(UserService userService, AuthService authService, IAuthStorage authStorage) : ObservableObject
     {
-        [ObservableProperty] private string? fullName;
-        [ObservableProperty] private string? email;
-        [ObservableProperty] private string? role;
-        [ObservableProperty] private string? profileImage;
-        [ObservableProperty] private int projectCount;
-        [ObservableProperty] private int completedProjects;
-        [ObservableProperty] private int taskCount;
-        [ObservableProperty] private int completedTasks;
-        [ObservableProperty] private string? registerDate;
-        [ObservableProperty] private string? errorMessage;
-        [ObservableProperty] private string? currentTeam;
+        [ObservableProperty]
+        public partial string? FullName { get; set; }
 
-        [ObservableProperty] private bool isLoading;
+        [ObservableProperty]
+        public partial string? Email { get; set; }
+
+        [ObservableProperty]
+        public partial string? Role { get; set; }
+
+        [ObservableProperty]
+        public partial string? ProfileImage { get; set; }
+
+        [ObservableProperty]
+        public partial int ProjectCount { get; set; }
+
+        [ObservableProperty]
+        public partial int CompletedProjects { get; set; }
+
+        [ObservableProperty]
+        public partial int TaskCount { get; set; }
+
+        [ObservableProperty]
+        public partial int CompletedTasks { get; set; }
+
+        [ObservableProperty]
+        public partial string? RegisterDate { get; set; }
+
+        [ObservableProperty]
+        public partial string? ErrorMessage { get; set; }
+
+        [ObservableProperty]
+        public partial string? CurrentTeam { get; set; }
+
+        [ObservableProperty]
+        public partial bool IsLoading { get; set; }
 
         private IRelayCommand? _logoutCommand;
         private IRelayCommand? _editProfileCommand;

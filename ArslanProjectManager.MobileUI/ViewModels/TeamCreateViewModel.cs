@@ -11,26 +11,26 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty]
         [Required(ErrorMessage = "Team name is required.")]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Team name must be between 1 and 50 characters.")]
-        private string name = string.Empty;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
-        private string description = string.Empty;
+        public partial string Description { get; set; }
 
         [ObservableProperty]
-        private bool isLoading = false;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private string validationMessage = string.Empty;
+        public partial string ValidationMessage { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool hasValidationErrors = false;
+        public partial bool HasValidationErrors { get; set; }
 
         [ObservableProperty]
-        private string nameError = string.Empty;
+        public partial string NameError { get; set; }
 
         partial void OnNameChanged(string value)
         {

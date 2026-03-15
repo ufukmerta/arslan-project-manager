@@ -30,7 +30,7 @@ namespace ArslanProjectManager.MobileUI
             builder.Services.AddSingleton<ITokenRefresher, TokenRefresher>();
             builder.Services.AddTransient<AuthenticatedHttpMessageHandler>();
 
-            builder.Services.AddAutoMapper(typeof(MapProfile));
+            builder.Services.AddAutoMapper(cfg => cfg.AllowNullCollections = true, typeof(MapProfile));
 #if DEBUG
             builder.Logging.AddDebug();            
             builder.Services.AddHttpClient("ArslanProjectManagerAPI", client =>

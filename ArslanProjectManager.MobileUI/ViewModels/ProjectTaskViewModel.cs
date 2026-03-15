@@ -11,18 +11,18 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class ProjectTaskViewModel(ProjectTaskService projectTaskService) : ObservableObject
     {
         [ObservableProperty]
-        private ObservableCollection<ProjectTaskDto> tasks = [];
+        public partial ObservableCollection<ProjectTaskDto> Tasks { get; set; }
 
         private List<ProjectTaskDto> allTasks = [];
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private string searchText = string.Empty;
+        public partial string SearchText { get; set; }
 
         partial void OnSearchTextChanged(string value)
         {

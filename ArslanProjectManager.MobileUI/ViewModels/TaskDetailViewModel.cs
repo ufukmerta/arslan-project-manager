@@ -9,22 +9,22 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class TaskDetailViewModel(ProjectTaskService projectTaskService) : ObservableObject
     {
         [ObservableProperty]
-        private ProjectTaskDto? selectedTask;
+        public partial ProjectTaskDto? SelectedTask { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<TaskCommentDto> comments = [];
+        public partial ObservableCollection<TaskCommentDto> Comments { get; set; }
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string newComment = string.Empty;
+        public partial string NewComment { get; set; }
 
         [ObservableProperty]
-        private bool isCommentError = false;
+        public partial bool IsCommentError { get; set; }
 
         [RelayCommand]
         public async Task SelectTaskAsync(int id)

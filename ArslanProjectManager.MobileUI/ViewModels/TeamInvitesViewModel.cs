@@ -16,25 +16,25 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         private bool _isInitialized;
 
         [ObservableProperty]
-        private int teamId;
+        public partial int TeamId { get; set; }
 
         [ObservableProperty]
-        private string teamName = string.Empty;
+        public partial string TeamName { get; set; }
 
         [ObservableProperty]
-        private string inviterName = string.Empty;
+        public partial string InviterName { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<TeamInviteListDto> invites = [];
+        public partial ObservableCollection<TeamInviteListDto> Invites { get; set; } = [];
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private bool isRefreshing;
+        public partial bool IsRefreshing { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         public void ApplyQueryAttributes(IDictionary<string, object> query)
         {
@@ -81,7 +81,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             var page = Shell.Current?.CurrentPage;
             if (page == null) return;
 
-            var confirm = await page.DisplayAlert(
+            var confirm = await page.DisplayAlertAsync(
                 "Cancel Invite",
                 $"Cancel invite for {invite.InvitedEmail}?",
                 "Yes",
@@ -97,7 +97,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 if (response?.IsSuccess == true)
                 {
                     Invites.Remove(invite);
-                    await page.DisplayAlert("Success", $"Invite for {invite.InvitedEmail} canceled.", "OK");
+                    await page.DisplayAlertAsync("Success", $"Invite for {invite.InvitedEmail} canceled.", "OK");
                     // Refresh the invites list to get updated data
                     await LoadInvitesAsync();
                 }

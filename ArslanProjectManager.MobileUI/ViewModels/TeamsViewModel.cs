@@ -11,16 +11,16 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class TeamsViewModel(TeamService teamService, IMapper mapper) : ObservableObject
     {
         [ObservableProperty]
-        private ObservableCollection<TeamViewModel> teams = [];
+        public partial ObservableCollection<TeamViewModel> Teams { get; set; }
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string searchText = string.Empty;
+        public partial string SearchText { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         private IEnumerable<TeamViewModel> allTeams = [];
 

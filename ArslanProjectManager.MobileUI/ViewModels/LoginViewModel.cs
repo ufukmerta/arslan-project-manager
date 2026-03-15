@@ -14,19 +14,18 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty]
         [Required]
         [EmailAddress]
-        private string email = string.Empty;
+        public partial string Email { get; set; }
 
         [ObservableProperty]
         [Required]
         [DataType(DataType.Password)]
-        private string password = string.Empty;
+        public partial string Password { get; set; }
 
         [ObservableProperty]
-        private bool isLoading = false;
-
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [RelayCommand]
         private async Task LoginAsync()

@@ -4,6 +4,7 @@ using ArslanProjectManager.WebUI.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +23,7 @@ builder.Services.AddHttpClient("ArslanProjectManagerAPI", client =>
 })
 .AddHttpMessageHandler<AuthenticatedHttpClientHandler>();
 
-builder.Services.AddAutoMapper(typeof(MapProfile));
+builder.Services.AddAutoMapper(cfg => cfg.AllowNullCollections = true, Assembly.GetAssembly(typeof(MapProfile))!);
 
 builder.Services.AddAuthentication(options =>
 {

@@ -11,31 +11,31 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class ProfileEditViewModel(UserService userService) : ObservableValidator
     {
         [ObservableProperty]
-        private int id;
+        public partial int Id { get; set; }
 
         [ObservableProperty]
         [Required()]
         [StringLength(50)]
-        private string name = string.Empty;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
         [Required()]
         [EmailAddress(ErrorMessage = ErrorMessages.InvalidEmailFormat)]
         [StringLength(50)]
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = ErrorMessages.InvalidEmailFormat)]
-        private string email = string.Empty;
+        public partial string Email { get; set; }
 
         [ObservableProperty]
-        private bool isLoading = false;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private string nameError = string.Empty;
+        public partial string NameError { get; set; }
 
         [ObservableProperty]
-        private string emailError = string.Empty;
+        public partial string EmailError { get; set; }
 
         partial void OnNameChanged(string value)
         {
@@ -111,7 +111,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 if (response != null && response.IsSuccess)
                 {
                     //if there is no error, we need to show a success message.
-                    await Shell.Current.DisplayAlert("Success", "Profile updated successfully", "OK");
+                    await Shell.Current.DisplayAlertAsync("Success", "Profile updated successfully", "OK");
                     await Shell.Current.GoToAsync("..", true);
                 }
                 else

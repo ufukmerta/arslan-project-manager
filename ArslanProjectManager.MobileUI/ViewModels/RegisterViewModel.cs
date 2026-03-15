@@ -12,43 +12,44 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty]
         [Required]
         [StringLength(50)]
-        private string name = string.Empty;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
         [Required]
         [EmailAddress]
         [StringLength(50)]
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = ErrorMessages.InvalidEmailFormat)]
-        private string email = string.Empty;
+        public partial string Email { get; set; }
 
         [ObservableProperty]
         [Required]
         [StringLength(100, MinimumLength = 8)]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*/?&+\-_.])[A-Za-z\d@$!%*/?&+\-_.]{8,}$", ErrorMessage = ErrorMessages.InvalidPasswordFormat)]
         [DataType(DataType.Password)]
-        private string password = string.Empty;
+        public partial string Password { get; set; }
 
         [ObservableProperty]
         [DataType(DataType.Password)]
-        private string confirmPassword = string.Empty;
+        public partial string ConfirmPassword { get; set; }
+
 
         [ObservableProperty]
-        private bool isLoading = false;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private string nameError = string.Empty;
+        public partial string NameError { get; set; }
 
         [ObservableProperty]
-        private string emailError = string.Empty;
+        public partial string EmailError { get; set; }
 
         [ObservableProperty]
-        private string passwordError = string.Empty;
+        public partial string PasswordError { get; set; }
 
         [ObservableProperty]
-        private string confirmPasswordError = string.Empty;
+        public partial string ConfirmPasswordError { get; set; }
 
         partial void OnNameChanged(string value)
         {
@@ -128,7 +129,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 var response = await authService.RegisterAsync(registerDto);
                 if (response != null && response.IsSuccess)
                 {
-                    await Shell.Current.DisplayAlert("Success", $"Account Created!", "OK");
+                    await Shell.Current.DisplayAlertAsync("Success", $"Account Created!", "OK");
                     await Shell.Current.GoToAsync($"..?email={Email}");
                 }
                 else

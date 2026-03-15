@@ -9,13 +9,13 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class MyInvitesViewModel(UserService userService) : ObservableObject
     {
         [ObservableProperty]
-        private ObservableCollection<PendingInviteDto> invites = new();
+        public partial ObservableCollection<PendingInviteDto> Invites { get; set; }
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [RelayCommand]
         public async Task LoadAsync()
@@ -61,18 +61,18 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 if (response?.IsSuccess == true)
                 {
                     Invites.Remove(invite);
-                    await Shell.Current.DisplayAlert("Success", "You have successfully joined the team!", "OK");
+                    await Shell.Current.DisplayAlertAsync("Success", "You have successfully joined the team!", "OK");
                 }
                 else
                 {
                     ErrorMessage = response?.Errors?.FirstOrDefault() ?? "Failed to accept invitation.";
-                    await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
+                    await Shell.Current.DisplayAlertAsync("Error", ErrorMessage, "OK");
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
-                await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ErrorMessage, "OK");
             }
             finally
             {
@@ -85,7 +85,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         {
             if (invite == null) return;
 
-            var confirmed = await Shell.Current.DisplayAlert(
+            var confirmed = await Shell.Current.DisplayAlertAsync(
                 "Reject Invitation",
                 $"Are you sure you want to reject the invitation from {invite.TeamName}?",
                 "Reject",
@@ -102,18 +102,18 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                 if (response?.IsSuccess == true)
                 {
                     Invites.Remove(invite);
-                    await Shell.Current.DisplayAlert("Success", "Invitation rejected successfully.", "OK");
+                    await Shell.Current.DisplayAlertAsync("Success", "Invitation rejected successfully.", "OK");
                 }
                 else
                 {
                     ErrorMessage = response?.Errors?.FirstOrDefault() ?? "Failed to reject invitation.";
-                    await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
+                    await Shell.Current.DisplayAlertAsync("Error", ErrorMessage, "OK");
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = ex.Message;
-                await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
+                await Shell.Current.DisplayAlertAsync("Error", ErrorMessage, "OK");
             }
             finally
             {

@@ -10,18 +10,18 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     public partial class ProjectsViewModel(ProjectService projectService) : ObservableObject
     {
         [ObservableProperty]
-        private ObservableCollection<UserProjectDto> projects = [];
+        public partial ObservableCollection<UserProjectDto> Projects { get; set; }
 
         private IEnumerable<UserProjectDto> allProjects = [];
 
         [ObservableProperty]
-        private bool isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private string searchText = string.Empty;
+        public partial string SearchText { get; set; }
 
         partial void OnSearchTextChanged(string value)
         {

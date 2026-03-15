@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.ComponentModel.DataAnnotations;
 using ArslanProjectManager.MobileUI.Services.UIServices;
@@ -10,33 +10,33 @@ namespace ArslanProjectManager.MobileUI.ViewModels
     {
         [ObservableProperty]
         [Required(ErrorMessage = ErrorMessages.PasswordsRequired)]
-        private string currentPassword = string.Empty;
+        public partial string CurrentPassword { get; set; }
 
         [ObservableProperty]
         [Required(ErrorMessage = ErrorMessages.PasswordsRequired)]
         [StringLength(100, MinimumLength = 8, ErrorMessage = ErrorMessages.InvalidPasswordFormat)]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*/?&+\-_.])[A-Za-z\d@$!%*/?&+\-_.]{8,}$", ErrorMessage = ErrorMessages.InvalidPasswordFormat)]
         [DataType(DataType.Password)]
-        private string newPassword = string.Empty;
+        public partial string NewPassword { get; set; }
 
         [ObservableProperty]
         [DataType(DataType.Password)]
-        private string confirmPassword = string.Empty;
+        public partial string ConfirmPassword { get; set; }
 
         [ObservableProperty]
-        private bool isLoading = false;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private string currentPasswordError = string.Empty;
+        public partial string CurrentPasswordError { get; set; }
 
         [ObservableProperty]
-        private string newPasswordError = string.Empty;
+        public partial string NewPasswordError { get; set; }
 
         [ObservableProperty]
-        private string confirmPasswordError = string.Empty;
+        public partial string ConfirmPasswordError { get; set; }
 
         partial void OnCurrentPasswordChanged(string value)
         {
@@ -112,7 +112,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     CurrentPassword = string.Empty;
                     NewPassword = string.Empty;
                     ConfirmPassword = string.Empty;
-                    await Shell.Current.DisplayAlert("Success", "Password changed successfully.", "OK");
+                    await Shell.Current.DisplayAlertAsync("Success", "Password changed successfully.", "OK");
                     await Shell.Current.GoToAsync("..", true);
                 }
                 else
