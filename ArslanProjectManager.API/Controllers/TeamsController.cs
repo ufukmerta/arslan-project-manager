@@ -690,9 +690,14 @@ namespace ArslanProjectManager.API.Controllers
             if (permissionResult != null) return permissionResult;
 
             var team = await context.Teams
-                .AsNoTracking()
-                .Include(t => t.TeamUsers)
-                .FirstOrDefaultAsync(t => t.Id == teamId);
+            .Include(t => t.TeamUsers)
+            .Select(t => new
+            {
+                t.Id,
+                t.ManagerId,
+                t.TeamUsers
+            })
+            .FirstOrDefaultAsync(t => t.Id == teamId);
 
             // Validate the user is in the team
             var teamUser = team!.TeamUsers.FirstOrDefault(tu => tu.UserId == userId);
