@@ -243,7 +243,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         public async Task<IActionResult> Logout()
         {
             var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
-            await client.GetAsync("auth/logout");
+            await client.PostAsync("auth/logout", null);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("AccessToken");
             Response.Cookies.Delete("RefreshToken");
