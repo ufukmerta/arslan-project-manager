@@ -1,6 +1,6 @@
 # Arslan Project Manager
 
-A full-stack **team-based project and task management** application built with .NET 9. It supports **web** (ASP.NET Core MVC) and **mobile** (MAUI) clients that consume a shared REST API with JWT authentication and role-based permissions.
+ A full-stack **team-based project and task management** application built with .NET 10. It supports **web** (ASP.NET Core MVC) and **mobile** (MAUI) clients that consume a shared REST API with JWT authentication and role-based permissions.
 
 ---
 
@@ -36,7 +36,7 @@ The solution uses a **layered architecture**:
 | **ArslanProjectManager.Core** | Domain models, DTOs, repository/service interfaces, constants. No external dependencies beyond EF and configuration. |
 | **ArslanProjectManager.Repository** | EF Core `DbContext`, entity configurations, migrations, concrete repositories, `UnitOfWork`, database seeder (board tags, log categories, task categories, system roles). |
 | **ArslanProjectManager.Service** | Business logic: auth, users, teams, team users, roles, projects, tasks, comments, logs, tags, tokens, permission resolution (`PermissionResolver`) and home/user summaries that respect RBAC. Uses AutoMapper, FluentValidation, BCrypt. |
-| **ArslanProjectManager.API** | ASP.NET Core Web API (.NET 9): JWT auth, per-team RBAC enforcement on projects and tasks, IP-based rate limiting, controllers (Auth, User, Teams, Projects, Tasks, Home), OpenAPI/Swagger, Scalar, ReDoc, CORS, custom exception and token-expiration middleware. |
+| **ArslanProjectManager.API** | ASP.NET Core Web API (.NET 10): JWT auth, per-team RBAC enforcement on projects and tasks, IP-based rate limiting, controllers (Auth, User, Teams, Projects, Tasks, Home), OpenAPI/Swagger, Scalar, ReDoc, CORS, custom exception and token-expiration middleware. |
 | **ArslanProjectManager.WebUI** | ASP.NET Core MVC app: cookie + JWT, calls API via `HttpClient` with `AuthenticatedHttpClientHandler` and token refresh. Views for Login, Register, Teams, Projects, Tasks, User profile, permissions, roles. |
 | **ArslanProjectManager.MobileUI** | .NET MAUI app (Android, iOS, Windows): CommunityToolkit.Mvvm, same API via HTTP + JWT; pages for auth, home, teams, projects, tasks, profile, invites. |
 
@@ -46,9 +46,9 @@ The solution uses a **layered architecture**:
 
 ## Tech Stack
 
-- **.NET 9**
+- **.NET 10**
 - **ASP.NET Core** (Web API + MVC)
-- **Entity Framework Core 9** + **SQL Server**
+- **Entity Framework Core 10** + **SQL Server**
 - **JWT** (access + refresh tokens), **BCrypt** for passwords
 - **AutoMapper**, **FluentValidation**, **Autofac** (API)
 - **OpenAPI / Swagger**, **Scalar**, **ReDoc** (API docs)
@@ -59,7 +59,7 @@ The solution uses a **layered architecture**:
 
 ## Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **SQL Server** (LocalDB, Express, or full) for the API and WebUI
 - For **Mobile**: Visual Studio 2022 with MAUI workload (or VS Code + .NET MAUI extension); Android SDK / Xcode / Windows SDK as needed per platform
 
@@ -158,7 +158,7 @@ Open the URL shown (e.g. `https://localhost:7xxx`) and use Login/Register.
 - Build and run for your target platform (e.g. Android emulator, Windows).
 
 ```bash
-dotnet build -f net9.0-android   # or net9.0-ios, net9.0-windows10.0.19041.0
+dotnet build -f net10.0-android   # or net10.0-ios, net10.0-windows10.0.19041.0
 ```
 
 ---
