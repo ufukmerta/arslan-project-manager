@@ -13,7 +13,7 @@ namespace ArslanProjectManager.Repository.Repositories
             _context = context;
         }
 
-        public async Task<Token?> GetByAcessTokenAsync(string accessToken)
+        public async Task<Token?> GetByAccessTokenAsync(string accessToken)
         {
             return await _context.Tokens
                 .Include(t => t.User)

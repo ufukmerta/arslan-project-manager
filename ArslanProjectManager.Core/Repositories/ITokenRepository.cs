@@ -9,7 +9,7 @@ namespace ArslanProjectManager.Core.Repositories
 {
     public interface ITokenRepository : IGenericRepository<Token>
     {
-        Task<Token?> GetByAcessTokenAsync(string accessToken);
+        Task<Token?> GetByAccessTokenAsync(string accessToken);
         Task<Token?> GetByRefreshTokenAsync(string refreshToken);
         Task<List<Token>> GetActiveTokensByUserIdAsync(int userId);
     }
