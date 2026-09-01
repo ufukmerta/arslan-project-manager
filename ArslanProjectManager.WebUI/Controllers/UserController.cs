@@ -3,6 +3,7 @@ using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.ViewModels;
+using ArslanProjectManager.WebUI.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text.Json;
 
 namespace ArslanProjectManager.WebUI.Controllers
@@ -69,6 +71,13 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+
+                /*// If the response indicates unauthorized access, sign out the user if they are currently authenticated.
+                if (response.StatusCode == HttpStatusCode.Unauthorized && User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                }*/
+
                 return View(new LoginViewModel());
             }
 
@@ -154,31 +163,17 @@ namespace ArslanProjectManager.WebUI.Controllers
         [NonAction]
         private async Task AddTokenToCookies(TokenDto token)
         {
-            var accessCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = token.Expiration
-            };
-            Response.Cookies.Append("AccessToken", token.AccessToken, accessCookieOptions);
-
-            var refreshCokieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = token.RefreshTokenExpiration
-            };
-            Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshCokieOptions);
+            WebCookieHelper.SetAuthCookies(Response, token);
 
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token.AccessToken);
             var claims = jsonToken.Claims;
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
-
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            await Task.CompletedTask;
+            
         }
 
         [HttpGet]
@@ -245,8 +240,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
             await client.PostAsync("auth/logout", null);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Delete("RefreshToken");
+            WebCookieHelper.ClearAuthCookies(Response);
             return RedirectToAction("Index", "Home");
         }
 

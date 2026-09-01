@@ -15,8 +15,6 @@ namespace ArslanProjectManager.Service.Services
     {
         public virtual async Task<T> AddAsync(T entity)
         {
-            entity.CreatedDate = DateTime.Now;
-            entity.UpdatedDate = DateTime.Now;
             await repository.AddAsync(entity);
             await unitOfWork.CommitAsync();
             return entity;
@@ -29,7 +27,7 @@ namespace ArslanProjectManager.Service.Services
 
         public void ChangeStatus(T entity)
         {
-            entity.UpdatedDate = DateTime.Now;
+            entity.IsActive = false;
             repository.ChangeStatus(entity);
             unitOfWork.Commit();
         }
@@ -51,7 +49,6 @@ namespace ArslanProjectManager.Service.Services
 
         public void Update(T entity)
         {
-            entity.UpdatedDate = DateTime.Now;
             repository.Update(entity);
             unitOfWork.Commit();
         }

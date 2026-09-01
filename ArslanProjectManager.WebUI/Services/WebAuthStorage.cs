@@ -1,51 +1,56 @@
-﻿using ArslanProjectManager.Core.Services;
+﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.Services;
 
 namespace ArslanProjectManager.WebUI.Services
 {
     public class WebAuthStorage(IHttpContextAccessor httpContextAccessor) : IAuthStorage
     {
+        /// <summary>
+        /// Gets the access token from cookies.
+        /// </summary>
         public Task<string?> GetAccessTokenAsync()
         {
-            return Task.FromResult(httpContextAccessor.HttpContext?.Request.Cookies["AccessToken"]);
+            var accessToken = WebCookieHelper.GetAccessToken(httpContextAccessor.HttpContext?.Request!);
+            return Task.FromResult(accessToken);
         }
 
+        /// <summary>
+        /// Gets the refresh token from cookies.
+        /// </summary>
         public Task<string?> GetRefreshTokenAsync()
         {
-            return Task.FromResult(httpContextAccessor.HttpContext?.Request.Cookies["RefreshToken"]);
+            var refreshToken = WebCookieHelper.GetRefreshToken(httpContextAccessor.HttpContext?.Request!);
+            return Task.FromResult(refreshToken);
         }
 
+        /// <summary>
+        /// Saves both access and refresh tokens to cookies.
+        /// </summary>
         public Task SaveTokensAsync(string accessToken, string refreshToken, DateTime accessExpiration, DateTime refreshExpiration)
         {
             var context = httpContextAccessor.HttpContext!;
-            var cookieOptions = new CookieOptions
+            
+            // Create a TokenDto to use with the centralized helper
+            var tokenDto = new TokenDto
             {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = accessExpiration
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                Expiration = accessExpiration,
+                RefreshTokenExpiration = refreshExpiration
             };
 
-            var refreshTokenOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = refreshExpiration
-            };
-
-            context.Response.Cookies.Append("AccessToken", accessToken, cookieOptions);
-            context.Response.Cookies.Append("RefreshToken", refreshToken, refreshTokenOptions);
-
+            WebCookieHelper.SetAuthCookies(context.Response, tokenDto);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Clears both authentication cookies.
+        /// </summary>
         public Task ClearTokensAsync()
         {
             var context = httpContextAccessor.HttpContext!;
-            context.Response.Cookies.Delete("AccessToken");
-            context.Response.Cookies.Delete("RefreshToken");
+            WebCookieHelper.ClearAuthCookies(context.Response);
             return Task.CompletedTask;
         }
     }
-
 }

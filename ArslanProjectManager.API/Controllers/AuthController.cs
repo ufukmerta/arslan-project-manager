@@ -1,3 +1,4 @@
+using ArslanProjectManager.API.Utilities;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
@@ -51,31 +52,9 @@ namespace ArslanProjectManager.API.Controllers
             newToken.RefreshTokenExpiration = token.RefreshTokenExpiration;
 
             var registeredToken = await TokenService.AddAsync(newToken);
+            AuthCookieHelper.SetAuthCookies(Response, newToken);
 
-            token.IsActive = false;
             TokenService.ChangeStatus(token);
-
-            var accessCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = newToken.Expiration,
-                Path = "/"
-            };
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Append("AccessToken", newToken.AccessToken, accessCookieOptions);
-
-            var refreshCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = newToken.RefreshTokenExpiration,
-                Path = "/"
-            };
-            Response.Cookies.Delete("RefreshToken");
-            Response.Cookies.Append("RefreshToken", newToken.RefreshToken, refreshCookieOptions);
 
             var tokenDto = mapper.Map<TokenDto>(registeredToken);
             return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
@@ -104,31 +83,7 @@ namespace ArslanProjectManager.API.Controllers
                 return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(500, ErrorMessages.TokenGenerationFailed));
             }
 
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Delete("RefreshToken");
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = token.Expiration,
-                Path = "/",
-                Domain = null
-            };
-
-            Response.Cookies.Append("AccessToken", token.AccessToken, cookieOptions);
-
-            var refreshTokenOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = token.RefreshTokenExpiration,
-                Path = "/",
-                Domain = null
-            };
-            Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshTokenOptions);
+            AuthCookieHelper.SetAuthCookies(Response, token);
 
             Token registeredToken = await TokenService.AddAsync(token);
             var tokenDto = mapper.Map<TokenDto>(registeredToken);
@@ -144,10 +99,8 @@ namespace ArslanProjectManager.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            var accessToken = (await GetToken())?.AccessToken ?? Request.Cookies["AccessToken"];
-            // Firstly, clear the access and refresh tokens from cookies before processing the logout. So, error handling will be easier.
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Delete("RefreshToken");
+            var accessToken = (await GetToken())?.AccessToken;
+            AuthCookieHelper.ClearAuthCookies(Response);
 
             if (!string.IsNullOrEmpty(accessToken))
             {
@@ -156,8 +109,7 @@ namespace ArslanProjectManager.API.Controllers
                     .FirstOrDefaultAsync();
                 if (token is not null)
                 {
-                    token.IsActive = false;
-                    TokenService.Update(token);
+                    TokenService.ChangeStatus(token);
                 }
             }
 
@@ -174,12 +126,14 @@ namespace ArslanProjectManager.API.Controllers
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(UserCreateDto userDto)
-        {           
+        {
             var emailValidation = ValidateEmail(userDto.Email);
-            if (emailValidation != null) return emailValidation;
+            if (emailValidation != null) 
+                return emailValidation;
 
             var passwordValidation = ValidatePassword(userDto.Password);
-            if (passwordValidation != null) return passwordValidation;            
+            if (passwordValidation != null)
+                return passwordValidation;
 
             var responseDto = await authService.RegisterAsync(userDto);
             return CreateActionResult(responseDto);

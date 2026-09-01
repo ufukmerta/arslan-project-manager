@@ -15,6 +15,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.16.0" />
+       <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
 		<PackageReference Include="Scalar.AspNetCore" Version="2.13.8" />
 		<PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.5" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.5" />

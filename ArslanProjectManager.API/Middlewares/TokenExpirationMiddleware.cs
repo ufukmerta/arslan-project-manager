@@ -1,3 +1,4 @@
+using ArslanProjectManager.API.Utilities;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
@@ -36,7 +37,7 @@ namespace ArslanProjectManager.API.Middlewares
         {
             // Resolve access token: Authorization header first, then cookie
             var authHeader = context.Request.Headers.Authorization.ToString();
-            string? accessToken = null;
+            string? accessToken;
             var accessTokenFromHeader = false;
 
             if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -44,12 +45,12 @@ namespace ArslanProjectManager.API.Middlewares
                 accessToken = authHeader["Bearer ".Length..].Trim();
                 accessTokenFromHeader = true;
             }
-            else if (context.Request.Cookies.ContainsKey("AccessToken"))
+            else
             {
-                accessToken = context.Request.Cookies["AccessToken"];
+                accessToken = AuthCookieHelper.GetAccessToken(context.Request);
             }
 
-            var refreshToken = context.Request.Cookies["RefreshToken"];
+            var refreshToken = AuthCookieHelper.GetRefreshToken(context.Request);
 
             if (!string.IsNullOrEmpty(accessToken))
             {
@@ -63,14 +64,15 @@ namespace ArslanProjectManager.API.Middlewares
                         await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
                         return;
                     }
+
                     if (existingToken.RefreshTokenExpiration < DateTime.UtcNow)
                     {
-                        existingToken.IsActive = false;
                         tokenService.ChangeStatus(existingToken);
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                         await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
                         return;
                     }
+
                     await next(context);
                     return;
                 }
@@ -79,16 +81,16 @@ namespace ArslanProjectManager.API.Middlewares
                 var existingTokenFromDb = await tokenService.GetValidTokenByAccessTokenAsync(accessToken);
                 if (existingTokenFromDb == null)
                 {
-                    ClearTokenCookies(context);
+                    AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
                     return;
                 }
+
                 if (existingTokenFromDb.RefreshTokenExpiration < DateTime.UtcNow)
                 {
-                    existingTokenFromDb.IsActive = false;
                     tokenService.ChangeStatus(existingTokenFromDb);
-                    ClearTokenCookies(context);
+                    AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
                     return;
@@ -108,7 +110,7 @@ namespace ArslanProjectManager.API.Middlewares
                 if (string.IsNullOrEmpty(refreshToken))
                 {
                     // No refresh token available, clear cookies and return unauthorized
-                    ClearTokenCookies(context);
+                    AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsJsonAsync(new { message = "Token expired and no refresh token available. Please login again." });
                     return;
@@ -119,7 +121,7 @@ namespace ArslanProjectManager.API.Middlewares
                 if (existingTokenByRefresh == null)
                 {
                     // Invalid or expired refresh token
-                    ClearTokenCookies(context);
+                    AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsJsonAsync(new { message = "Invalid or expired refresh token. Please login again." });
                     return;
@@ -128,9 +130,8 @@ namespace ArslanProjectManager.API.Middlewares
                 if (existingTokenByRefresh.RefreshTokenExpiration < DateTime.UtcNow)
                 {
                     // Refresh token expired: mark inactive (like CustomBaseController.ValidateToken)
-                    existingTokenByRefresh.IsActive = false;
                     tokenService.ChangeStatus(existingTokenByRefresh);
-                    ClearTokenCookies(context);
+                    AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     await context.Response.WriteAsJsonAsync(new { message = "Refresh token expired. Please login again." });
                     return;
@@ -144,56 +145,18 @@ namespace ArslanProjectManager.API.Middlewares
                 newToken.RefreshTokenExpiration = existingTokenByRefresh.RefreshTokenExpiration;
                 await tokenService.AddAsync(newToken);
 
-                // Update old token status
-                existingTokenByRefresh.IsActive = false;
-                tokenService.Update(existingTokenByRefresh);
+                // Mark old token as inactive
+                tokenService.ChangeStatus(existingTokenByRefresh);
 
                 // Set new cookies
 
-                ClearTokenCookies(context);
-                AppendTokenToCookie(context, newToken);
+                AuthCookieHelper.SetAuthCookies(context.Response, newToken);
 
                 // Update the Authorization header with the new token
                 context.Request.Headers.Authorization = $"Bearer {newToken.AccessToken}";
             }
 
             await next(context);
-        }
-
-        /// <summary>
-        /// Removes the AccessToken and RefreshToken cookies from the response.
-        /// </summary>
-        /// <param name="context">The HTTP context; cookies are deleted on the response.</param>
-        private static void ClearTokenCookies(HttpContext context)
-        {
-            context.Response.Cookies.Delete("AccessToken");
-            context.Response.Cookies.Delete("RefreshToken");
-        }
-
-        /// <summary>
-        /// Appends the access and refresh tokens to the response cookies with appropriate options.
-        /// </summary>
-        /// <param name="context">The HTTP context; cookies are added to the response.</param>
-        private static void AppendTokenToCookie(HttpContext context, Token token)
-        {
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = token.Expiration
-            };
-
-            var refreshCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = token.RefreshTokenExpiration
-            };
-
-            context.Response.Cookies.Append("AccessToken", token.AccessToken, cookieOptions);
-            context.Response.Cookies.Append("RefreshToken", token.RefreshToken, refreshCookieOptions);
         }
     }
 }

@@ -3,15 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.Repository;
 
-public partial class ProjectManagerDbContext : DbContext
+public partial class ProjectManagerDbContext(DbContextOptions<ProjectManagerDbContext> options) : DbContext(options)
 {
-    public ProjectManagerDbContext()
-    {
-    }
-
-    public ProjectManagerDbContext(DbContextOptions<ProjectManagerDbContext> options) : base(options)
-    {
-    }
     //Migrations: dotnet ef migrations add InitialCreate --context ProjectManagerDbContext --project ArslanProjectManager.Repository --startup-project ArslanProjectManager.API
     //dotnet ef database update --project ArslanProjectManager.Repository --startup-project ArslanProjectManager.API
     public virtual DbSet<BoardTag> BoardTags { get; set; }
@@ -42,7 +35,6 @@ public partial class ProjectManagerDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProjectManagerDbContext).Assembly);
@@ -53,12 +45,6 @@ public partial class ProjectManagerDbContext : DbContext
 
     public override int SaveChanges()
     {
-        var addedEntries = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && e.State == EntityState.Added);
-        foreach (var entry in addedEntries)
-        {
-            ((BaseEntity)entry.Entity).CreatedDate = DateTime.UtcNow;
-        }
-
         var modifiedEntities = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && (e.State == EntityState.Modified));
         foreach (var entityEntry in modifiedEntities)
         {
@@ -70,12 +56,6 @@ public partial class ProjectManagerDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var addedEntities = ChangeTracker.Entries()
-            .Where(e => e.State == EntityState.Added && e.Entity is BaseEntity);
-
-        foreach (var entry in addedEntities)
-            ((BaseEntity)entry.Entity).CreatedDate = DateTime.UtcNow;
-
         var modifiedEntities = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Modified && e.Entity is BaseEntity);
 

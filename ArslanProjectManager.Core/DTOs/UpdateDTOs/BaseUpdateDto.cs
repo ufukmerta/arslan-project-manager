@@ -9,7 +9,7 @@ namespace ArslanProjectManager.Core.DTOs.UpdateDTOs
     public class BaseUpdateDto
     {
         public int Id { get; set; }
-        public DateTime UpdatedDate { get; set; } = DateTime.Now;
+        public DateTime? UpdatedDate { get; set; }
         public bool IsActive { get; set; } = true;
     }
 }

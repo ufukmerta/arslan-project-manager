@@ -1,3 +1,4 @@
+using ArslanProjectManager.API.Utilities;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Models;
@@ -53,15 +54,15 @@ namespace ArslanProjectManager.API.Controllers
         [NonAction]
         protected async Task<Token?> GetToken()
         {
-            string? accessToken = null;
+            string? accessToken;
             var authHeader = HttpContext.Request.Headers.Authorization.ToString();
             if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer "))
             {
                 accessToken = authHeader["Bearer ".Length..].Trim();
             }
-            else if (HttpContext.Request.Cookies.ContainsKey("AccessToken"))
+            else
             {
-                accessToken = HttpContext.Request.Cookies["AccessToken"];
+                accessToken = AuthCookieHelper.GetAccessToken(HttpContext.Request);
             }
 
             if (string.IsNullOrWhiteSpace(accessToken))

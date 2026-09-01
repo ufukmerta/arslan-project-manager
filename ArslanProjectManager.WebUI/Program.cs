@@ -1,6 +1,7 @@
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Service.Mappings;
 using ArslanProjectManager.WebUI.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +36,19 @@ builder.Services.AddAuthentication(options =>
     options.LoginPath = "/User/Login";
     options.AccessDeniedPath = "/User/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnValidatePrincipal = async context =>
+        {
+            var accessToken = WebCookieHelper.GetAccessToken(context.HttpContext.Request);   
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                // AccessToken is missing/null → Reject the principal & sign out the user
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        }
+    };
 })
 .AddJwtBearer(options =>
 {
