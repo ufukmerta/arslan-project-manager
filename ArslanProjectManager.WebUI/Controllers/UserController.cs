@@ -1,6 +1,7 @@
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.CreateDTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.ViewModels;
 using ArslanProjectManager.WebUI.Services;
@@ -173,7 +174,6 @@ namespace ArslanProjectManager.WebUI.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             await Task.CompletedTask;
-            
         }
 
         [HttpGet]
@@ -244,6 +244,43 @@ namespace ArslanProjectManager.WebUI.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> LogoutAll()
+        {
+            var client = httpClientFactory.CreateClient("ArslanProjectManagerAPI");
+            var response = await client.PostAsync("auth/logout-all", null);
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["errorMessage"] = "An error occurred while logging out. Please try again later.";
+                return View();
+            }
+
+            var jsonResponse = await response.Content.ReadAsStreamAsync();
+            var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<TokenDto>>(jsonResponse, _jsonSerializerOptions);
+            if (wrapper is null || !wrapper.IsSuccess || wrapper.Data is null)
+            {
+                TempData["errorMessage"] = "An error occurred while logging out. Please try again later.";
+                return View();
+            }
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            WebCookieHelper.ClearAuthCookies(Response);
+            await Task.Delay(5000); // Wait for 5 seconds to ensure cookies are cleared before redirecting
+            var token = wrapper.Data;
+            if (token.AccessToken is not null)
+            {
+                await AddTokenToCookies(token);
+                TempData["successMessage"] = "You have been logged out successfully.";
+                return View();
+            }
+            else
+            {
+                TempData["errorMessage"] = "An error occurred while logging out. Please try again later.";
+                return View();
+            }
+        }
+
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Edit()
@@ -288,7 +325,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             if (string.IsNullOrWhiteSpace(token))
             {
                 TempData["errorMessage"] = "You must be logged in to edit your profile.";
-                return RedirectToAction(nameof(Login), nameof(User));
+                return RedirectToAction(nameof(Login));
             }
 
             var userUpdateDto = mapper.Map<UserUpdateDto>(editUserViewModel);
@@ -322,7 +359,25 @@ namespace ArslanProjectManager.WebUI.Controllers
                 return RedirectToAction(nameof(Edit));
             }
 
-            TempData["successMessage"] = "Profile updated successfully. Some changes may not be seen before re-login";
+            if (User.Identity?.Name != userUpdateDto.Name)
+            {
+                var identity = (ClaimsIdentity)User.Identity!;
+
+                var nameClaim = identity.FindFirst(ClaimTypes.Name);
+
+                if (nameClaim != null)
+                {
+                    identity.RemoveClaim(nameClaim);
+                }
+
+                identity.AddClaim(new Claim(ClaimTypes.Name, userUpdateDto.Name));
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(identity));
+            }
+
+            TempData["successMessage"] = "Profile updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -330,7 +385,7 @@ namespace ArslanProjectManager.WebUI.Controllers
         [Authorize]
         public async Task<IActionResult> RemovePicture()
         {
-            var token = await authStorage.GetAccessTokenAsync();            
+            var token = await authStorage.GetAccessTokenAsync();
             if (string.IsNullOrEmpty(token))
             {
                 TempData["errorMessage"] = "You must be logged in to delete your avatar.";

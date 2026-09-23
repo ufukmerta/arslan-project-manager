@@ -49,6 +49,7 @@ The solution uses a **layered architecture**:
 - **.NET 10**
 - **ASP.NET Core** (Web API + MVC)
 - **Entity Framework Core 10** + **SQL Server**
+- **Redis** (token revocation, security stamp caching)
 - **JWT** (access + refresh tokens), **BCrypt** for passwords
 - **AutoMapper**, **FluentValidation**, **Autofac** (API)
 - **OpenAPI / Swagger**, **Scalar**, **ReDoc** (API docs)
@@ -61,6 +62,7 @@ The solution uses a **layered architecture**:
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **SQL Server** (LocalDB, Express, or full) for the API and WebUI
+- **Redis** (required) — local or remote instance for token revocation and security stamp caching. Test for free with [Redis Cloud](https://redis.io/pricing/) or [Upstash](https://upstash.com/pricing/redis)
 - For **Mobile**: Visual Studio 2022 with MAUI workload (or VS Code + .NET MAUI extension); Android SDK / Xcode / Windows SDK as needed per platform
 
 ---
@@ -108,6 +110,51 @@ The API signs JWTs with **HMAC-SHA256** (see `TokenHandler`); the key is used as
   "SqlConnection": "Server=(LocalDB)\\MSSQLLocalDB;Database=ProjectManagerDB;Integrated Security=True;"
 }
 ```
+
+#### Redis Configuration (Required for Token Revocation & Caching)
+
+The API **requires Redis** to:
+- **Revoke JTI (JWT ID)** — When a user logs out or tokens expire, the JTI is stored in Redis with a TTL to prevent token reuse
+- **Cache security stamps** — User security stamps are cached in Redis for faster validation during token refresh
+
+To enable Redis:
+
+1. **Set up a Redis instance:**
+   - **Local development:** Use [Redis on Windows](https://github.com/microsoftarchive/redis/releases), [WSL2 + Docker](https://hub.docker.com/_/redis), or Docker Desktop
+   - **Production or free cloud testing:** Use [Redis Cloud (free tier)](https://redis.io/pricing/) or [Upstash (free tier)](https://upstash.com/pricing/redis)
+
+2. **Configure Redis in `appsettings.json`:**
+
+```json
+{
+  "ConnectionStrings": {
+    "SqlConnection": "Server=(LocalDB)\\MSSQLLocalDB;Database=ProjectManagerDB;Integrated Security=True;",
+    "Redis": "localhost:6379"
+  }
+}
+```
+
+For **remote Redis with authentication** (e.g., Azure Cache for Redis, Upstash, Redis Cloud):
+
+```json
+{
+  "ConnectionStrings": {
+    "Redis": "your-redis-host.redis.cache.windows.net:6380,password=your-password,ssl=true"
+  }
+}
+```
+
+3. **Redis is registered in `Program.cs`:**
+   - The API requires the `ConnectionStrings:Redis` configuration to be present and accessible
+   - Redis services are initialized during startup
+   - If Redis is unavailable at startup, the application will fail to start
+
+**Why Redis is required:** 
+- **Instant token invalidation** — A logout immediately prevents token reuse without hitting the database
+- **High performance** — In-memory lookup for security stamp validation during token refresh
+- **Distributed sessions** — Multiple API instances can share token state
+
+The `RedisService` handles connection pooling and automatic reconnection.
 
 The `RateLimiting` section controls the simple IP-based fixed-window rate limiter used by the API:
 

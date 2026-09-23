@@ -1,4 +1,5 @@
 using ArslanProjectManager.API.Filters;
+using ArslanProjectManager.API.Utilities;
 using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.DTOs.UpdateDTOs;
@@ -17,7 +18,7 @@ namespace ArslanProjectManager.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService, ITokenService tokenService, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper, IRoleService roleService) : CustomBaseController(tokenService)
+    public class UserController(IUserService userService, ITokenService tokenService, ITeamInviteService teamInviteService, ITeamService teamService, IMapper mapper, IRoleService roleService, IRedisService redisService, ITokenHandler tokenHandler) : CustomBaseController(tokenService)
     {
         /// <summary>
         /// Retrieves the profile information of the authenticated user
@@ -198,7 +199,43 @@ namespace ArslanProjectManager.API.Controllers
             if (passwordValidation != null) return passwordValidation;
 
             existingUser.Password = BCrypt.Net.BCrypt.HashPassword(userPasswordUpdateDto.NewPassword);
+
+            // Rotate security stamp to invalidate previous access tokens
+            existingUser.SecurityStamp = Guid.NewGuid().ToString();
             userService.Update(existingUser);
+
+            // Invalidate cached stamp in Redis
+            await redisService.InvalidateSecurityStampCacheAsync(existingUser.Id);
+
+            // Revoke all refresh tokens for this user except the one used by the current device (if any)
+            var currentRefreshToken = AuthCookieHelper.GetRefreshToken(Request);
+            var activeTokens = await tokenService.GetActiveTokensForUserAsync(existingUser.Id);
+            foreach (var t in activeTokens)
+            {
+                if (!string.IsNullOrEmpty(currentRefreshToken) && t.RefreshToken == currentRefreshToken)
+                    continue; // keep current device's refresh token active
+
+                tokenService.ChangeStatus(t);
+            }
+
+            // Re-issue a fresh access token for the current device so it stays logged in
+            if (!string.IsNullOrEmpty(currentRefreshToken))
+            {
+                var currentTokenRow = await tokenService.GetValidTokenByRefreshTokenAsync(currentRefreshToken);
+                if (currentTokenRow != null)
+                {
+                    var newToken = tokenHandler.CreateToken(existingUser, new List<Role>());
+                    // Keep existing refresh token and expiration
+                    newToken.RefreshToken = currentTokenRow.RefreshToken;
+                    newToken.RefreshTokenExpiration = currentTokenRow.RefreshTokenExpiration;
+                    await tokenService.AddAsync(newToken);
+                    // Mark old token row inactive
+                    tokenService.ChangeStatus(currentTokenRow);
+
+                    AuthCookieHelper.SetAuthCookies(Response, newToken);
+                }
+            }
+
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
 

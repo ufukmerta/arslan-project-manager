@@ -9,6 +9,7 @@ public partial class User : BaseEntity
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
     public byte[]? ProfilePicture { get; set; }
+    public string SecurityStamp { get; set; } = Guid.NewGuid().ToString();
 
     public virtual ICollection<TeamInvite> TeamInvites { get; set; } = [];
     public virtual ICollection<TeamUser> TeamUsers { get; set; } = [];

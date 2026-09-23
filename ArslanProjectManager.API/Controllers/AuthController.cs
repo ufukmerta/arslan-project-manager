@@ -17,7 +17,7 @@ namespace ArslanProjectManager.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController(IAuthService authService, ITokenService tokenService, ITokenHandler tokenHandler, IMapper mapper) : CustomBaseController(tokenService)
+    public class AuthController(IAuthService authService, ITokenService tokenService, ITokenHandler tokenHandler, IMapper mapper, IRedisService redisService, IUserService userService) : CustomBaseController(tokenService)
     {
         /// <summary>
         /// Refreshes the access token using a refresh token
@@ -47,7 +47,7 @@ namespace ArslanProjectManager.API.Controllers
             }
 
             // Update the new token with the existing token's refresh token and expiration
-            // to allow user to not login more than refresh token's expiration time. Maximum 7 days authorization.
+            // to allow user to not login more than refresh token's expiration time. Maximum 7 days authentication without login.
             newToken.RefreshToken = token.RefreshToken;
             newToken.RefreshTokenExpiration = token.RefreshTokenExpiration;
 
@@ -96,20 +96,92 @@ namespace ArslanProjectManager.API.Controllers
         /// <returns>No content response</returns>
         /// <response code="204">User logged out successfully</response>
         [HttpPost("[action]")]
-        [AllowAnonymous]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
-            var accessToken = (await GetToken())?.AccessToken;
+            // Revoke the current access token (jti) in Redis and invalidate the current refresh token row in DB
+            var jti = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
             AuthCookieHelper.ClearAuthCookies(Response);
 
-            if (!string.IsNullOrEmpty(accessToken))
+            if (!string.IsNullOrEmpty(jti))
+            {
+                // Try to determine remaining lifetime from exp claim
+                var expClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+                TimeSpan ttl = TimeSpan.FromMinutes(5);
+                if (!string.IsNullOrEmpty(expClaim) && long.TryParse(expClaim, out var expSeconds))
+                {
+                    try
+                    {
+                        var exp = DateTimeOffset.FromUnixTimeSeconds(expSeconds).UtcDateTime;
+                        ttl = exp - DateTime.UtcNow;
+                        if (ttl <= TimeSpan.Zero) ttl = TimeSpan.FromMinutes(1);
+                    }
+                    catch { }
+                }
+
+                await redisService.RevokeJtiAsync(jti, ttl);
+            }
+
+            var refreshToken = AuthCookieHelper.GetRefreshToken(Request);
+            if (!string.IsNullOrEmpty(refreshToken))
             {
                 var token = await TokenService
-                    .Where(t => t.AccessToken == accessToken)
+                    .Where(t => t.RefreshToken == refreshToken)
                     .FirstOrDefaultAsync();
                 if (token is not null)
                 {
                     TokenService.ChangeStatus(token);
+                }
+            }
+
+            return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
+        }
+
+        /// <summary>
+        /// Logs out all other devices for the current user while keeping the current device logged in.
+        /// Rotates the SecurityStamp, invalidates cached stamps and revokes other refresh tokens.
+        /// </summary>
+        [HttpPost("logout-all")]
+        [Authorize]
+        public async Task<IActionResult> LogoutAll()
+        {
+            var jti = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out var userId))
+            {
+                return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(401, "Invalid user"));
+            }
+
+            var user = await userService.GetByIdAsync(userId);
+            if (user == null) return CreateActionResult(CustomResponseDto<NoContentDto>.Fail(404, ErrorMessages.UserNotFound));
+
+            // Rotate security stamp
+            user.SecurityStamp = Guid.NewGuid().ToString();
+            userService.Update(user);
+
+            // Invalidate cached stamp
+            await redisService.InvalidateSecurityStampCacheAsync(user.Id);
+
+            // Revoke other refresh tokens (except current one)
+            var currentRefreshToken = AuthCookieHelper.GetRefreshToken(Request);
+            await TokenService.RevokeTokensForUserAsync(user.Id, currentRefreshToken);
+
+            // Re-issue token for current device
+            if (!string.IsNullOrEmpty(currentRefreshToken))
+            {
+                var currentTokenRow = await TokenService.GetValidTokenByRefreshTokenAsync(currentRefreshToken);
+                if (currentTokenRow != null)
+                {
+                    var newToken = tokenHandler.CreateToken(user, new List<Role>());
+                    newToken.RefreshToken = currentTokenRow.RefreshToken;
+                    newToken.RefreshTokenExpiration = currentTokenRow.RefreshTokenExpiration;
+                    await TokenService.AddAsync(newToken);
+                    TokenService.ChangeStatus(currentTokenRow);
+                    AuthCookieHelper.SetAuthCookies(Response, newToken);
+                    var tokenDto = mapper.Map<TokenDto>(newToken);
+                    return CreateActionResult(CustomResponseDto<TokenDto>.Success(tokenDto, 200));
                 }
             }
 
@@ -128,7 +200,7 @@ namespace ArslanProjectManager.API.Controllers
         public async Task<IActionResult> Register(UserCreateDto userDto)
         {
             var emailValidation = ValidateEmail(userDto.Email);
-            if (emailValidation != null) 
+            if (emailValidation != null)
                 return emailValidation;
 
             var passwordValidation = ValidatePassword(userDto.Password);

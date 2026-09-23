@@ -25,15 +25,14 @@ namespace ArslanProjectManager.Repository.Configurations
             builder.Property(e => e.UserId)
                 .HasColumnName("user_id");
 
-            builder.Property(e => e.AccessToken)
-                .HasColumnName("access_token")
-                .IsRequired()
-                .HasMaxLength(1024);
-
             builder.Property(e => e.RefreshToken)
                 .HasColumnName("refresh_token")
                 .IsRequired()
                 .HasMaxLength(1024);
+
+            builder.Property(e => e.RefreshTokenExpiration)
+                .HasColumnName("refresh_token_expiration")
+                .HasColumnType("datetime");
 
             builder.Property(e => e.IsActive)
                 .HasColumnName("is_active")

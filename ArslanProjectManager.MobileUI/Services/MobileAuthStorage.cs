@@ -12,6 +12,7 @@ namespace ArslanProjectManager.MobileUI.Services
 
         public async Task SaveTokensAsync(string accessToken, string refreshToken, DateTime accessExpiration, DateTime refreshExpiration)
         {
+            await ClearTokensAsync();
             await SecureStorage.Default.SetAsync("AccessToken", accessToken);
             await SecureStorage.Default.SetAsync("RefreshToken", refreshToken);
             await SecureStorage.Default.SetAsync("AccessTokenExpiration", accessExpiration.ToString("o"));

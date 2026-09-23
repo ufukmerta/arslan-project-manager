@@ -38,6 +38,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
            .HasColumnType("varbinary(max)")
            .HasMaxLength(200);
 
+        builder.Property(e => e.SecurityStamp)
+            .HasColumnName("security_stamp")
+            .HasMaxLength(100)
+            .IsRequired();
+
         builder.Property(e => e.CreatedDate)
             .HasColumnName("register_date")
             .HasColumnType("datetime")

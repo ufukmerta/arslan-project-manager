@@ -8,23 +8,20 @@ namespace ArslanProjectManager.Service.Services
     public class TokenService(IGenericRepository<Token> repository, ITokenRepository tokenRepository, IUnitOfWork unitOfWork)
         : GenericService<Token>(repository, unitOfWork), ITokenService
     {
-        public async Task<Token?> GetValidTokenByAccessTokenAsync(string accessToken)
-        {
-            var token = await tokenRepository.GetByAccessTokenAsync(accessToken);
-            if (token is null || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
-            {
-                return null;
-            }
-            return token;
-        }
-
         public async Task<Token?> GetValidTokenByRefreshTokenAsync(string refreshToken)
         {
             var token = await tokenRepository.GetByRefreshTokenAsync(refreshToken);
-            if (token is null || token.RefreshTokenExpiration <= System.DateTime.UtcNow)
+
+            if (token is null)
             {
                 return null;
             }
+
+            if (token.RefreshTokenExpiration < DateTime.UtcNow)
+            {
+                ChangeStatus(token);
+            }
+
             return token;
         }
 
@@ -33,14 +30,17 @@ namespace ArslanProjectManager.Service.Services
             return await tokenRepository.GetActiveTokensByUserIdAsync(userId);
         }
 
-        public async Task RevokeTokensForUserAsync(int userId)
+        public async Task RevokeTokensForUserAsync(int userId, string? exceptRefreshToken = null)
         {
             var tokens = await tokenRepository.GetActiveTokensByUserIdAsync(userId);
 
             foreach (var token in tokens)
             {
-                token.IsActive = false;
-                tokenRepository.Update(token);
+                // Skip the specified refresh token if provided
+                if (!string.IsNullOrEmpty(exceptRefreshToken) && token.RefreshToken == exceptRefreshToken)
+                    continue;
+
+                ChangeStatus(token);
             }
         }
     }

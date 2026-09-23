@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using Scalar.AspNetCore;
 using System.Reflection;
 using System.Security.Claims;
@@ -58,6 +59,65 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     context.Token = context.Request.Cookies["AccessToken"];
                 }
                 return Task.CompletedTask;
+            },
+            OnTokenValidated = async context =>
+            {
+                // Additional validation: jti revocation and security stamp check
+                var principal = context.Principal;
+                if (principal == null)
+                {
+                    context.Fail("Invalid token principal");
+                    return;
+                }
+
+                var redis = context.HttpContext.RequestServices.GetRequiredService<IRedisService>();
+                var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+
+                var jti = principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                if (!string.IsNullOrEmpty(jti))
+                {
+                    var revoked = await redis.IsJtiRevokedAsync(jti);
+                    if (revoked)
+                    {
+                        context.Fail("Token has been revoked");
+                        return;
+                    }
+                }
+
+                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                {
+                    context.Fail("Invalid subject");
+                    return;
+                }
+
+                var tokenStamp = principal.FindFirst("security_stamp")?.Value;
+                if (string.IsNullOrEmpty(tokenStamp))
+                {
+                    context.Fail("Missing security stamp in token");
+                    return;
+                }
+
+                // Try cache first
+                var cachedStamp = await redis.GetCachedSecurityStampAsync(userId);
+                if (cachedStamp == null)
+                {
+                    var user = await userService.GetByIdAsync(userId);
+                    if (user == null)
+                    {
+                        context.Fail("User not found");
+                        return;
+                    }
+                    cachedStamp = user.SecurityStamp;
+                    // Cache short-lived to reduce DB load
+                    await redis.SetCachedSecurityStampAsync(userId, cachedStamp, TimeSpan.FromMinutes(5));
+                }
+
+                if (cachedStamp != tokenStamp)
+                {
+                    context.Fail("Security stamp mismatch");
+                    return;
+                }
             },
             OnAuthenticationFailed = context =>
             {
@@ -134,6 +194,16 @@ builder.Services.AddDbContext<ProjectManagerDbContext>(options =>
         option =>
             option.MigrationsAssembly(Assembly.GetAssembly(typeof(ProjectManagerDbContext))!.GetName().Name))
     );
+
+// Redis connection (used for jti revocation and security-stamp caching). Required for stateless JWT validation.
+var redisConn = builder.Configuration.GetConnectionString("Redis");
+if (string.IsNullOrEmpty(redisConn))
+{
+    throw new InvalidOperationException("Redis configuration is failed");
+}
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(redisConn));
+builder.Services.AddSingleton<IRedisService, RedisService>();
 
 builder.Services.AddScoped(typeof(NotFoundFilter<>));
 builder.Services.AddAutoMapper(cfg => cfg.AllowNullCollections = true, typeof(MapProfile));

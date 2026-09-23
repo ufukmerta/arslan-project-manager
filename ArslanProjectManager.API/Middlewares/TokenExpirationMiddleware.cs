@@ -7,95 +7,59 @@ using Microsoft.IdentityModel.JsonWebTokens;
 namespace ArslanProjectManager.API.Middlewares
 {
     /// <summary>
-    /// Middleware that validates access tokens and refreshes them when sent via cookies.
-    /// Runs before authentication; enforces token presence in the database and refresh-token expiry.
+    /// Middleware that silently refreshes expired access tokens for cookie-based sessions.
+    /// Runs before authentication; real access-token validation (JWT signature, jti revocation,
+    /// SecurityStamp match) happens later in the JwtBearer <c>OnTokenValidated</c> event.
     /// </summary>
     /// <remarks>
     /// <para><b>Token source</b></para>
     /// <list type="bullet">
-    /// <item><b>Authorization header (Bearer)</b>: Validation only. Ensures token exists in DB and refresh token is not expired.
-    /// No automatic refresh; clients (e.g. mobile) are expected to refresh via a dedicated endpoint.</item>
-    /// <item><b>AccessToken cookie</b>: Same DB validation (token exists, refresh not expired). If the access token is expired, a new one is issued using the
-    /// RefreshToken cookie, and both cookies plus the Authorization header are updated for the current request.</item>
+    /// <item><b>Authorization header (Bearer)</b>: No action taken here; the request proceeds and is
+    /// validated entirely by the JwtBearer authentication pipeline (stateless).</item>
+    /// <item><b>AccessToken cookie</b>: The token's <c>exp</c> is inspected (without signature verification,
+    /// used only to decide whether a silent refresh is needed — not as a trust boundary). If still valid,
+    /// the request proceeds unchanged. If expired, the RefreshToken cookie is used to look up the refresh
+    /// token in the database and, if valid, mint and persist a new access/refresh token pair, update cookies
+    /// and the Authorization header for the current request, then proceed.</item>
     /// </list>
     /// <para>When no access token is present, the request proceeds to the next middleware unchanged.</para>
-    /// <para><paramref name="next"/> is the next delegate in the pipeline; <paramref name="tokenService"/> for token persistence and lookup; <paramref name="tokenHandler"/> for creating new JWTs.</para>
+    /// <para><paramref name="next"/> is the next delegate in the pipeline; <paramref name="tokenService"/> for refresh-token persistence and lookup; <paramref name="tokenHandler"/> for creating new JWTs.</para>
     /// </remarks>
     public class TokenExpirationMiddleware(RequestDelegate next, ITokenService tokenService, ITokenHandler tokenHandler)
     {
         /// <summary>
-        /// Validates the access token and, for cookie-based requests, refreshes it if expired.
+        /// For cookie-based requests, silently refreshes the access token if expired using the refresh token.
         /// </summary>
         /// <param name="context">The HTTP context for the current request.</param>
         /// <returns>A task that completes when the pipeline has been invoked or a 401 response has been sent.</returns>
         /// <remarks>
         /// Resolves the access token from the Authorization header (Bearer) first, then from the AccessToken cookie.
-        /// Refresh token is read only from the RefreshToken cookie. On validation or refresh failure, returns 401
+        /// Refresh token is read only from the RefreshToken cookie. On refresh failure, returns 401
         /// with a JSON body containing a "message" field; otherwise calls the next middleware.
         /// </remarks>
         public async Task InvokeAsync(HttpContext context)
         {
             // Resolve access token: Authorization header first, then cookie
             var authHeader = context.Request.Headers.Authorization.ToString();
-            string? accessToken;
-            var accessTokenFromHeader = false;
+            var accessTokenFromHeader = authHeader?.StartsWith("Bearer ") == true ? authHeader["Bearer ".Length..].Trim() : null;
 
-            if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(accessTokenFromHeader))
             {
-                accessToken = authHeader["Bearer ".Length..].Trim();
-                accessTokenFromHeader = true;
-            }
-            else
-            {
-                accessToken = AuthCookieHelper.GetAccessToken(context.Request);
+                await next(context);
+                return;
             }
 
-            var refreshToken = AuthCookieHelper.GetRefreshToken(context.Request);
+            string? accessToken, refreshToken;
+            accessToken = AuthCookieHelper.GetAccessToken(context.Request);
 
-            if (!string.IsNullOrEmpty(accessToken))
+            if (string.IsNullOrWhiteSpace(accessToken) && string.IsNullOrEmpty(accessTokenFromHeader))
             {
-                if (accessTokenFromHeader)
-                {
-                    // Header path: validate only (token in DB, refresh not expired); no refresh
-                    var existingToken = await tokenService.GetValidTokenByAccessTokenAsync(accessToken);
-                    if (existingToken == null)
-                    {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
-                        return;
-                    }
+                await next(context);
+                return;
+            }
 
-                    if (existingToken.RefreshTokenExpiration < DateTime.UtcNow)
-                    {
-                        tokenService.ChangeStatus(existingToken);
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
-                        return;
-                    }
-
-                    await next(context);
-                    return;
-                }
-
-                // Cookie path: validate token in DB and JWT expiry; if expired, refresh using RefreshToken cookie
-                var existingTokenFromDb = await tokenService.GetValidTokenByAccessTokenAsync(accessToken);
-                if (existingTokenFromDb == null)
-                {
-                    AuthCookieHelper.ClearAuthCookies(context.Response);
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
-                    return;
-                }
-
-                if (existingTokenFromDb.RefreshTokenExpiration < DateTime.UtcNow)
-                {
-                    tokenService.ChangeStatus(existingTokenFromDb);
-                    AuthCookieHelper.ClearAuthCookies(context.Response);
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.Unauthorized });
-                    return;
-                }
-
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
                 var jsonWebTokenHandler = new JsonWebTokenHandler();
                 var jwtToken = jsonWebTokenHandler.ReadToken(accessToken);
 
@@ -106,13 +70,14 @@ namespace ArslanProjectManager.API.Middlewares
                     return;
                 }
 
+                refreshToken = AuthCookieHelper.GetRefreshToken(context.Request);
                 // Access token is expired, try to refresh using refresh token
                 if (string.IsNullOrEmpty(refreshToken))
                 {
                     // No refresh token available, clear cookies and return unauthorized
                     AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsJsonAsync(new { message = "Token expired and no refresh token available. Please login again." });
+                    await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.RefreshTokenMissing });
                     return;
                 }
 
@@ -123,17 +88,17 @@ namespace ArslanProjectManager.API.Middlewares
                     // Invalid or expired refresh token
                     AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsJsonAsync(new { message = "Invalid or expired refresh token. Please login again." });
+                    await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.RefreshTokenMissing });
                     return;
                 }
 
                 if (existingTokenByRefresh.RefreshTokenExpiration < DateTime.UtcNow)
                 {
-                    // Refresh token expired: mark inactive (like CustomBaseController.ValidateToken)
-                    tokenService.ChangeStatus(existingTokenByRefresh);
+                    // Refresh token expired: marked inactive with GetValidTokenByRefreshTokenAsync() above,
+                    // but just in case, clear cookies and return unauthorized
                     AuthCookieHelper.ClearAuthCookies(context.Response);
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsJsonAsync(new { message = "Refresh token expired. Please login again." });
+                    await context.Response.WriteAsJsonAsync(new { message = ErrorMessages.RefreshTokenExpired });
                     return;
                 }
 
@@ -154,9 +119,8 @@ namespace ArslanProjectManager.API.Middlewares
 
                 // Update the Authorization header with the new token
                 context.Request.Headers.Authorization = $"Bearer {newToken.AccessToken}";
+                await next(context);
             }
-
-            await next(context);
         }
     }
 }

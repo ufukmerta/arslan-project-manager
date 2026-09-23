@@ -4,6 +4,7 @@ using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
 using System.Text.RegularExpressions;
 
 namespace ArslanProjectManager.API.Controllers
@@ -54,23 +55,27 @@ namespace ArslanProjectManager.API.Controllers
         [NonAction]
         protected async Task<Token?> GetToken()
         {
-            string? accessToken;
-            var authHeader = HttpContext.Request.Headers.Authorization.ToString();
-            if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Bearer "))
+            // Check if user is authenticated
+            if (User.Identity?.IsAuthenticated != true)
             {
-                accessToken = authHeader["Bearer ".Length..].Trim();
-            }
-            else
-            {
-                accessToken = AuthCookieHelper.GetAccessToken(HttpContext.Request);
+                return null;
             }
 
+            // Get jwt token from logged in user
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
             if (string.IsNullOrWhiteSpace(accessToken))
             {
                 return null;
             }
 
-            return await TokenService.GetValidTokenByAccessTokenAsync(accessToken);
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            _ = int.TryParse(idClaim, out var userId);
+
+            return new Token
+            {
+                AccessToken = accessToken,
+                UserId = userId
+            };
         }
 
         /// <summary>

@@ -33,9 +33,27 @@ namespace ArslanProjectManager.Service.Services
             SigningCredentials signingCredentials = new(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = SetClaims(user, roles).ToList();
-            
-            token.Expiration = DateTime.Now.AddHours(1);
-            token.RefreshTokenExpiration = DateTime.Now.AddDays(7);
+
+            // Add jti and security stamp for revocation and stamp validation
+            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+            claims.Add(new Claim("security_stamp", user.SecurityStamp));
+
+            // Use UTC for token lifetime calculations
+
+            var tokenExpire = configuration["Jwt:ExpirationInMinutes"];
+            if (!int.TryParse(tokenExpire, out int expirationInMinutes))
+            {
+                expirationInMinutes = 60; // Default to 60 minutes if not configured
+            }
+
+            var refreshTokenExpire = configuration["RefreshToken:ExpirationInDays"];
+            if (!int.TryParse(refreshTokenExpire, out int refreshTokenExpirationInDays))
+            {
+                refreshTokenExpirationInDays = 7; // Default to 7 days if not configured
+            }
+
+            token.Expiration = DateTime.UtcNow.AddMinutes(expirationInMinutes);
+            token.RefreshTokenExpiration = DateTime.UtcNow.AddDays(refreshTokenExpirationInDays);
             token.UserId = user.Id;
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -43,7 +61,7 @@ namespace ArslanProjectManager.Service.Services
                 Issuer = configuration["Jwt:Issuer"],
                 Audience = configuration["Jwt:Audience"],
                 Expires = token.Expiration,
-                NotBefore = DateTime.Now,
+                NotBefore = DateTime.UtcNow,
                 SigningCredentials = signingCredentials,
                 Subject = new ClaimsIdentity(claims)
             };
@@ -73,7 +91,7 @@ namespace ArslanProjectManager.Service.Services
             ];
 
             claims.AddName(user.Name, user.Email);
-            claims.AddRoles(roles.Select(r => r.RoleName).ToList());
+            claims.AddRoles([.. roles.Select(r => r.RoleName)]);
             return claims;
         }
     }
