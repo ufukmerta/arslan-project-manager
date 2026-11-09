@@ -42,6 +42,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -97,6 +101,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -160,6 +168,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -189,6 +201,8 @@ namespace ArslanProjectManager.WebUI.Controllers
             return RedirectToAction("Details", new { id = wrapper.Data.Id });
         }
 
+        [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Invite(int id)
         {
             string? accessToken = await authStorage.GetAccessTokenAsync();
@@ -196,7 +210,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 var loginViewModel = new LoginViewModel
                 {
-                    ReturnUrl = Url.Action("Create", "Teams")
+                    ReturnUrl = Url.Action("Invite", "Teams", new { id })
                 };
                 return RedirectToAction("Login", "User", loginViewModel);
             }
@@ -209,10 +223,19 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
                     return RedirectToAction("Login", "User");
+                }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    TempData["ForbiddenFrom"] = "team";
+                    return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound)
                 {
@@ -221,7 +244,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 else
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
-                    return View(new List<TeamViewModel>());
+                    return RedirectToAction(nameof(Details), new { id });
                 }
             }
 
@@ -230,7 +253,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
             {
                 TempData["errorMessage"] = "An error occurred while fetching teams. Please try again later.";
-                return View(new List<TeamInviteViewModel>());
+                return RedirectToAction(nameof(Details), new { id });
             }
             var teams = wrapper.Data;
             var teamInviteViewModel = mapper.Map<TeamInviteViewModel>(teams);
@@ -247,7 +270,7 @@ namespace ArslanProjectManager.WebUI.Controllers
             {
                 var loginViewModel = new LoginViewModel
                 {
-                    ReturnUrl = Url.Action("Create", "Teams")
+                    ReturnUrl = Url.Action("Invite", "Teams", new { id = model.TeamId })
                 };
                 return RedirectToAction("Login", "User", loginViewModel);
             }
@@ -268,6 +291,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -275,6 +302,7 @@ namespace ArslanProjectManager.WebUI.Controllers
                 }
                 else if (response.StatusCode == HttpStatusCode.Forbidden)
                 {
+                    TempData["ForbiddenFrom"] = "team";
                     return StatusCode(StatusCodes.Status403Forbidden);
                 }
                 else if (response.StatusCode == HttpStatusCode.NotFound)
@@ -322,6 +350,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "team";
@@ -353,11 +385,25 @@ namespace ArslanProjectManager.WebUI.Controllers
             }
 
             var teamInvites = wrapper.Data.ToList();
+            var currentUserId = Convert.ToInt32(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userPermissionsResponse = await client.GetAsync($"teams/{id}/users/{currentUserId}/permissions");
+            var canInviteMembers = false;
+            if (userPermissionsResponse.IsSuccessStatusCode)
+            {
+                var userPermsJson = await userPermissionsResponse.Content.ReadAsStreamAsync();
+                var userPermsWrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<UserEffectivePermissionsDto>>(userPermsJson, _jsonSerializerOptions);
+                if (userPermsWrapper?.IsSuccess == true && userPermsWrapper.Data != null)
+                {
+                    canInviteMembers = userPermsWrapper.Data.CanInviteMembers;
+                }
+            }
+
             var teamInviteListViewModel = new TeamInviteListViewModel
             {
                 TeamId = id,
                 TeamName = teamInvites.FirstOrDefault()?.TeamName ?? "Unknown Team",
                 ManagerId = teamInvites.FirstOrDefault()?.ManagerId ?? 0,
+                CanInviteMembers = canInviteMembers,
                 Invites = mapper.Map<List<TeamInviteItemViewModel>>(teamInvites)
             };
 
@@ -389,6 +435,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 var errorMessage = await GetErrorMessageAsync(response);
                 TempData["errorMessage"] = errorMessage;
@@ -428,6 +478,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -490,6 +544,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errors = errorMessage });
             }
@@ -522,6 +580,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
@@ -568,6 +630,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -603,6 +669,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (rolesResponse.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)rolesResponse.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (rolesResponse.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -689,6 +759,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -726,6 +800,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
             }
@@ -752,6 +830,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });
@@ -785,6 +867,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 var errorMessage = await GetErrorMessageAsync(response);
                 return Json(new { isSuccess = false, errorMessage });

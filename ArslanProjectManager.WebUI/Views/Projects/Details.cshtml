@@ -1,4 +1,4 @@
-﻿@model ProjectDetailsViewModel
+@model ProjectDetailsViewModel
 
 @{
     ViewData["Title"] = Model.ProjectName + " Project Details";
@@ -60,9 +60,12 @@
                             </div>
                         </a>
                     }
-                    <a asp-controller="Tasks" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-custom w-100">
-                        <i class="bi bi-plus-circle"></i> Add Task
-                    </a>
+                    @if (Model.CanCreateTasks)
+                    {
+                        <a asp-controller="Tasks" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-custom w-100">
+                            <i class="bi bi-plus-circle"></i> Add Task
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -95,9 +98,12 @@
                             </div>
                         </a>
                     }
-                    <a asp-controller="Tasks" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-custom w-100">
-                        <i class="bi bi-plus-circle"></i> Add Task
-                    </a>
+                    @if (Model.CanCreateTasks)
+                    {
+                        <a asp-controller="Tasks" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-custom w-100">
+                            <i class="bi bi-plus-circle"></i> Add Task
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -130,9 +136,12 @@
                             </div>
                         </a>
                     }
-                    <a asp-controller="Tasks" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-custom w-100">
-                        <i class="bi bi-plus-circle"></i> Add Task
-                    </a>
+                    @if (Model.CanCreateTasks)
+                    {
+                        <a asp-controller="Tasks" asp-action="Create" asp-route-id="@Model.Id" class="btn btn-custom w-100">
+                            <i class="bi bi-plus-circle"></i> Add Task
+                        </a>
+                    }
                 </div>
             </div>
         </div>

@@ -1,15 +1,10 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Core.Services
 {
-    public interface ITeamUserService: IGenericService<TeamUser>
+    public interface ITeamUserService : IGenericService<TeamUser>
     {
-        Task<UserEffectivePermissionsDto> GetTeamUserWithPermissionsAsync(int teamId, int userId);
+        Task<UserEffectivePermissionsDto?> GetTeamUserWithPermissionsAsync(int teamId, int userId);
     }
 }

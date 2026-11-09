@@ -1,4 +1,5 @@
-﻿using ArslanProjectManager.Core.DTOs;
+using ArslanProjectManager.Core.Constants;
+using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Service.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Net;
@@ -19,12 +20,20 @@ namespace ArslanProjectManager.API.Middlewares
                     var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();                    
                     var statusCode = exceptionFeature?.Error switch
                     {
-                        ClientSideException =>400,
+                        ClientSideException => 400,
                         NotFoundException => 404,
                         _ => 500
                     };
+                    if (statusCode == 500 && exceptionFeature?.Error != null)
+                    {
+                        var logger = context.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("UseCustomExceptionHandler");
+                        logger?.LogError(exceptionFeature.Error, "An unhandled server exception occurred.");
+                    }
                     context.Response.StatusCode = statusCode;
-                    var response = CustomResponseDto<NoContentDto>.Fail(statusCode, exceptionFeature?.Error.Message ?? "An unexpected error occurred.");
+                    var errorMessage = statusCode >= 500
+                        ? ErrorMessages.ProcessingError
+                        : (exceptionFeature?.Error.Message ?? "An unexpected error occurred.");
+                    var response = CustomResponseDto<NoContentDto>.Fail(statusCode, errorMessage);
                     await context.Response.WriteAsync(JsonSerializer.Serialize(response));
                 });
             });

@@ -5,8 +5,8 @@ using ArslanProjectManager.Core.UnitOfWork;
 
 namespace ArslanProjectManager.Service.Services
 {
-    public class TokenService(IGenericRepository<Token> repository, ITokenRepository tokenRepository, IUnitOfWork unitOfWork)
-        : GenericService<Token>(repository, unitOfWork), ITokenService
+    public class TokenService(ITokenRepository tokenRepository, IUnitOfWork unitOfWork)
+        : GenericService<Token>(tokenRepository, unitOfWork), ITokenService
     {
         public async Task<Token?> GetValidTokenByRefreshTokenAsync(string refreshToken)
         {
@@ -19,7 +19,7 @@ namespace ArslanProjectManager.Service.Services
 
             if (token.RefreshTokenExpiration < DateTime.UtcNow)
             {
-                ChangeStatus(token);
+                await ChangeStatusAsync(token);
             }
 
             return token;
@@ -33,14 +33,23 @@ namespace ArslanProjectManager.Service.Services
         public async Task RevokeTokensForUserAsync(int userId, string? exceptRefreshToken = null)
         {
             var tokens = await tokenRepository.GetActiveTokensByUserIdAsync(userId);
+            var hasChanges = false;
 
             foreach (var token in tokens)
             {
-                // Skip the specified refresh token if provided
                 if (!string.IsNullOrEmpty(exceptRefreshToken) && token.RefreshToken == exceptRefreshToken)
+                {
                     continue;
+                }
 
-                ChangeStatus(token);
+                token.IsActive = false;
+                tokenRepository.ChangeStatus(token);
+                hasChanges = true;
+            }
+
+            if (hasChanges)
+            {
+                await UnitOfWork.CommitAsync();
             }
         }
     }

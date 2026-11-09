@@ -61,9 +61,12 @@
                     <a class="btn btn-info btn-sm" asp-action="Invites" asp-route-id="@Model.TeamId">
                         <i class="bi bi-envelope"></i> View Invites
                     </a>
-                    <a class="btn btn-custom btn-sm" asp-action="Invite" asp-route-id="@Model.TeamId">
-                        <i class="bi bi-person-plus"></i> Invite Member
-                    </a>
+                    @if (Model.CanInviteMembers)
+                    {
+                        <a class="btn btn-custom btn-sm" asp-action="Invite" asp-route-id="@Model.TeamId">
+                            <i class="bi bi-person-plus"></i> Invite Member
+                        </a>
+                    }
                 </div>
             </div>
             <div class="card-body p-0">
@@ -362,7 +365,7 @@
                                                 <a class="btn btn-info btn-sm" asp-controller="Projects" asp-action="Details" asp-route-id="@project.ProjectId">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
-                                                @if (Model.ManagerId == userId)
+                                                @if (Model.CanDeleteProjects)
                                                 {
                                                 <a class="btn btn-danger btn-sm" asp-controller="Projects" asp-action="Delete" asp-route-id="@project.ProjectId">
                                                     <i class="bi bi-trash"></i> Delete

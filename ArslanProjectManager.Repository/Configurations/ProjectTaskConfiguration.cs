@@ -1,16 +1,14 @@
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Repository.Configurations;
 
-public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
+public class ProjectTaskConfiguration : BaseEntityConfiguration<ProjectTask>
 {
-    public void Configure(EntityTypeBuilder<ProjectTask> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<ProjectTask> builder)
     {
         builder.ToTable("project_task");
-
-        builder.HasKey(e => e.Id);
 
         builder.HasIndex(e => e.AppointeeId, "IX_project_task_appointee_id");
         builder.HasIndex(e => e.AppointerId, "IX_project_task_appointer_id");
@@ -28,15 +26,6 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
             .HasColumnName("task_name")
             .HasMaxLength(100)
             .IsRequired();
-
-        builder.Property(e => e.CreatedDate)
-           .HasColumnName("created_date")
-           .HasColumnType("datetime")
-           .HasDefaultValueSql("(GETUTCDATE())");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("updated_date")
-            .HasColumnType("datetime");
 
         builder.Property(e => e.StartDate)
             .HasColumnName("start_date")
@@ -70,10 +59,6 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
             .HasDefaultValue(ProjectTask.TaskPriority.Medium)
             .HasSentinel((ProjectTask.TaskPriority)0);
 
-        builder.Property(e => e.IsActive)
-            .HasColumnName("is_active")
-            .HasDefaultValue(true);
-
         builder.HasOne(d => d.Appointee)
             .WithMany(p => p.ProjectTaskAppointees)
             .HasForeignKey(d => d.AppointeeId)
@@ -101,7 +86,5 @@ public class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectTask>
             .HasForeignKey(d => d.TaskCategoryId)
             .OnDelete(DeleteBehavior.ClientSetNull)
             .HasConstraintName("FK_task_task_category");
-
-        builder.HasQueryFilter(e => e.IsActive);
     }
 }

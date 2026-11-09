@@ -1,3 +1,4 @@
+using ArslanProjectManager.Core.Constants;
 using ArslanProjectManager.Core.DTOs;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
@@ -48,7 +49,7 @@ namespace ArslanProjectManager.Service.Services
                 .ToList();
 
             var recentTasks = tasks
-                .OrderByDescending(t => t.UpdatedDate)
+                .OrderByDescending(t => t.UpdatedDate ?? t.CreatedDate)
                 .Take(5)
                 .Select(t => new RecentTaskDto
                 {
@@ -76,15 +77,15 @@ namespace ArslanProjectManager.Service.Services
                     CreatedDate = p.CreatedDate,
                     StartDate = p.StartDate,
                     TotalTasks = p.ProjectTasks.Count,
-                    CompletedTasks = p.ProjectTasks.Count(t => t.BoardId == 3)
+                    CompletedTasks = p.ProjectTasks.Count(t => t.BoardId == SystemBoards.DoneId)
                 }).ToList();
 
             return new HomeDto
             {
                 TotalProjects = projects.Count,
-                CompletedProjects = projects.Count(p => p.ProjectTasks.All(t => t.BoardId == 3)),
+                CompletedProjects = projects.Count(p => p.ProjectTasks.Count > 0 && p.ProjectTasks.All(t => t.BoardId == SystemBoards.DoneId)),
                 TotalTasks = tasks.Count,
-                CompletedTasks = tasks.Count(t => t.BoardId == 3),
+                CompletedTasks = tasks.Count(t => t.BoardId == SystemBoards.DoneId),
                 TotalTeams = allTeams.Count,
                 TotalMembers = allTeams.Sum(t => t.TeamUsers.Count),
                 RecentTasks = recentTasks,

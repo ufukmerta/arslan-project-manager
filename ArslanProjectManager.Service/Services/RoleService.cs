@@ -41,6 +41,7 @@ public class RoleService(
         foreach (var role in roles)
         {
             var dto = mapper.Map<RoleDto>(role);
+            dto.TeamName ??= team?.TeamName;
             dto.UserCount = userCountByRoleId.GetValueOrDefault(role.Id, 0);
             dtos.Add(dto);
         }

@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -7,8 +7,8 @@ namespace ArslanProjectManager.Repository.Repositories
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
-        private readonly ProjectManagerDbContext _context;
-        private readonly DbSet<T> _dbSet;
+        protected readonly ProjectManagerDbContext _context;
+        protected readonly DbSet<T> _dbSet;
 
         public GenericRepository(ProjectManagerDbContext context)
         {
@@ -26,10 +26,7 @@ namespace ArslanProjectManager.Repository.Repositories
             return await _dbSet.AnyAsync(expression);
         }
 
-        public void ChangeStatus(T entity)
-        {
-            _dbSet.Update(entity);
-        }
+        public void ChangeStatus(T entity) => Update(entity);
 
         public int Count()
         {

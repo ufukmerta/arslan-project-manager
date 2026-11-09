@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -19,7 +19,11 @@ namespace ArslanProjectManager.Core.Services
 
         void Update(T entity);
 
+        Task UpdateAsync(T entity);
+
         void ChangeStatus(T entity);
+
+        Task ChangeStatusAsync(T entity);
 
         Task<T> AddAsync(T entity);
 

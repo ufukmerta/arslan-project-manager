@@ -1,16 +1,14 @@
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Repository.Configurations;
 
-public class RoleConfiguration : IEntityTypeConfiguration<Role>
+public class RoleConfiguration : BaseEntityConfiguration<Role>
 {
-    public void Configure(EntityTypeBuilder<Role> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<Role> builder)
     {
         builder.ToTable("role");
-
-        builder.HasKey(e => e.Id);
 
         // Unique constraint: RoleName must be unique per team
         // For team roles: (RoleName, TeamId) must be unique where TeamId IS NOT NULL
@@ -20,7 +18,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.HasIndex(e => new { e.RoleName, e.TeamId })
             .IsUnique()
             .HasFilter("[is_active] = 1");
-        
+
         // Additional unique index for system roles (RoleName must be unique globally when TeamId is NULL)
         // Note: SQL Server allows multiple NULLs in unique indexes, so we use a filtered index
         // Only active roles are considered for uniqueness (soft-deleted roles can reuse names)
@@ -90,25 +88,10 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .HasColumnName("can_manage_permissions")
             .HasDefaultValue(false);
 
-        builder.Property(e => e.CreatedDate)
-           .HasColumnName("created_date")
-           .HasColumnType("datetime")
-           .HasDefaultValueSql("(GETUTCDATE())");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("updated_date")
-            .HasColumnType("datetime");
-
-        builder.Property(e => e.IsActive)
-            .HasColumnName("is_active")
-            .HasDefaultValue(true);
-
         // Relationship: Role -> Team (optional, for team-specific roles)
         builder.HasOne(d => d.Team)
             .WithMany(p => p.Roles)
             .HasForeignKey(d => d.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasQueryFilter(e => e.IsActive);
     }
 }

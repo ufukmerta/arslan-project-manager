@@ -33,6 +33,10 @@ namespace ArslanProjectManager.Core.ViewModels
         public string ProjectName { get; set; } = string.Empty;
         public string? ProjectDetail { get; set; }
         public DateOnly StartDate { get; set; }
+        public bool CanEdit { get; set; }
+        public bool CanDelete { get; set; }
+        public bool CanViewTasks { get; set; }
+        public bool CanCreateTasks { get; set; }
         public List<ProjectTaskViewModel> Tasks { get; set; } = [];
     }
 

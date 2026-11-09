@@ -33,10 +33,10 @@ The solution uses a **layered architecture**:
 
 | Project | Description |
 |---------|-------------|
-| **ArslanProjectManager.Core** | Domain models, DTOs, repository/service interfaces, constants. No external dependencies beyond EF and configuration. |
-| **ArslanProjectManager.Repository** | EF Core `DbContext`, entity configurations, migrations, concrete repositories, `UnitOfWork`, database seeder (board tags, log categories, task categories, system roles). |
-| **ArslanProjectManager.Service** | Business logic: auth, users, teams, team users, roles, projects, tasks, comments, logs, tags, tokens, permission resolution (`PermissionResolver`) and home/user summaries that respect RBAC. Uses AutoMapper, FluentValidation, BCrypt. |
-| **ArslanProjectManager.API** | ASP.NET Core Web API (.NET 10): JWT auth, per-team RBAC enforcement on projects and tasks, IP-based rate limiting, controllers (Auth, User, Teams, Projects, Tasks, Home), OpenAPI/Swagger, Scalar, ReDoc, CORS, custom exception and token-expiration middleware. |
+| **ArslanProjectManager.Core** | Domain models, DTOs, ViewModels, repository/service interfaces, constants (`SystemRoles`, `SystemBoards`, `ErrorMessages`). No external dependencies beyond EF and configuration. |
+| **ArslanProjectManager.Repository** | EF Core `DbContext`, entity configurations (`BaseEntityConfiguration<T>`), migrations, concrete repositories, `UnitOfWork`, database seeder (board tags, log categories, task categories, system roles). |
+| **ArslanProjectManager.Service** | Business logic & RBAC enforcement: auth, users, teams, team users, roles, projects, tasks, comments, logs, tags, tokens, password hashing (`IPasswordHasher`), permission resolution (`PermissionResolver`), and home/user summaries. Uses AutoMapper, FluentValidation, BCrypt. |
+| **ArslanProjectManager.API** | ASP.NET Core Web API (.NET 10): thin controllers (Auth, User, Teams, Projects, Tasks, Home) handling HTTP, claims, and cookies while delegating business logic to `Service`; JWT auth, IP-based rate limiting, OpenAPI/Swagger, Scalar, ReDoc, CORS, custom exception and token-expiration middleware. |
 | **ArslanProjectManager.WebUI** | ASP.NET Core MVC app: cookie + JWT, calls API via `HttpClient` with `AuthenticatedHttpClientHandler` and token refresh. Views for Login, Register, Teams, Projects, Tasks, User profile, permissions, roles. |
 | **ArslanProjectManager.MobileUI** | .NET MAUI app (Android, iOS, Windows): CommunityToolkit.Mvvm, same API via HTTP + JWT; pages for auth, home, teams, projects, tasks, profile, invites. |
 
@@ -213,7 +213,7 @@ dotnet build -f net10.0-android   # or net10.0-ios, net10.0-windows10.0.19041.0
 ## Solution structure (summary)
 
 ```
-ArslanProjectManager.sln
+ArslanProjectManager.slnx
 ├── ArslanProjectManager.Core/          # Models, DTOs, interfaces, constants
 ├── ArslanProjectManager.Repository/    # DbContext, EF configs, migrations, repositories, seeder
 ├── ArslanProjectManager.Service/       # Business logic, validation, token handling
@@ -228,8 +228,8 @@ ArslanProjectManager.sln
 
 |   Area   |     Controllers      | Notes                                          |
 |----------|----------------------|------------------------------------------------|
-| Auth     | `AuthController`     | Register, login, refresh token, logout         |
-| User     | `UserController`     | Profile, change password                       |
+| Auth     | `AuthController`     | Register, login, refresh token, logout, logout-all |
+| User     | `UserController`     | Profile, edit profile, picture, password, invites |
 | Teams    | `TeamsController`    | CRUD, invites, members, roles, permissions     |
 | Projects | `ProjectsController` | CRUD, scoped to teams                          |
 | Tasks    | `TasksController`    | CRUD, comments, logs, assignment, board status |

@@ -1,16 +1,14 @@
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Repository.Configurations;
 
-public class TeamUserConfiguration : IEntityTypeConfiguration<TeamUser>
+public class TeamUserConfiguration : BaseEntityConfiguration<TeamUser>
 {
-    public void Configure(EntityTypeBuilder<TeamUser> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<TeamUser> builder)
     {
         builder.ToTable("team_user");
-
-        builder.HasKey(e => e.Id);
 
         builder.HasIndex(e => e.RoleId, "IX_team_user_role_id");
         builder.HasIndex(e => e.TeamId, "IX_team_user_team_id");
@@ -65,19 +63,6 @@ public class TeamUserConfiguration : IEntityTypeConfiguration<TeamUser>
         builder.Property(e => e.CanManagePermissionsOverride)
             .HasColumnName("can_manage_permissions_override");
 
-        builder.Property(e => e.CreatedDate)
-           .HasColumnName("created_date")
-           .HasColumnType("datetime")
-           .HasDefaultValueSql("(GETUTCDATE())");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("updated_date")
-            .HasColumnType("datetime");
-
-        builder.Property(e => e.IsActive)
-            .HasColumnName("is_active")
-            .HasDefaultValue(true);
-
         builder.HasOne(d => d.Role)
             .WithMany(p => p.TeamUsers)
             .HasForeignKey(d => d.RoleId)
@@ -92,7 +77,5 @@ public class TeamUserConfiguration : IEntityTypeConfiguration<TeamUser>
             .WithMany(p => p.TeamUsers)
             .HasForeignKey(d => d.UserId)
             .OnDelete(DeleteBehavior.ClientSetNull);
-
-        builder.HasQueryFilter(e => e.IsActive);
     }
 }

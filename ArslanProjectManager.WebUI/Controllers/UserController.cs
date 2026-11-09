@@ -39,6 +39,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Login), nameof(User));
             }
@@ -71,6 +75,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
 
                 /*// If the response indicates unauthorized access, sign out the user if they are currently authenticated.
@@ -125,6 +133,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
@@ -208,6 +220,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
                 {
                     TempData["errorMessage"] = "Email already exists.";
@@ -252,6 +268,14 @@ namespace ArslanProjectManager.WebUI.Controllers
             var response = await client.PostAsync("auth/logout-all", null);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 TempData["errorMessage"] = "An error occurred while logging out. Please try again later.";
                 return View();
             }
@@ -299,6 +323,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Index));
@@ -355,6 +383,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Edit));
             }
@@ -399,6 +431,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(Edit));
@@ -448,6 +484,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return View(changePasswordViewModel);
             }
@@ -465,6 +505,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return View(new List<PendingInviteViewModel>());
@@ -496,6 +540,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(MyInvites));
             }
@@ -516,6 +564,10 @@ namespace ArslanProjectManager.WebUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction(nameof(MyInvites));

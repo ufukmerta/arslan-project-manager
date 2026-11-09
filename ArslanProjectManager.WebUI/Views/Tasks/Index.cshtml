@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ProjectTaskViewModel>
+@model IEnumerable<ProjectTaskViewModel>
 
 @{
     ViewData["Title"] = "Tasks";
@@ -124,9 +124,12 @@ else
                                                 <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
-                                                <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </a>
+                                                @if (item.CanEdit)
+                                                {
+                                                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                }
                                                 @if (item.CanDelete)
                                                 {
                                                     <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">
@@ -206,9 +209,12 @@ else
                                                 <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
-                                                <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">
-                                                    <i class="bi bi-pencil"></i> Edit
-                                                </a>
+                                                @if (item.CanEdit)
+                                                {
+                                                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.Id">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                }
                                                 @if (item.CanDelete)
                                                 {
                                                     <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">

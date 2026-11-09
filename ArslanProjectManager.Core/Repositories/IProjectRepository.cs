@@ -1,14 +1,13 @@
-﻿using ArslanProjectManager.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Core.Repositories
 {
-    public interface IProjectRepository: IGenericRepository<Project>
+    public interface IProjectRepository : IGenericRepository<Project>
     {
         Task<Project?> GetProjectWithDetailsAsync(int id);
+        Task<List<Project>> GetProjectsByTeamIdsAsync(IEnumerable<int> teamIds);
+        Task<Project?> GetProjectWithTeamAsync(int id, bool asNoTracking = true, bool ignoreQueryFilters = false);
+        Task<Project?> GetProjectForDeleteConfirmAsync(int id);
+        Task<Project?> GetProjectByTaskIdAsync(int taskId);
     }
 }

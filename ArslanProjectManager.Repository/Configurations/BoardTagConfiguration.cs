@@ -1,16 +1,14 @@
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Repository.Configurations;
 
-public class BoardTagConfiguration : IEntityTypeConfiguration<BoardTag>
+public class BoardTagConfiguration : BaseEntityConfiguration<BoardTag>
 {
-    public void Configure(EntityTypeBuilder<BoardTag> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<BoardTag> builder)
     {
         builder.ToTable("board_tag");
-
-        builder.HasKey(e => e.Id);
 
         builder.Property(e => e.Id)
             .HasColumnName("board_id");
@@ -24,24 +22,9 @@ public class BoardTagConfiguration : IEntityTypeConfiguration<BoardTag>
             .HasColumnName("board_order")
             .IsRequired();
 
-        builder.Property(e => e.CreatedDate)
-           .HasColumnName("created_date")
-           .HasColumnType("datetime")
-           .HasDefaultValueSql("(GETUTCDATE())");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("updated_date")
-            .HasColumnType("datetime");
-
-        builder.Property(e => e.IsActive)
-            .HasColumnName("is_active")
-            .HasDefaultValue(true);
-
         builder.HasMany(e => e.ProjectTasks)
-                .WithOne(e => e.Board)
-                .HasForeignKey(e => e.BoardId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasQueryFilter(e => e.IsActive);
+            .WithOne(e => e.Board)
+            .HasForeignKey(e => e.BoardId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

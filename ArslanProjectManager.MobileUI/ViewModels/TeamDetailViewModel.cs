@@ -38,6 +38,10 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         public partial bool CanEditProjects { get; set; }
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(InviteCommand))]
+        public partial bool CanInviteMembers { get; set; }
+
+        [ObservableProperty]
         public partial ObservableCollection<TeamUserDto> Members { get; set; } = [];
 
         [ObservableProperty]
@@ -82,6 +86,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
                     ManagerName = details.ManagerName ?? string.Empty;
                     ManagerId = details.ManagerId;
                     CanEditProjects = details.CanEditProjects;
+                    CanInviteMembers = details.CanInviteMembers;
 
                     Members.Clear();
                     if (details.Members != null && details.Members.Count > 0)
@@ -142,7 +147,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
             await Shell.Current.GoToAsync($"{nameof(TeamInvitesPage)}?id={TeamId}");
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanInviteMembers))]
         private async Task InviteAsync()
         {
             try

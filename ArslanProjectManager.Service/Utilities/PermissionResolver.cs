@@ -1,3 +1,4 @@
+using ArslanProjectManager.Core.DTOs.UpdateDTOs;
 using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Service.Utilities;
@@ -31,7 +32,7 @@ public static class PermissionResolver
             CanManagePermissions = teamUser.CanManagePermissionsOverride ?? role.CanManagePermissions
         };
     }
-    
+
     /// <summary>
     /// Checks if a user has a specific permission
     /// </summary>
@@ -39,6 +40,30 @@ public static class PermissionResolver
     {
         var effectivePermissions = GetEffectivePermissions(teamUser, role);
         return permissionCheck(effectivePermissions);
+    }
+
+    /// <summary>
+    /// Applies permission overrides to a TeamUser by comparing the requested values against the current Role defaults.
+    /// When a requested permission matches the Role default, the override is cleared (set to null).
+    /// </summary>
+    public static void ApplyPermissionOverrides(TeamUser teamUser, Role currentRole, UserPermissionUpdateDto model)
+    {
+        static bool? ResolveOverride(bool? requested, bool roleDefault, bool? existingOverride) =>
+            requested.HasValue
+                ? (requested.Value == roleDefault ? null : requested.Value)
+                : existingOverride;
+
+        teamUser.CanViewTasksOverride = ResolveOverride(model.CanViewTasks, currentRole.CanViewTasks, teamUser.CanViewTasksOverride);
+        teamUser.CanEditTasksOverride = ResolveOverride(model.CanEditTasks, currentRole.CanEditTasks, teamUser.CanEditTasksOverride);
+        teamUser.CanDeleteTasksOverride = ResolveOverride(model.CanDeleteTasks, currentRole.CanDeleteTasks, teamUser.CanDeleteTasksOverride);
+        teamUser.CanAssignTasksOverride = ResolveOverride(model.CanAssignTasks, currentRole.CanAssignTasks, teamUser.CanAssignTasksOverride);
+        teamUser.CanViewProjectsOverride = ResolveOverride(model.CanViewProjects, currentRole.CanViewProjects, teamUser.CanViewProjectsOverride);
+        teamUser.CanEditProjectsOverride = ResolveOverride(model.CanEditProjects, currentRole.CanEditProjects, teamUser.CanEditProjectsOverride);
+        teamUser.CanDeleteProjectsOverride = ResolveOverride(model.CanDeleteProjects, currentRole.CanDeleteProjects, teamUser.CanDeleteProjectsOverride);
+        teamUser.CanInviteMembersOverride = ResolveOverride(model.CanInviteMembers, currentRole.CanInviteMembers, teamUser.CanInviteMembersOverride);
+        teamUser.CanRemoveMembersOverride = ResolveOverride(model.CanRemoveMembers, currentRole.CanRemoveMembers, teamUser.CanRemoveMembersOverride);
+        teamUser.CanManageRolesOverride = ResolveOverride(model.CanManageRoles, currentRole.CanManageRoles, teamUser.CanManageRolesOverride);
+        teamUser.CanManagePermissionsOverride = ResolveOverride(model.CanManagePermissions, currentRole.CanManagePermissions, teamUser.CanManagePermissionsOverride);
     }
 }
 

@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseStaticWebAssets();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -71,6 +72,7 @@ builder.Services.AddAuthentication(options =>
             {
                 context.Token = accessToken;
             }
+
             return Task.CompletedTask;
         }
     };

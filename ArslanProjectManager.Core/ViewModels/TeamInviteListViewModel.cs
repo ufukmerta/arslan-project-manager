@@ -7,6 +7,7 @@ public class TeamInviteListViewModel
     public int TeamId { get; set; }
     public string TeamName { get; set; } = null!;
     public int ManagerId { get; set; }
+    public bool CanInviteMembers { get; set; }
     public List<TeamInviteItemViewModel> Invites { get; set; } = [];
 }
 

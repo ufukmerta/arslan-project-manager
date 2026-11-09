@@ -6,16 +6,16 @@ namespace ArslanProjectManager.Repository.Repositories
 {
     public class UserRepository(ProjectManagerDbContext context) : GenericRepository<User>(context), IUserRepository
     {
-        private readonly ProjectManagerDbContext _context = context;
-
         public async Task<User?> GetUserWithTeamsProjectsTasksAsync(int userId)
         {
-            return await _context.Users
+            return await _dbSet
+                .AsNoTrackingWithIdentityResolution()
+                .AsSplitQuery()
                 .Include(u => u.TeamUsers)
                     .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.TeamUsers)
                             .ThenInclude(tu => tu.Role)
-                .Include(t => t.TeamUsers)
+                .Include(u => u.TeamUsers)
                     .ThenInclude(tu => tu.Team)
                         .ThenInclude(t => t.Projects)
                             .ThenInclude(p => p.ProjectTasks)

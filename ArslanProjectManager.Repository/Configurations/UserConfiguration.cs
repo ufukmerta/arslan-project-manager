@@ -1,16 +1,16 @@
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Repository.Configurations;
 
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public class UserConfiguration : BaseEntityConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<Core.Models.User> builder)
+    protected override string CreatedDateColumnName => "register_date";
+
+    protected override void ConfigureEntity(EntityTypeBuilder<User> builder)
     {
         builder.ToTable("user");
-
-        builder.HasKey(e => e.Id);
 
         builder.HasIndex(e => e.Email)
             .IsUnique();
@@ -34,28 +34,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.Property(e => e.ProfilePicture)
-           .HasColumnName("profile_picture")
-           .HasColumnType("varbinary(max)")
-           .HasMaxLength(200);
+            .HasColumnName("profile_picture")
+            .HasColumnType("varbinary(max)")
+            .HasMaxLength(200);
 
         builder.Property(e => e.SecurityStamp)
             .HasColumnName("security_stamp")
             .HasMaxLength(100)
             .IsRequired();
-
-        builder.Property(e => e.CreatedDate)
-            .HasColumnName("register_date")
-            .HasColumnType("datetime")
-            .HasDefaultValueSql("(GETUTCDATE())");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("updated_date")
-            .HasColumnType("datetime");
-
-        builder.Property(e => e.IsActive)
-            .HasColumnName("is_active")
-            .HasDefaultValue(true);
-
-        builder.HasQueryFilter(e => e.IsActive);
     }
 }

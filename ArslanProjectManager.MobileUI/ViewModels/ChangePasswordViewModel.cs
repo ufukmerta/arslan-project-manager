@@ -15,7 +15,7 @@ namespace ArslanProjectManager.MobileUI.ViewModels
         [ObservableProperty]
         [Required(ErrorMessage = ErrorMessages.PasswordsRequired)]
         [StringLength(100, MinimumLength = 8, ErrorMessage = ErrorMessages.InvalidPasswordFormat)]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*/?&+\-_.])[A-Za-z\d@$!%*/?&+\-_.]{8,}$", ErrorMessage = ErrorMessages.InvalidPasswordFormat)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*/?&+\-_.])[A-Za-z\d@#$!%*/?&+\-_.]{8,}$", ErrorMessage = ErrorMessages.InvalidPasswordFormat)]
         [DataType(DataType.Password)]
         public partial string NewPassword { get; set; }
 

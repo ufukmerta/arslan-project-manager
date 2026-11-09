@@ -1,16 +1,17 @@
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ArslanProjectManager.Core.Models;
 
 namespace ArslanProjectManager.Repository.Configurations;
 
-public class TeamInviteConfiguration : IEntityTypeConfiguration<TeamInvite>
+public class TeamInviteConfiguration : BaseEntityConfiguration<TeamInvite>
 {
-    public void Configure(EntityTypeBuilder<TeamInvite> builder)
+    protected override string CreatedDateColumnName => "invite_date";
+    protected override string UpdatedDateColumnName => "status_change_date";
+
+    protected override void ConfigureEntity(EntityTypeBuilder<TeamInvite> builder)
     {
         builder.ToTable("team_invite");
-
-        builder.HasKey(e => e.Id);
 
         builder.Property(e => e.Id)
             .HasColumnName("team_invite_id");
@@ -26,25 +27,8 @@ public class TeamInviteConfiguration : IEntityTypeConfiguration<TeamInvite>
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Property(e => e.CreatedDate)
-           .HasColumnName("invite_date")
-           .HasColumnType("datetime")
-           .HasDefaultValueSql("(GETUTCDATE())");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("updated_date")
-            .HasColumnType("datetime");
-
-        builder.Property(e => e.IsActive)
-            .HasColumnName("is_active")
-            .HasDefaultValue(true);
-
         builder.Property(e => e.Status)
             .HasColumnName("status");
-
-        builder.Property(e => e.UpdatedDate)
-            .HasColumnName("status_change_date")
-            .HasColumnType("datetime");
 
         builder.Property(e => e.StatusChangeNote)
             .HasColumnName("status_change_note")
@@ -60,7 +44,5 @@ public class TeamInviteConfiguration : IEntityTypeConfiguration<TeamInvite>
             .WithMany(p => p.TeamInvites)
             .HasForeignKey(d => d.InvitedById)
             .OnDelete(DeleteBehavior.ClientSetNull);
-
-        builder.HasQueryFilter(e => e.IsActive);
     }
 }

@@ -2,17 +2,14 @@ using ArslanProjectManager.Core.Models;
 using ArslanProjectManager.Core.Repositories;
 using ArslanProjectManager.Core.Services;
 using ArslanProjectManager.Core.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArslanProjectManager.Service.Services
 {
     public class GenericService<T>(IGenericRepository<T> repository, IUnitOfWork unitOfWork) : IGenericService<T> where T : BaseEntity
     {
+        protected IUnitOfWork UnitOfWork => unitOfWork;
+
         public virtual async Task<T> AddAsync(T entity)
         {
             await repository.AddAsync(entity);
@@ -32,6 +29,13 @@ namespace ArslanProjectManager.Service.Services
             unitOfWork.Commit();
         }
 
+        public async Task ChangeStatusAsync(T entity)
+        {
+            entity.IsActive = false;
+            repository.ChangeStatus(entity);
+            await unitOfWork.CommitAsync();
+        }
+
         public int Count()
         {
             return repository.Count();
@@ -44,13 +48,19 @@ namespace ArslanProjectManager.Service.Services
 
         public async Task<T> GetByIdAsync(int id)
         {
-            return await repository.GetByIdAsync(id);
+            return (await repository.GetByIdAsync(id))!;
         }
 
         public void Update(T entity)
         {
             repository.Update(entity);
             unitOfWork.Commit();
+        }
+
+        public async Task UpdateAsync(T entity)
+        {
+            repository.Update(entity);
+            await unitOfWork.CommitAsync();
         }
 
         public IQueryable<T> Where(Expression<Func<T, bool>> expression)

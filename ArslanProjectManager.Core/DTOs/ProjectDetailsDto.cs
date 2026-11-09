@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,8 @@ namespace ArslanProjectManager.Core.DTOs
         public DateOnly StartDate { get; set; }
         public bool CanEdit { get; set; } = false;
         public bool CanDelete { get; set; } = false;
+        public bool CanViewTasks { get; set; } = false;
+        public bool CanCreateTasks { get; set; } = false;
 
         public List<MiniProjectTaskDto> Tasks { get; set; } = [];
     }

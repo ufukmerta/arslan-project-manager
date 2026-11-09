@@ -1,4 +1,4 @@
-﻿using ArslanProjectManager.Core.Models;
+using ArslanProjectManager.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArslanProjectManager.Repository;
@@ -45,23 +45,29 @@ public partial class ProjectManagerDbContext(DbContextOptions<ProjectManagerDbCo
 
     public override int SaveChanges()
     {
-        var modifiedEntities = ChangeTracker.Entries().Where(e => e.Entity is BaseEntity && (e.State == EntityState.Modified));
-        foreach (var entityEntry in modifiedEntities)
-        {
-            ((BaseEntity)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
-        }
-
+        ApplyAuditTimestamps();
         return base.SaveChanges();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var modifiedEntities = ChangeTracker.Entries()
-            .Where(e => e.State == EntityState.Modified && e.Entity is BaseEntity);
-
-        foreach (var entry in modifiedEntities)
-            ((BaseEntity)entry.Entity).UpdatedDate = DateTime.UtcNow;
-
+        ApplyAuditTimestamps();
         return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyAuditTimestamps()
+    {
+        var now = DateTime.UtcNow;
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            if (entry.State == EntityState.Added && entry.Entity.CreatedDate == default)
+            {
+                entry.Entity.CreatedDate = now;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedDate = now;
+            }
+        }
     }
 }

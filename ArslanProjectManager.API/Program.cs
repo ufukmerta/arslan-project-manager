@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
                 if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
                 {
                     context.Token = authHeader["Bearer ".Length..].Trim();
@@ -58,6 +58,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     context.Token = context.Request.Cookies["AccessToken"];
                 }
+
                 return Task.CompletedTask;
             },
             OnTokenValidated = async context =>
@@ -108,6 +109,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         context.Fail("User not found");
                         return;
                     }
+
                     cachedStamp = user.SecurityStamp;
                     // Cache short-lived to reduce DB load
                     await redis.SetCachedSecurityStampAsync(userId, cachedStamp, TimeSpan.FromMinutes(5));
@@ -125,6 +127,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     context.Response.Headers.Append("Token-Expired", "true");
                 }
+
                 return Task.CompletedTask;
             },
             OnChallenge = context =>
@@ -134,6 +137,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     context.Response.Headers.Append("Authentication-Error",
                         context.AuthenticateFailure.Message.Replace("\n", " ").Replace("\r", " "));
                 }
+
                 return Task.CompletedTask;
             }
         };

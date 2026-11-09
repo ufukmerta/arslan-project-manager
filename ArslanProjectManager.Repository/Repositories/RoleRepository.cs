@@ -13,11 +13,19 @@ public class RoleRepository(ProjectManagerDbContext context) : GenericRepository
     /// </summary>
     public async Task<Role?> GetDefaultRoleAsync()
     {
-        return await Where(r => r.TeamId == null && r.IsSystemRole && r.RoleName != SystemRoles.Manager)
+        return await _dbSet
             .AsNoTracking()
+            .Where(r => r.TeamId == null && r.IsSystemRole && r.RoleName != SystemRoles.Manager)
             .OrderBy(r => r.RoleName == SystemRoles.Member ? 0 : r.RoleName == SystemRoles.Viewer ? 1 : 2)
             .ThenBy(r => r.Id)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<Role?> GetSystemRoleByNameAsync(string roleName)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.TeamId == null && r.IsSystemRole && r.RoleName == roleName);
     }
 
     /// <summary>
@@ -26,10 +34,12 @@ public class RoleRepository(ProjectManagerDbContext context) : GenericRepository
     /// </summary>
     public async Task<List<Role>> GetRolesForTeamAsync(int teamId)
     {
-        return await Where(r => r.TeamId == null || r.TeamId == teamId)
+        return await _dbSet
             .AsNoTracking()
+            .Include(r => r.Team)
+            .Where(r => r.TeamId == null || r.TeamId == teamId)
             .OrderByDescending(r => r.IsSystemRole)
-            .ThenBy(r => r.RoleName == "Manager" ? 0 : r.RoleName == "Member" ? 1 : 2)
+            .ThenBy(r => r.RoleName == SystemRoles.Manager ? 0 : r.RoleName == SystemRoles.Member ? 1 : 2)
             .ToListAsync();
     }
 }

@@ -9,12 +9,17 @@ namespace ArslanProjectManager.Service.Services
 {
     public class TeamUserService(ITeamUserRepository repository, IUnitOfWork unitOfWork) : GenericService<TeamUser>(repository, unitOfWork), ITeamUserService
     {
-        public async Task<UserEffectivePermissionsDto> GetTeamUserWithPermissionsAsync(int teamId, int userId)
+        public async Task<UserEffectivePermissionsDto?> GetTeamUserWithPermissionsAsync(int teamId, int userId)
         {
             var teamUser = await repository.GetTeamUserWithRoleAsync(userId, teamId);
-            var effectivePermissions = PermissionResolver.GetEffectivePermissions(teamUser!, teamUser!.Role);
+            if (teamUser is null)
+            {
+                return null;
+            }
 
-            var permissionsDto = new UserEffectivePermissionsDto
+            var effectivePermissions = PermissionResolver.GetEffectivePermissions(teamUser, teamUser.Role);
+
+            return new UserEffectivePermissionsDto
             {
                 UserId = teamUser.UserId,
                 UserName = teamUser.User.Name,
@@ -44,8 +49,6 @@ namespace ArslanProjectManager.Service.Services
                 HasManageRolesOverride = teamUser.CanManageRolesOverride.HasValue,
                 HasManagePermissionsOverride = teamUser.CanManagePermissionsOverride.HasValue
             };
-
-            return permissionsDto;
         }
     }
 }

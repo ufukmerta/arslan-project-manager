@@ -27,8 +27,10 @@ namespace ArslanProjectManager.Core.ViewModels
         public string? Description { get; set; }
         public int ManagerId { get; set; }
         public string ManagerName { get; set; } = null!;
+        public bool CanInviteMembers { get; set; }
         public bool CanRemoveMembers { get; set; }
         public bool CanEditProjects { get; set; }
+        public bool CanDeleteProjects { get; set; }
         public List<TeamMemberViewModel> Members { get; set; } = [];
         public List<ProjectViewModel> Projects { get; set; } = [];
     }

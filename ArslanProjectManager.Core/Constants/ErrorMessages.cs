@@ -1,4 +1,4 @@
-﻿namespace ArslanProjectManager.Core.Constants
+namespace ArslanProjectManager.Core.Constants
 {
     public static class ErrorMessages
     {
@@ -44,6 +44,7 @@
         public const string InvalidInviteId = "Invalid invite ID";
         public const string OnlyPendingInvitationsCanBeCanceled = "Only pending invitations can be canceled";
         public const string NotAuthorizedToCancelInvitation = "You are not authorized to cancel this invitation";
+        public const string NoPermissionToInviteMembers = "You do not have permission to invite members to this team";
 
         // User-specific error messages
         public const string TokenExpired = "Token is expired";
@@ -51,7 +52,7 @@
         public const string InvalidCredentials = "Invalid email or password";
         public const string EmailAlreadyExists = "This email is already registered";
         public const string InvalidEmailFormat = "Invalid email format";
-        public const string InvalidPasswordFormat = "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@$!%*/?&+-_.)";
+        public const string InvalidPasswordFormat = "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character (@#$!%*/?&+-_.)";
         public const string RefreshTokenMissing = "Refresh token is missing, invalid, or inactive";
         public const string RefreshTokenExpired = "Refresh token has expired";
         public const string TokenGenerationFailed = "Token generation failed";

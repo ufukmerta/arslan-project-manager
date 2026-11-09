@@ -41,6 +41,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["errorMessage"] = await GetErrorMessageAsync(response);
@@ -96,6 +100,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -153,6 +161,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -206,6 +218,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -271,6 +287,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                     {
                         return RedirectToTooManyRequests();
                     }
+                    if ((int)response.StatusCode >= 500)
+                    {
+                        return RedirectToServerError();
+                    }
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         TempData["UnauthorizedFrom"] = "task";
@@ -312,6 +332,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 if (response2.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response2.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response2.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -368,6 +392,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -429,6 +457,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 {
                     return RedirectToTooManyRequests();
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     TempData["UnauthorizedFrom"] = "task";
@@ -481,6 +513,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
@@ -536,6 +572,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     return RedirectToTooManyRequests();
+                }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
                 }
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {

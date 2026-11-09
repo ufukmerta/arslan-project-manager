@@ -8,11 +8,21 @@ namespace ArslanProjectManager.Repository.Repositories
     {
         public Task<TeamUser?> GetTeamUserWithRoleAsync(int userId, int teamId)
         {
-            return Where(tu => tu.TeamId == teamId && tu.UserId == userId)
+            return _dbSet
                 .AsNoTracking()
                 .Include(tu => tu.Role)
-                .Include(tu=> tu.User)
-                .FirstOrDefaultAsync();
+                .Include(tu => tu.User)
+                .FirstOrDefaultAsync(tu => tu.TeamId == teamId && tu.UserId == userId);
+        }
+
+        public Task<List<TeamUser>> GetUserTeamMembershipsWithRoleAndTeamAsync(int userId)
+        {
+            return _dbSet
+                .AsNoTracking()
+                .Include(tu => tu.Role)
+                .Include(tu => tu.Team)
+                .Where(tu => tu.UserId == userId)
+                .ToListAsync();
         }
     }
 }

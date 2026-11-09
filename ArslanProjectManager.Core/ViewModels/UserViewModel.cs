@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -57,7 +57,7 @@ namespace ArslanProjectManager.Core.ViewModels
 
         [Required]
         [StringLength(100, MinimumLength = 8)]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$!%*\/?&+\-_.]{8,}$",
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*\/?&+\-_.])[A-Za-z\d@#$!%*\/?&+\-_.]{8,}$",
             ErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
@@ -92,7 +92,7 @@ namespace ArslanProjectManager.Core.ViewModels
         public string Password { get; set; } = string.Empty;
         [Required]
         [StringLength(100, MinimumLength = 8)]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*\/?&+\-_.])[A-Za-z\d@$!%*\/?&+\-_.]{8,}$",
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*\/?&+\-_.])[A-Za-z\d@#$!%*\/?&+\-_.]{8,}$",
             ErrorMessage = "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one digit, and one special character.")]
         [DataType(DataType.Password)]
         public string NewPassword { get; set; } = string.Empty;

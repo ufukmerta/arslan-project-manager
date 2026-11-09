@@ -4,12 +4,13 @@ using ArslanProjectManager.Core.ViewModels;
 using ArslanProjectManager.WebUI.Controllers;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace ArslanProjectManager.WEBUI.Controllers
 {
-    public class HomeController(IHttpClientFactory httpClientFactory, IAuthStorage authStorage, IMapper mapper) : BaseController
+    public class HomeController(IHttpClientFactory httpClientFactory, IAuthStorage authStorage, IMapper mapper, ILogger<HomeController> logger) : BaseController
     {
         [HttpGet]
         [AllowAnonymous]
@@ -36,12 +37,16 @@ namespace ArslanProjectManager.WEBUI.Controllers
                 {
                     return RedirectToAction(nameof(TooManyRequests), "Home");
                 }
+                if ((int)response.StatusCode >= 500)
+                {
+                    return RedirectToServerError();
+                }
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     await authStorage.ClearTokensAsync();
                 }
 
-                TempData["ErrorMessage"] = GetErrorMessageAsync(response);
+                TempData["errorMessage"] = await GetErrorMessageAsync(response);
                 return RedirectToAction("Login", "User");
             }
 
@@ -49,7 +54,7 @@ namespace ArslanProjectManager.WEBUI.Controllers
             var wrapper = await JsonSerializer.DeserializeAsync<CustomResponseDto<HomeDto>>(json, _jsonSerializerOptions);
             if (wrapper == null || !wrapper.IsSuccess || wrapper.Data == null)
             {
-                return View("Error");
+                return RedirectToServerError();
             }
 
             var viewModel = mapper.Map<HomeViewModel>(wrapper.Data);
@@ -65,6 +70,23 @@ namespace ArslanProjectManager.WEBUI.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error(int? code = null)
         {
+            var statusCodeFeature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+            var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+
+            var originalPath = exceptionFeature?.Path ?? statusCodeFeature?.OriginalPath ?? HttpContext.Request.Path.Value;
+            var originalQuery = statusCodeFeature?.OriginalQueryString ?? HttpContext.Request.QueryString.Value;
+            var exception = exceptionFeature?.Error;
+
+            if (exception is not null)
+            {
+                logger.LogError(exception, "Unhandled exception on '{OriginalPath}{OriginalQuery}': {Message}",
+                    originalPath, originalQuery, exception.Message);
+            }
+            else
+            {
+                logger.LogWarning("Status code {StatusCode} on '{OriginalPath}{OriginalQuery}'",
+                    code, originalPath, originalQuery);
+            }
 
             ViewBag.StatusCode = code;
             if (code == 400)
@@ -86,6 +108,10 @@ namespace ArslanProjectManager.WEBUI.Controllers
             else if (code == 429)
             {
                 return RedirectToAction(nameof(TooManyRequests), "Home");
+            }
+            else if (code >= 500 || code == null)
+            {
+                return RedirectToAction(nameof(ServerError), "Home");
             }
             else
             {
@@ -118,6 +144,12 @@ namespace ArslanProjectManager.WEBUI.Controllers
 
         [HttpGet]
         public IActionResult TooManyRequests()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ServerError()
         {
             return View();
         }
